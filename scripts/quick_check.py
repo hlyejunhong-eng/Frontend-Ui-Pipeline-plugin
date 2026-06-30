@@ -139,9 +139,8 @@ def main() -> None:
         "$frontend-ui-ideation",
         "$frontend-asset-production",
         "$frontend-implementation",
-        "examples/",
-        "launch-kit/",
-        "PROMPTS.md",
+        "本地校验",
+        "Local Check",
     ):
         if required not in readme:
             fail(f"README.md missing {required}")

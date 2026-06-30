@@ -10,13 +10,9 @@
 
 Frontend UI Pipeline 是一个 Codex 插件。它把已有页面、截图、Figma、localhost 地址或本地前端项目拆成三阶段处理：先生成高级定制 UI brief 和预览方案，再生成命名清晰的美术资产和动效规则，最后把审核通过的资产接入真实前端。
 
-这个仓库只保留实际插件内容：manifest、skills、安装脚本、校验脚本、README、LICENSE 和 CI。`examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等样例或营销素材不会上传到 GitHub。
-
 **English**
 
 Frontend UI Pipeline is a Codex plugin that turns an existing page, screenshot, Figma screen, localhost URL, or local frontend project into a three-phase delivery flow: a premium UI brief and preview, named production art assets and motion rules, then a real frontend implementation using the approved assets.
-
-This repository intentionally keeps only the actual plugin files: manifest, skills, install script, check script, README, LICENSE, and CI. Local-only materials such as `examples/`, `launch-kit/`, `docs/`, and `PROMPTS.md` are ignored and not uploaded to GitHub.
 
 ## 三个 Skills / Three Skills
 
@@ -481,52 +477,6 @@ A complete run should leave at least:
 - Verification command output
 - Desktop and mobile screenshots
 
-## 仓库内容 / Repository Contents
-
-**中文**
-
-GitHub 仓库保留：
-
-- `.codex-plugin/plugin.json`
-- `skills/`
-- `scripts/install_local_marketplace.py`
-- `scripts/quick_check.py`
-- `README.md`
-- `LICENSE`
-- `.github/workflows/quick-check.yml`
-
-GitHub 仓库不追踪：
-
-- `examples/`
-- `launch-kit/`
-- `docs/`
-- `PROMPTS.md`
-- `.github/ISSUE_TEMPLATE/`
-
-这些内容如果在本地存在，会被 `.gitignore` 忽略。
-
-**English**
-
-The GitHub repository tracks:
-
-- `.codex-plugin/plugin.json`
-- `skills/`
-- `scripts/install_local_marketplace.py`
-- `scripts/quick_check.py`
-- `README.md`
-- `LICENSE`
-- `.github/workflows/quick-check.yml`
-
-The GitHub repository does not track:
-
-- `examples/`
-- `launch-kit/`
-- `docs/`
-- `PROMPTS.md`
-- `.github/ISSUE_TEMPLATE/`
-
-If these materials exist locally, `.gitignore` keeps them out of GitHub.
-
 ## 本地校验 / Local Check
 
 ```bash
@@ -535,25 +485,11 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README 和 ignore 规则。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本和 README。
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, and ignore rules.
-
-## 不承诺什么 / What This Does Not Promise
-
-**中文**
-
-- 不保证 GitHub star、流量或产品成功。
-- 不替代法务、安全、品牌或无障碍认证。
-- 不应该静默覆盖和目标页面无关的项目代码。
-
-**English**
-
-- It does not guarantee GitHub stars, traffic, or product success.
-- It does not replace legal, security, brand, or accessibility review.
-- It should not silently overwrite project code unrelated to the requested screen or flow.
+This checks the plugin manifest, three skills, agent YAML files, install script, and README.
 
 ## License
 
