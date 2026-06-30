@@ -39,6 +39,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Identify which visuals should be real image assets and which should remain CSS, native UI, or code-driven animation.
    - Create an asset plan before generating files.
    - Confirm that the Phase 1 brief includes a Phase 2 generation guide. If missing, add a short supplement before producing assets.
+   - When a full foundation kit is required, use `../../scripts/generate_foundation_manifest.py` to create a per-state manifest scaffold, then update it with the real generated asset paths.
 
 2. Produce assets:
    - Choose and document the asset strategy before generation: AI raster illustration, vector/Figma-style production, or CSS/SVG procedural assets.
@@ -67,6 +68,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - List known deviations, tradeoffs, and any assets that need user judgment.
    - Include a machine-readable `asset-manifest.json` when practical so Phase 3 can import assets without re-parsing prose.
    - Prefer one manifest entry per asset and per important component state when practical, rather than only one entry per component family.
+   - If using the bundled manifest generator, keep its coverage counts in the review package so the user can see whether every required state is represented.
 
 5. Mandatory user approval:
    - Stop and ask the user to review the asset package.
@@ -106,6 +108,24 @@ Phase 2 must generate the full style-matched kit below unless the user explicitl
 - Transition animation: page enter/exit, modal enter/exit, button press, hover, loading shimmer, and reduced-motion fallback.
 
 Represent this kit as real frontend-consumable assets: SVG icon sprites or files, CSS component tokens, motion keyframes, component preview HTML, raster/vector illustration layers, and `asset-manifest.json` entries.
+
+## Foundation Manifest Generator
+
+Use the bundled script when the Phase 2 output needs the full foundation kit and the target repo does not already provide an equivalent manifest:
+
+```bash
+python3 ../../scripts/generate_foundation_manifest.py \
+  --project "<project-name>" \
+  --screen "<screen-name>" \
+  --target-route "<route-or-component>" \
+  --style-name "<approved-style-name>" \
+  --status review-pending \
+  --phase1-brief "<path-to-phase1-ui-brief.md>" \
+  --preview "<path-to-preview.png>" \
+  --output "<phase2-folder>/asset-manifest.json"
+```
+
+After generation, replace scaffold paths with the real generated asset paths and keep one entry per important component state.
 
 ## SVG Sprite Review Rule
 

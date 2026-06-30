@@ -5,3 +5,5 @@ launch-kit/
 .github/ISSUE_TEMPLATE/
 .DS_Store
 .validation-yaml-shim/
+__pycache__/
+*.pyc

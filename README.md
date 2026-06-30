@@ -541,6 +541,26 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 This checks the plugin manifest, three skills, agent YAML files, install script, and README.
 
+## 阶段二 Manifest 生成器 / Phase 2 Manifest Generator
+
+**中文**
+
+阶段二可以使用内置脚本生成完整基础组件清单，避免漏掉按钮、角标、卡片、combobox、常用 icons、导航、通告、搜索、章节标题、弹窗和过渡动画状态：
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_foundation_manifest.py \
+  --project my-app \
+  --screen dashboard \
+  --target-route /dashboard \
+  --style-name "approved premium direction" \
+  --status review-pending \
+  --output ./asset-manifest.json
+```
+
+**English**
+
+Phase 2 can use the bundled script to generate a complete foundation component manifest so buttons, badges, cards, comboboxes, common icons, navigation, notice bars, search bars, section titles, modals, and transition states are not missed.
+
 ## License
 
 MIT

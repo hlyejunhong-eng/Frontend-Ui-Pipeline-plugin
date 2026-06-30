@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -163,6 +165,39 @@ def main() -> None:
 
     check_file(ROOT / ".github" / "workflows" / "quick-check.yml")
     check_file(ROOT / "scripts" / "install_local_marketplace.py")
+    manifest_generator = ROOT / "scripts" / "generate_foundation_manifest.py"
+    check_file(manifest_generator)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        output_path = Path(temp_dir) / "asset-manifest.json"
+        subprocess.run(
+            [
+                sys.executable,
+                str(manifest_generator),
+                "--project",
+                "quick-check",
+                "--screen",
+                "dashboard",
+                "--target-route",
+                "/dashboard",
+                "--status",
+                "review-pending",
+                "--output",
+                str(output_path),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        generated = json.loads(output_path.read_text(encoding="utf-8"))
+        entries = generated.get("entries", [])
+        expected_total = 89
+        if generated.get("coverage", {}).get("commonIcons") != len(COMMON_ICONS):
+            fail("foundation manifest generator must cover all common icons")
+        if generated.get("coverage", {}).get("totalEntries") != expected_total:
+            fail("foundation manifest generator total entry count changed unexpectedly")
+        if len(entries) != expected_total:
+            fail("foundation manifest generator output is missing required foundation states")
     ok("scripts and CI")
 
     check_file(ROOT / "LICENSE")
