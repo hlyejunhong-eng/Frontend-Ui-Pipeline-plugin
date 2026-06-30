@@ -50,6 +50,8 @@ If no existing frontend repo is provided, create a runnable standalone implement
    - Decide which visual elements are image assets and which should be rendered with CSS, canvas, SVG, or native components.
    - Define responsive breakpoints and exact layout constraints from the phase 1 and phase 2 documents.
    - Import or translate the Phase 2 foundational component kit before building screen-specific UI so future screens can reuse the same style system.
+   - Run `../../scripts/generate_implementation_patch_plan.py` when the bundled script is available, after target inspection and before editing the real app. Use it to confirm approval status, copy operations, target file operations, API preservation rules, runtime notes, and screenshot verification steps.
+   - Do not edit the production app while the implementation patch plan says `blockedBeforeEditing: true`.
 
 3. Connect data:
    - Use existing real APIs or service clients when they are present and callable.
@@ -132,6 +134,21 @@ python3 ../../scripts/generate_screenshot_qa_plan.py \
 
 The generator writes a Markdown plan, JSON plan, and `capture-screenshots.mjs` Playwright script. Use it to standardize mobile and desktop viewport sizes, screenshot paths, `check_visual_artifacts.py` commands, and `compare_visual_artifacts.py` commands. If no browser URL is available because the target needs HBuilderX or another external runtime, keep the plan as evidence and capture equivalent screenshots through that runtime before running the visual checks.
 
+## Implementation Patch Plan
+
+Use the bundled implementation patch plan generator before editing the real app:
+
+```bash
+python3 ../../scripts/generate_implementation_patch_plan.py \
+  --manifest "<phase2-folder>/asset-manifest.json" \
+  --inspection "<handoff-folder>/phase3-target-inspection.json" \
+  --phase2-handoff "<phase2-folder>/phase2-asset-handoff.md" \
+  --screenshot-plan "<handoff-folder>/phase3-screenshot-qa/phase3-screenshot-qa-plan.md" \
+  --output-dir "<handoff-folder>/phase3-patch-plan"
+```
+
+The generator writes a Markdown plan and JSON plan with asset copy operations, source-exists checks, destination import paths, target file operations, API preservation rules, runtime notes, implementation order, and verification steps. Treat `blockedBeforeEditing: true` as a hard stop for production edits.
+
 ## Final Output
 
 Report:
@@ -141,6 +158,7 @@ Report:
 - Foundation kit components imported, implemented, or documented for reuse.
 - Target inspection report path and key findings when the bundled inspector is available.
 - Screenshot QA plan path and whether screenshots were captured by generated Playwright script, browser tool, or external runtime.
+- Implementation patch plan path and whether it was blocked before editing.
 - Pipeline runbook path when the bundled generator is available.
 - Verification commands run and their result.
 - Screenshot paths or a clear reason screenshots could not be captured.

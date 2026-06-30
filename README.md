@@ -508,6 +508,7 @@ Required outputs:
 - `phase2-asset-handoff.md`
 - 完整 foundation component kit
 - common icon set
+- 阶段三实现补丁计划
 - 前端代码改动
 - 验证命令输出
 - 桌面和移动截图
@@ -523,6 +524,7 @@ A complete run should leave at least:
 - `phase2-asset-handoff.md`
 - Complete foundation component kit
 - Common icon set
+- Phase 3 implementation patch plan
 - Frontend code changes
 - Verification command output
 - Desktop and mobile screenshots
@@ -559,11 +561,11 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、流水线运行索引生成器、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、流水线运行索引生成器、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, pipeline runbook generator, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, pipeline runbook generator, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 ## 阶段一 Brief 验收器 / Phase 1 Brief Validator
 
@@ -767,6 +769,34 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_screenshot_qa_plan.py \
   --route-url '#/pages/grid/grid' \
   --approved-preview ./phase1-preview-mobile.png \
   --output-dir ./phase3-screenshot-qa
+```
+
+## 阶段三实现补丁计划生成器 / Phase 3 Implementation Patch Plan Generator
+
+**中文**
+
+真实改项目之前，用这个脚本把“要复制哪些资产、要改哪些文件、哪些 API 必须保留、哪些运行/截图检查要做”先写成计划。没有阶段二明确通过或目标路由没有匹配时，它会标记 `blockedBeforeEditing: true`，防止误改正式应用。
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_implementation_patch_plan.py \
+  --manifest ./asset-manifest.json \
+  --inspection ./phase3-target-inspection.json \
+  --phase2-handoff ./phase2-asset-handoff.md \
+  --screenshot-plan ./phase3-screenshot-qa/phase3-screenshot-qa-plan.md \
+  --output-dir ./phase3-patch-plan
+```
+
+**English**
+
+Before editing a real project, use this script to plan exactly which assets to copy, which files to edit, which APIs to preserve, and which runtime/screenshot checks to run. If Phase 2 approval is missing or the target route is not matched, it records `blockedBeforeEditing: true` so the production app is not changed accidentally.
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_implementation_patch_plan.py \
+  --manifest ./asset-manifest.json \
+  --inspection ./phase3-target-inspection.json \
+  --phase2-handoff ./phase2-asset-handoff.md \
+  --screenshot-plan ./phase3-screenshot-qa/phase3-screenshot-qa-plan.md \
+  --output-dir ./phase3-patch-plan
 ```
 
 ## 视觉产物检查器 / Visual Artifact Checker

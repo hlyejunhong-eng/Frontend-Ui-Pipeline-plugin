@@ -56,6 +56,7 @@ def collect_artifacts(root: Path) -> dict[str, list[Path]]:
         "phase3Inspections": find_all(root, ["**/phase3-target-inspection.md", "**/phase3-target-inspection.json"]),
         "phase3ScreenshotPlans": find_all(root, ["**/phase3-screenshot-qa-plan.md", "**/phase3-screenshot-qa-plan.json"]),
         "phase3CaptureScripts": find_all(root, ["**/capture-screenshots.mjs"]),
+        "phase3PatchPlans": find_all(root, ["**/phase3-implementation-patch-plan.md", "**/phase3-implementation-patch-plan.json"]),
         "phase3Screenshots": find_all(root, ["**/screenshots/*.png", "**/phase3-*screenshot*.png", "**/implementation-screenshot*.png"]),
         "visualReports": find_all(root, ["**/visual-diff*.md", "**/visual-diff*.json"]),
         "issueLogs": find_all(root, ["**/plugin-run-issues.md", "**/issues.md"]),
@@ -73,6 +74,7 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
     phase2_approved = bool(artifacts["phase2Handoffs"])
     phase3_inspected = bool(artifacts["phase3Inspections"])
     phase3_planned = bool(artifacts["phase3ScreenshotPlans"] and artifacts["phase3CaptureScripts"])
+    phase3_patch_planned = bool(artifacts["phase3PatchPlans"])
     phase3_screenshots = bool(artifacts["phase3Screenshots"])
 
     if not phase1_ready:
@@ -117,6 +119,15 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
             "Continue $frontend-implementation. Generate the Phase 3 screenshot QA plan, then capture "
             "desktop and mobile screenshots when the app runtime is available."
         )
+    elif not phase3_patch_planned:
+        key = "phase3-patch-plan-needed"
+        title_cn = "截图 QA 计划已就绪，下一步生成实现补丁计划"
+        title_en = "Screenshot QA plan ready; create the implementation patch plan"
+        next_skill = "$frontend-implementation"
+        next_prompt = (
+            "Continue $frontend-implementation. Generate the Phase 3 implementation patch plan before editing "
+            "the real app, then follow it only if it is not blocked."
+        )
     elif not phase3_screenshots:
         key = "phase3-screenshot-capture-needed"
         title_cn = "截图 QA 计划已就绪，下一步捕获实现截图"
@@ -148,6 +159,7 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
             "phase2Approved": phase2_approved,
             "phase3Inspected": phase3_inspected,
             "phase3QaPlanned": phase3_planned,
+            "phase3PatchPlanned": phase3_patch_planned,
             "phase3ScreenshotsCaptured": phase3_screenshots,
         },
     }
@@ -168,6 +180,7 @@ def build_runbook(root: Path, project: str, target: str) -> dict[str, Any]:
         ("phase3Inspections", "Phase 3", "Target inspection", "inspection"),
         ("phase3ScreenshotPlans", "Phase 3", "Screenshot QA plan", "qa-plan"),
         ("phase3CaptureScripts", "Phase 3", "Capture script", "script"),
+        ("phase3PatchPlans", "Phase 3", "Implementation patch plan", "patch-plan"),
         ("phase3Screenshots", "Phase 3", "Implementation screenshot", "visual"),
         ("visualReports", "QA", "Visual report", "qa"),
         ("issueLogs", "Ops", "Issue log", "log"),
@@ -214,6 +227,7 @@ def markdown(runbook: dict[str, Any]) -> str:
         ("Phase 2 approved handoff", readiness["phase2Approved"]),
         ("Phase 3 target inspection", readiness["phase3Inspected"]),
         ("Phase 3 screenshot QA plan", readiness["phase3QaPlanned"]),
+        ("Phase 3 implementation patch plan", readiness["phase3PatchPlanned"]),
         ("Phase 3 implementation screenshots", readiness["phase3ScreenshotsCaptured"]),
     ]
     readiness_lines = [f"- {name}: `{'yes' if value else 'no'}`" for name, value in readiness_rows]

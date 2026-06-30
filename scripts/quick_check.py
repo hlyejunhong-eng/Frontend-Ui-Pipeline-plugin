@@ -199,9 +199,11 @@ def main() -> None:
                 "generate_phase2_handoff.py",
                 "inspect_frontend_target.py",
                 "generate_screenshot_qa_plan.py",
+                "generate_implementation_patch_plan.py",
                 "generate_pipeline_runbook.py",
                 "Target Inspector",
                 "Screenshot QA Plan",
+                "Implementation Patch Plan",
             ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
@@ -274,6 +276,9 @@ def main() -> None:
         "阶段三截图 QA 计划生成器",
         "Phase 3 Screenshot QA Plan Generator",
         "generate_screenshot_qa_plan.py",
+        "阶段三实现补丁计划生成器",
+        "Phase 3 Implementation Patch Plan Generator",
+        "generate_implementation_patch_plan.py",
         "视觉产物检查器",
         "Visual Artifact Checker",
         "check_visual_artifacts.py",
@@ -310,6 +315,8 @@ def main() -> None:
     check_file(target_inspector)
     screenshot_plan_generator = ROOT / "scripts" / "generate_screenshot_qa_plan.py"
     check_file(screenshot_plan_generator)
+    patch_plan_generator = ROOT / "scripts" / "generate_implementation_patch_plan.py"
+    check_file(patch_plan_generator)
     visual_checker = ROOT / "scripts" / "check_visual_artifacts.py"
     check_file(visual_checker)
     visual_diff_helper = ROOT / "scripts" / "compare_visual_artifacts.py"
@@ -792,6 +799,94 @@ Phase 2 can start after validation passes.
                 fail(f"screenshot QA plan missing {required_plan_text}")
         if "playwright" not in capture_script.read_text(encoding="utf-8"):
             fail("screenshot QA plan did not write a Playwright capture script")
+        patch_plan_dir = Path(temp_dir) / "phase3-patch-plan"
+        blocked_patch_plan_check = subprocess.run(
+            [
+                sys.executable,
+                str(patch_plan_generator),
+                "--manifest",
+                str(output_path),
+                "--inspection",
+                str(inspection_json),
+                "--screenshot-plan",
+                str(plan_md),
+                "--output-dir",
+                str(patch_plan_dir),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        patch_plan_md = patch_plan_dir / "phase3-implementation-patch-plan.md"
+        patch_plan_json = patch_plan_dir / "phase3-implementation-patch-plan.json"
+        if "Blocked before editing: yes" not in blocked_patch_plan_check.stdout or not patch_plan_md.exists() or not patch_plan_json.exists():
+            fail("implementation patch plan generator did not block before approval")
+        blocked_plan = json.loads(patch_plan_json.read_text(encoding="utf-8"))
+        if not blocked_plan.get("blockedBeforeEditing") or blocked_plan.get("approvalReady"):
+            fail("implementation patch plan must block when Phase 2 approval is missing")
+        approved_patch_plan_check = subprocess.run(
+            [
+                sys.executable,
+                str(patch_plan_generator),
+                "--manifest",
+                str(output_path),
+                "--inspection",
+                str(inspection_json),
+                "--approval-text",
+                "Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation.",
+                "--screenshot-plan",
+                str(plan_md),
+                "--output-dir",
+                str(patch_plan_dir),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if "Blocked before editing: no" not in approved_patch_plan_check.stdout:
+            fail("implementation patch plan generator did not unblock after approval")
+        approved_plan = json.loads(patch_plan_json.read_text(encoding="utf-8"))
+        if approved_plan.get("blockedBeforeEditing") or not approved_plan.get("copyOperations") or not approved_plan.get("fileOperations"):
+            fail("implementation patch plan missing copy/file operations after approval")
+        patch_plan_text = patch_plan_md.read_text(encoding="utf-8")
+        for required_patch_plan_text in (
+            "Phase 3 Implementation Patch Plan",
+            "Copy Operations",
+            "File Operations",
+            "API Preservation",
+            "Verification Steps",
+        ):
+            if required_patch_plan_text not in patch_plan_text:
+                fail(f"implementation patch plan missing {required_patch_plan_text}")
+        runbook_after_patch_md = Path(temp_dir) / "pipeline-runbook-after-patch.md"
+        runbook_after_patch_json = Path(temp_dir) / "pipeline-runbook-after-patch.json"
+        subprocess.run(
+            [
+                sys.executable,
+                str(runbook_generator),
+                "--run-root",
+                str(temp_dir),
+                "--project",
+                "quick-check",
+                "--target",
+                "/dashboard",
+                "--output-md",
+                str(runbook_after_patch_md),
+                "--output-json",
+                str(runbook_after_patch_json),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        runbook_after_patch = json.loads(runbook_after_patch_json.read_text(encoding="utf-8"))
+        if not runbook_after_patch.get("status", {}).get("phaseReadiness", {}).get("phase3PatchPlanned"):
+            fail("pipeline runbook did not detect the implementation patch plan")
+        if "Implementation patch plan" not in runbook_after_patch_md.read_text(encoding="utf-8"):
+            fail("pipeline runbook did not index the implementation patch plan")
         server_check = subprocess.run(
             [
                 sys.executable,
