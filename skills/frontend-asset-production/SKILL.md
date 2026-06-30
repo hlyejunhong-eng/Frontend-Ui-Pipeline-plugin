@@ -69,6 +69,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Include a machine-readable `asset-manifest.json` when practical so Phase 3 can import assets without re-parsing prose.
    - Prefer one manifest entry per asset and per important component state when practical, rather than only one entry per component family.
    - If using the bundled manifest generator, keep its coverage counts in the review package so the user can see whether every required state is represented.
+   - Run `../../scripts/validate_foundation_manifest.py <manifest-path>` before asking the user to approve assets; fix any missing component state, icon, or screen asset slot first.
 
 5. Mandatory user approval:
    - Stop and ask the user to review the asset package.
@@ -126,6 +127,14 @@ python3 ../../scripts/generate_foundation_manifest.py \
 ```
 
 After generation, replace scaffold paths with the real generated asset paths and keep one entry per important component state.
+
+Validate coverage before review:
+
+```bash
+python3 ../../scripts/validate_foundation_manifest.py "<phase2-folder>/asset-manifest.json"
+```
+
+Use `--require-status approved` before Phase 3 if the manifest is supposed to represent final approved assets.
 
 ## SVG Sprite Review Rule
 

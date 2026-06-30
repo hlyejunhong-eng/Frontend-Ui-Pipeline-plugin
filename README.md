@@ -561,6 +561,24 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_foundation_manifest.py \
 
 Phase 2 can use the bundled script to generate a complete foundation component manifest so buttons, badges, cards, comboboxes, common icons, navigation, notice bars, search bars, section titles, modals, and transition states are not missed.
 
+## 阶段二 Manifest 验收器 / Phase 2 Manifest Validator
+
+**中文**
+
+生成资产后，用验收器确认完整基础组件和常用 icons 没有漏项：
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/validate_foundation_manifest.py ./asset-manifest.json
+```
+
+**English**
+
+After asset generation, validate that the foundation component states and common icons are complete:
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/validate_foundation_manifest.py ./asset-manifest.json
+```
+
 ## 阶段二本地审核服务器 / Phase 2 Local Review Server
 
 **中文**

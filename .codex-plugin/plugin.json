@@ -1,6 +1,6 @@
 {
   "name": "frontend-ui-pipeline",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Three-stage frontend redesign pipeline for premium UI briefs, production art assets, and real app implementation.",
   "author": {
     "name": "hlyejunhong-eng",
