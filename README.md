@@ -535,11 +535,11 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 ## 阶段一 Brief 验收器 / Phase 1 Brief Validator
 
@@ -715,6 +715,34 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/inspect_frontend_target.py \
   --target-route pages/grid/grid \
   --output-md ./phase3-target-inspection.md \
   --output-json ./phase3-target-inspection.json
+```
+
+## 阶段三截图 QA 计划生成器 / Phase 3 Screenshot QA Plan Generator
+
+**中文**
+
+目标项目检查完成后，用这个脚本生成桌面/移动端截图计划、Playwright 捕获脚本、截图输出路径、视觉产物检查命令和视觉差异对比命令。它不会假装项目已经能跑起来；如果检测到 HBuilderX 或外部运行环境，就会把截图计划和外部运行提示写清楚。
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_screenshot_qa_plan.py \
+  --inspection ./phase3-target-inspection.json \
+  --base-url http://127.0.0.1:5173 \
+  --route-url '#/pages/grid/grid' \
+  --approved-preview ./phase1-preview-mobile.png \
+  --output-dir ./phase3-screenshot-qa
+```
+
+**English**
+
+After target inspection, use this script to generate desktop/mobile screenshot targets, a Playwright capture script, screenshot output paths, visual artifact check commands, and visual diff commands. It does not pretend the app is already runnable; if HBuilderX or another external runtime is required, the plan records that guidance.
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_screenshot_qa_plan.py \
+  --inspection ./phase3-target-inspection.json \
+  --base-url http://127.0.0.1:5173 \
+  --route-url '#/pages/grid/grid' \
+  --approved-preview ./phase1-preview-mobile.png \
+  --output-dir ./phase3-screenshot-qa
 ```
 
 ## 视觉产物检查器 / Visual Artifact Checker

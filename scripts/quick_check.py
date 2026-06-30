@@ -197,7 +197,9 @@ def main() -> None:
                 "compare_visual_artifacts.py",
                 "generate_phase2_handoff.py",
                 "inspect_frontend_target.py",
+                "generate_screenshot_qa_plan.py",
                 "Target Inspector",
+                "Screenshot QA Plan",
             ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
@@ -264,6 +266,9 @@ def main() -> None:
         "阶段三目标项目检查器",
         "Phase 3 Target Inspector",
         "inspect_frontend_target.py",
+        "阶段三截图 QA 计划生成器",
+        "Phase 3 Screenshot QA Plan Generator",
+        "generate_screenshot_qa_plan.py",
         "视觉产物检查器",
         "Visual Artifact Checker",
         "check_visual_artifacts.py",
@@ -296,6 +301,8 @@ def main() -> None:
     check_file(handoff_generator)
     target_inspector = ROOT / "scripts" / "inspect_frontend_target.py"
     check_file(target_inspector)
+    screenshot_plan_generator = ROOT / "scripts" / "generate_screenshot_qa_plan.py"
+    check_file(screenshot_plan_generator)
     visual_checker = ROOT / "scripts" / "check_visual_artifacts.py"
     check_file(visual_checker)
     visual_diff_helper = ROOT / "scripts" / "compare_visual_artifacts.py"
@@ -694,6 +701,49 @@ Phase 2 can start after validation passes.
             fail("target inspector did not report external runtime notes for uni-app")
         if "Frontend Target Inspection" not in inspection_md.read_text(encoding="utf-8"):
             fail("target inspector did not write Markdown output")
+        screenshot_plan_dir = Path(temp_dir) / "phase3-screenshot-qa"
+        screenshot_plan_check = subprocess.run(
+            [
+                sys.executable,
+                str(screenshot_plan_generator),
+                "--inspection",
+                str(inspection_json),
+                "--base-url",
+                "http://127.0.0.1:5173",
+                "--route-url",
+                "#/pages/grid/grid",
+                "--approved-preview",
+                str(contact_sheet),
+                "--output-dir",
+                str(screenshot_plan_dir),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        plan_md = screenshot_plan_dir / "phase3-screenshot-qa-plan.md"
+        plan_json = screenshot_plan_dir / "phase3-screenshot-qa-plan.json"
+        capture_script = screenshot_plan_dir / "capture-screenshots.mjs"
+        if "Wrote" not in screenshot_plan_check.stdout or not plan_md.exists() or not plan_json.exists() or not capture_script.exists():
+            fail("screenshot QA plan generator did not write expected outputs")
+        plan = json.loads(plan_json.read_text(encoding="utf-8"))
+        if len(plan.get("cases", [])) != 2:
+            fail("screenshot QA plan must include mobile and desktop cases")
+        if not plan.get("visualCheckCommand") or not plan.get("visualDiffCommands"):
+            fail("screenshot QA plan missing visual check or diff commands")
+        plan_text = plan_md.read_text(encoding="utf-8")
+        for required_plan_text in (
+            "Phase 3 Screenshot QA Plan",
+            "Capture Command",
+            "Visual Artifact Check",
+            "Visual Diff Commands",
+            "capture-screenshots.mjs",
+        ):
+            if required_plan_text not in plan_text:
+                fail(f"screenshot QA plan missing {required_plan_text}")
+        if "playwright" not in capture_script.read_text(encoding="utf-8"):
+            fail("screenshot QA plan did not write a Playwright capture script")
         server_check = subprocess.run(
             [
                 sys.executable,

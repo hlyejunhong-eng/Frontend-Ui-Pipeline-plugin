@@ -81,6 +81,7 @@ If no existing frontend repo is provided, create a runnable standalone implement
    - Run the relevant formatter, typecheck, lint, tests, and build commands when available.
    - Start the local dev server for app-based work.
    - If the app cannot be started because the required runtime is external, state the blocker, provide exact run instructions for that runtime, and capture standalone preview screenshots if possible.
+   - Run `../../scripts/generate_screenshot_qa_plan.py` when the bundled script is available to create desktop/mobile screenshot targets, capture commands, visual artifact checks, and visual diff commands.
    - Capture desktop and mobile screenshots with Playwright or the available browser tool.
    - Run `../../scripts/check_visual_artifacts.py <screenshot-paths>` when the bundled script is available so missing or zero-size screenshots are caught before claiming visual QA.
    - Compare screenshots against the approved preview and phase 2 assembly map.
@@ -115,6 +116,21 @@ python3 ../../scripts/inspect_frontend_target.py \
 
 Use the report to confirm framework/runtime, route file, available run commands, external runtime notes, API client files, recommended asset paths, and Phase 3 implementation cautions. For uni-app projects with no npm scripts, follow the HBuilderX/external-runtime guidance instead of claiming a normal dev-server verification.
 
+## Screenshot QA Plan
+
+Use the bundled screenshot QA plan generator before claiming visual verification:
+
+```bash
+python3 ../../scripts/generate_screenshot_qa_plan.py \
+  --inspection "<handoff-folder>/phase3-target-inspection.json" \
+  --base-url "<running-app-url>" \
+  --route-url "<route-url-or-hash>" \
+  --approved-preview "<approved-preview.png>" \
+  --output-dir "<handoff-folder>/phase3-screenshot-qa"
+```
+
+The generator writes a Markdown plan, JSON plan, and `capture-screenshots.mjs` Playwright script. Use it to standardize mobile and desktop viewport sizes, screenshot paths, `check_visual_artifacts.py` commands, and `compare_visual_artifacts.py` commands. If no browser URL is available because the target needs HBuilderX or another external runtime, keep the plan as evidence and capture equivalent screenshots through that runtime before running the visual checks.
+
 ## Final Output
 
 Report:
@@ -123,6 +139,7 @@ Report:
 - Real APIs connected or mocks created.
 - Foundation kit components imported, implemented, or documented for reuse.
 - Target inspection report path and key findings when the bundled inspector is available.
+- Screenshot QA plan path and whether screenshots were captured by generated Playwright script, browser tool, or external runtime.
 - Verification commands run and their result.
 - Screenshot paths or a clear reason screenshots could not be captured.
 - Visual artifact check results for screenshots when the bundled checker is available.
