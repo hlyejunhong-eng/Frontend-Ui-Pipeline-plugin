@@ -182,13 +182,14 @@ def main() -> None:
                 "SVG Sprite Review Rule",
                 "Asset Prompt Pack Generator",
                 "Asset Review Packet Generator",
+                "Phase 2 Handoff Generator",
                 "Visual Artifact Checker",
                 "Visual Diff Helper",
             ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         if skill == "frontend-implementation":
-            for required in ("Run Mode", "uni-app", "HBuilderX", "check_visual_artifacts.py", "compare_visual_artifacts.py"):
+            for required in ("Run Mode", "uni-app", "HBuilderX", "check_visual_artifacts.py", "compare_visual_artifacts.py", "generate_phase2_handoff.py"):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         agent_yaml = check_file(skill_root / "agents" / "openai.yaml")
@@ -248,6 +249,9 @@ def main() -> None:
         "阶段二资产审核包生成器",
         "Phase 2 Asset Review Packet Generator",
         "generate_asset_review_packet.py",
+        "阶段二最终交接文档生成器",
+        "Phase 2 Final Handoff Generator",
+        "generate_phase2_handoff.py",
         "视觉产物检查器",
         "Visual Artifact Checker",
         "check_visual_artifacts.py",
@@ -276,6 +280,8 @@ def main() -> None:
     check_file(prompt_pack_generator)
     review_packet_generator = ROOT / "scripts" / "generate_asset_review_packet.py"
     check_file(review_packet_generator)
+    handoff_generator = ROOT / "scripts" / "generate_phase2_handoff.py"
+    check_file(handoff_generator)
     visual_checker = ROOT / "scripts" / "check_visual_artifacts.py"
     check_file(visual_checker)
     visual_diff_helper = ROOT / "scripts" / "compare_visual_artifacts.py"
@@ -539,6 +545,70 @@ Phase 2 can start after validation passes.
         ):
             if required_approval_text not in approval_text:
                 fail(f"asset review packet missing {required_approval_text}")
+        handoff_path = Path(temp_dir) / "phase2-asset-handoff.md"
+        handoff_check = subprocess.run(
+            [
+                sys.executable,
+                str(handoff_generator),
+                "--manifest",
+                str(output_path),
+                "--phase1-brief",
+                str(phase1_brief),
+                "--prompt-pack",
+                str(prompt_pack_path),
+                "--review-packet",
+                str(approval_md),
+                "--contact-sheet",
+                str(contact_sheet),
+                "--visual-diff-report",
+                str(diff_md),
+                "--target-runtime",
+                "quick-check-runtime",
+                "--approved-by",
+                "quick-check",
+                "--approved-at",
+                "2026-01-01T00:00:00Z",
+                "--approval-text",
+                "Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation.",
+                "--output",
+                str(handoff_path),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if not handoff_path.exists() or "Wrote" not in handoff_check.stdout:
+            fail("phase 2 handoff generator did not write expected output")
+        handoff_text = handoff_path.read_text(encoding="utf-8")
+        for required_handoff_text in (
+            "Phase 2 Asset Handoff",
+            "## Approval",
+            "## Asset Manifest",
+            "## Assembly Map",
+            "## Component Usage Rules",
+            "## Phase 3 Acceptance Checklist",
+            "$frontend-implementation",
+        ):
+            if required_handoff_text not in handoff_text:
+                fail(f"phase 2 handoff missing {required_handoff_text}")
+        rejected_handoff = subprocess.run(
+            [
+                sys.executable,
+                str(handoff_generator),
+                "--manifest",
+                str(output_path),
+                "--approval-text",
+                "please wait",
+                "--output",
+                str(Path(temp_dir) / "should-not-exist.md"),
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if rejected_handoff.returncode == 0:
+            fail("phase 2 handoff generator must reject missing explicit approval")
         server_check = subprocess.run(
             [
                 sys.executable,

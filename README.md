@@ -535,11 +535,11 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 ## 阶段一 Brief 验收器 / Phase 1 Brief Validator
 
@@ -651,6 +651,44 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_review_packet.py \
   --contact-sheet ./review/phase2-contact-sheet.png \
   --review-url http://127.0.0.1:8000/component-contact-sheet.html \
   --output-dir ./review
+```
+
+## 阶段二最终交接文档生成器 / Phase 2 Final Handoff Generator
+
+**中文**
+
+用户明确说资产通过后，用这个脚本生成标准 `phase2-asset-handoff.md`。它会把审批文字、manifest、review packet、contact sheet、visual diff、组件调用规则、动效规则和 Phase 3 验收清单合并成一份可直接交给 `$frontend-implementation` 的文档。没有明确通过文字时，脚本会失败，防止跳过审核门禁。
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_phase2_handoff.py \
+  --manifest ./asset-manifest.json \
+  --phase1-brief ./phase1-ui-brief.md \
+  --prompt-pack ./phase2-asset-prompt-pack.md \
+  --review-packet ./review/phase2-asset-approval-packet.md \
+  --contact-sheet ./review/phase2-contact-sheet.png \
+  --visual-diff-report ./review/visual-diff-report.md \
+  --target-runtime "uni-app" \
+  --approved-by "user" \
+  --approval-text "Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation." \
+  --output ./phase2-asset-handoff.md
+```
+
+**English**
+
+After the user explicitly approves the assets, use this script to generate the standard `phase2-asset-handoff.md`. It combines approval text, manifest entries, review packet, contact sheet, visual diff report, component usage rules, motion rules, and the Phase 3 acceptance checklist into one document for `$frontend-implementation`. The script fails when approval text is missing or not explicit, so the review gate cannot be skipped accidentally.
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_phase2_handoff.py \
+  --manifest ./asset-manifest.json \
+  --phase1-brief ./phase1-ui-brief.md \
+  --prompt-pack ./phase2-asset-prompt-pack.md \
+  --review-packet ./review/phase2-asset-approval-packet.md \
+  --contact-sheet ./review/phase2-contact-sheet.png \
+  --visual-diff-report ./review/visual-diff-report.md \
+  --target-runtime "uni-app" \
+  --approved-by "user" \
+  --approval-text "Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation." \
+  --output ./phase2-asset-handoff.md
 ```
 
 ## 视觉产物检查器 / Visual Artifact Checker

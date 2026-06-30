@@ -81,6 +81,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - If the user requests changes, revise assets and repeat the review gate.
 
 6. Finalize the phase 2 handoff:
+   - Use `../../scripts/generate_phase2_handoff.py` when the bundled script is available so approval text, manifest entries, assembly rules, component usage, motion rules, and Phase 3 acceptance checks are captured consistently.
    - Write `phase2-asset-handoff.md` beside the asset folder or in the user-provided output directory.
    - Supplement the phase 1 brief rather than replacing it.
 
@@ -184,6 +185,26 @@ python3 ../../scripts/generate_asset_review_packet.py \
 
 The packet must give the user four plain decisions: approve assets, revise visual style, revise naming/organization, or revise implementation mapping. Treat only an explicit approval as permission to write final `phase2-asset-handoff.md`.
 
+## Phase 2 Handoff Generator
+
+After the user explicitly approves the asset review package, use the bundled handoff generator to create the final `phase2-asset-handoff.md`:
+
+```bash
+python3 ../../scripts/generate_phase2_handoff.py \
+  --manifest "<phase2-folder>/asset-manifest.json" \
+  --phase1-brief "<path-to-phase1-ui-brief.md>" \
+  --prompt-pack "<phase2-folder>/phase2-asset-prompt-pack.md" \
+  --review-packet "<phase2-folder>/review/phase2-asset-approval-packet.md" \
+  --contact-sheet "<phase2-folder>/review/phase2-contact-sheet.png" \
+  --visual-diff-report "<phase2-folder>/review/visual-diff-report.md" \
+  --target-runtime "<target-runtime>" \
+  --approved-by "<user-or-role>" \
+  --approval-text "<exact-user-approval-message>" \
+  --output "<phase2-folder>/phase2-asset-handoff.md"
+```
+
+The script must fail when approval text is missing or does not contain an explicit approval/pass decision. Do not bypass that guard in production mode.
+
 ## Visual Artifact Checker
 
 Use the bundled visual artifact checker on Phase 2 review screenshots, contact sheets, SVGs, and HTML review pages:
@@ -216,7 +237,7 @@ Use this report as QA evidence, not as a replacement for user approval. If the d
 Final output must include:
 
 - Approved real asset files.
-- `phase2-asset-handoff.md`.
+- `phase2-asset-handoff.md`, preferably generated with `generate_phase2_handoff.py` after explicit approval.
 - `phase2-asset-prompt-pack.md` or an equivalent asset-generation prompt record when generated assets used raster, Figma/vector, or CSS/SVG prompt production.
 - An asset review package the user can inspect visually.
 - `phase2-asset-approval-packet.md` and/or `phase2-asset-approval-packet.html` when the bundled review packet generator is available.
