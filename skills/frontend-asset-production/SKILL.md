@@ -63,7 +63,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
 
 4. Create the review package:
    - Build a contact sheet or preview folder that lets the user inspect every generated asset.
-   - Make the contact sheet work under a local file open or provide a local static-server command; do not rely only on browser support for external SVG sprite references under `file://`.
+   - Make the contact sheet work through `../../scripts/serve_review.py` or a local file open; do not rely only on browser support for external SVG sprite references under `file://`.
    - Include side-by-side comparison against the phase 1 preview when possible.
    - List known deviations, tradeoffs, and any assets that need user judgment.
    - Include a machine-readable `asset-manifest.json` when practical so Phase 3 can import assets without re-parsing prose.
@@ -129,7 +129,17 @@ After generation, replace scaffold paths with the real generated asset paths and
 
 ## SVG Sprite Review Rule
 
-If you generate SVG sprites, verify the review page actually shows every icon. If external `<use href="sprite.svg#id">` is blank in a local `file://` review, inline the preview paths in the contact sheet or run a local static server. Keep the production sprite if it is still the best import format.
+If you generate SVG sprites, verify the review page actually shows every icon. If external `<use href="sprite.svg#id">` is blank in a local `file://` review, run the bundled review server or inline the preview paths in the contact sheet. Keep the production sprite if it is still the best import format.
+
+## Review Server
+
+Use the bundled server for contact sheets, SVG sprites, fonts, and relative asset paths:
+
+```bash
+python3 ../../scripts/serve_review.py "<phase2-folder>/review" --entry component-contact-sheet.html
+```
+
+Report the printed `Review URL` to the user. If you only need to validate the folder in automation, add `--check`.
 
 ## Quality Gate
 

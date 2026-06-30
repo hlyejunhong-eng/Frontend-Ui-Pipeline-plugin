@@ -561,6 +561,22 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_foundation_manifest.py \
 
 Phase 2 can use the bundled script to generate a complete foundation component manifest so buttons, badges, cards, comboboxes, common icons, navigation, notice bars, search bars, section titles, modals, and transition states are not missed.
 
+## 阶段二本地审核服务器 / Phase 2 Local Review Server
+
+**中文**
+
+如果阶段二生成了 contact sheet、SVG sprite、字体或相对路径资源，建议用内置本地服务器打开审核包，而不是直接双击 HTML：
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/serve_review.py ./phase2/review --entry component-contact-sheet.html
+```
+
+复制输出里的 `Review URL` 到浏览器即可。
+
+**English**
+
+If Phase 2 generates a contact sheet, SVG sprite, fonts, or relative assets, serve the review folder locally instead of double-clicking the HTML file. Copy the printed `Review URL` into your browser.
+
 ## License
 
 MIT

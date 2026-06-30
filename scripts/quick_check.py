@@ -152,6 +152,9 @@ def main() -> None:
         "$frontend-implementation",
         "本地校验",
         "Local Check",
+        "阶段二本地审核服务器",
+        "Phase 2 Local Review Server",
+        "serve_review.py",
     ):
         if required not in readme:
             fail(f"README.md missing {required}")
@@ -167,6 +170,8 @@ def main() -> None:
     check_file(ROOT / "scripts" / "install_local_marketplace.py")
     manifest_generator = ROOT / "scripts" / "generate_foundation_manifest.py"
     check_file(manifest_generator)
+    review_server = ROOT / "scripts" / "serve_review.py"
+    check_file(review_server)
     with tempfile.TemporaryDirectory() as temp_dir:
         output_path = Path(temp_dir) / "asset-manifest.json"
         subprocess.run(
@@ -198,6 +203,29 @@ def main() -> None:
             fail("foundation manifest generator total entry count changed unexpectedly")
         if len(entries) != expected_total:
             fail("foundation manifest generator output is missing required foundation states")
+        review_root = Path(temp_dir) / "review"
+        review_root.mkdir()
+        (review_root / "component-contact-sheet.html").write_text(
+            "<!doctype html><title>Review</title><h1>ok</h1>\n",
+            encoding="utf-8",
+        )
+        server_check = subprocess.run(
+            [
+                sys.executable,
+                str(review_server),
+                str(review_root),
+                "--entry",
+                "component-contact-sheet.html",
+                "--check",
+                "--quiet",
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if "Review URL:" not in server_check.stdout:
+            fail("review server check did not print a Review URL")
     ok("scripts and CI")
 
     check_file(ROOT / "LICENSE")
