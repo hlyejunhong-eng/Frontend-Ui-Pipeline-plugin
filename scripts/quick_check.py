@@ -175,7 +175,7 @@ def main() -> None:
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         if skill == "frontend-asset-production":
-            for required in ("Required Foundation Kit", "complete foundational component kit", "Run Mode", "SVG Sprite Review Rule"):
+            for required in ("Required Foundation Kit", "complete foundational component kit", "Run Mode", "SVG Sprite Review Rule", "Asset Prompt Pack Generator"):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         if skill == "frontend-implementation":
@@ -233,6 +233,9 @@ def main() -> None:
         "阶段一 Brief 验收器",
         "Phase 1 Brief Validator",
         "validate_phase1_brief.py",
+        "阶段二资产提示包生成器",
+        "Phase 2 Asset Prompt Pack Generator",
+        "generate_asset_prompt_pack.py",
     ):
         if required not in readme:
             fail(f"README.md missing {required}")
@@ -251,6 +254,8 @@ def main() -> None:
     check_file(phase1_validator)
     manifest_generator = ROOT / "scripts" / "generate_foundation_manifest.py"
     check_file(manifest_generator)
+    prompt_pack_generator = ROOT / "scripts" / "generate_asset_prompt_pack.py"
+    check_file(prompt_pack_generator)
     manifest_validator = ROOT / "scripts" / "validate_foundation_manifest.py"
     check_file(manifest_validator)
     review_server = ROOT / "scripts" / "serve_review.py"
@@ -370,6 +375,38 @@ Phase 2 can start after validation passes.
             fail("foundation manifest generator total entry count changed unexpectedly")
         if len(entries) != expected_total:
             fail("foundation manifest generator output is missing required foundation states")
+        prompt_pack_path = Path(temp_dir) / "phase2-asset-prompt-pack.md"
+        prompt_pack_check = subprocess.run(
+            [
+                sys.executable,
+                str(prompt_pack_generator),
+                "--phase1-brief",
+                str(phase1_brief),
+                "--manifest",
+                str(output_path),
+                "--strategy",
+                "hybrid",
+                "--output",
+                str(prompt_pack_path),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if not prompt_pack_path.exists() or "Wrote" not in prompt_pack_check.stdout:
+            fail("asset prompt pack generator did not write output")
+        prompt_pack = prompt_pack_path.read_text(encoding="utf-8")
+        for required_prompt_text in (
+            "Phase 2 Asset Prompt Pack",
+            "AI Raster Prompt",
+            "Figma/Vector Prompt",
+            "CSS/SVG Component Prompt",
+            "Common icons",
+            "Total manifest entries",
+        ):
+            if required_prompt_text not in prompt_pack:
+                fail(f"asset prompt pack missing {required_prompt_text}")
         validator_check = subprocess.run(
             [
                 sys.executable,

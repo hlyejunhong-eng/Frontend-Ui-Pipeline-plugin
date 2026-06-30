@@ -40,6 +40,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Create an asset plan before generating files.
    - Confirm that the Phase 1 brief includes a Phase 2 generation guide. If missing, add a short supplement before producing assets.
    - When a full foundation kit is required, use `../../scripts/generate_foundation_manifest.py` to create a per-state manifest scaffold, then update it with the real generated asset paths.
+   - Use `../../scripts/generate_asset_prompt_pack.py` after the manifest exists to create a practical production prompt pack for raster, Figma/vector, and CSS/SVG asset generation. Use the pack to drive asset production rather than relying on vague art direction prose.
 
 2. Produce assets:
    - Choose and document the asset strategy before generation: AI raster illustration, vector/Figma-style production, or CSS/SVG procedural assets.
@@ -136,6 +137,20 @@ python3 ../../scripts/validate_foundation_manifest.py "<phase2-folder>/asset-man
 
 Use `--require-status approved` before Phase 3 if the manifest is supposed to represent final approved assets.
 
+## Asset Prompt Pack Generator
+
+Use the bundled prompt-pack generator when the user is non-technical, the asset strategy includes AI raster/vector generation, or the Phase 1 style needs to be translated into concrete production prompts:
+
+```bash
+python3 ../../scripts/generate_asset_prompt_pack.py \
+  --phase1-brief "<path-to-phase1-ui-brief.md>" \
+  --manifest "<phase2-folder>/asset-manifest.json" \
+  --strategy hybrid \
+  --output "<phase2-folder>/phase2-asset-prompt-pack.md"
+```
+
+The output must name layer prompts, AI raster prompts, Figma/vector prompts, CSS/SVG component prompts, refinement knobs, manifest paths, and the approval checklist. Keep it beside the Phase 2 review package so a non-designer can understand what was generated and what can be revised.
+
 ## SVG Sprite Review Rule
 
 If you generate SVG sprites, verify the review page actually shows every icon. If external `<use href="sprite.svg#id">` is blank in a local `file://` review, run the bundled review server or inline the preview paths in the contact sheet. Keep the production sprite if it is still the best import format.
@@ -156,6 +171,7 @@ Final output must include:
 
 - Approved real asset files.
 - `phase2-asset-handoff.md`.
+- `phase2-asset-prompt-pack.md` or an equivalent asset-generation prompt record when generated assets used raster, Figma/vector, or CSS/SVG prompt production.
 - An asset review package the user can inspect visually.
 - A manifest or table that maps every asset to a component, state, layer, and import/calling path.
 - A complete foundational component kit covering buttons, badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.

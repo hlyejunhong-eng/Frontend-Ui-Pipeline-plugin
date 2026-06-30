@@ -535,11 +535,11 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 ## 阶段一 Brief 验收器 / Phase 1 Brief Validator
 
@@ -578,6 +578,32 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_foundation_manifest.py \
 **English**
 
 Phase 2 can use the bundled script to generate a complete foundation component manifest so buttons, badges, cards, comboboxes, common icons, navigation, notice bars, search bars, section titles, modals, and transition states are not missed.
+
+## 阶段二资产提示包生成器 / Phase 2 Asset Prompt Pack Generator
+
+**中文**
+
+当用户不懂美术、Figma 或资产切图时，可以先把阶段一 brief 和阶段二 manifest 转成一份具体的生产提示包。它会输出 AI raster、Figma/vector、CSS/SVG 三类资产生产提示、分层规则、二次调参项、manifest 路径和审核清单：
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_prompt_pack.py \
+  --phase1-brief ./phase1-ui-brief.md \
+  --manifest ./asset-manifest.json \
+  --strategy hybrid \
+  --output ./phase2-asset-prompt-pack.md
+```
+
+**English**
+
+When the user does not know art direction, Figma, or asset slicing, convert the Phase 1 brief and Phase 2 manifest into a practical production prompt pack first. It outputs AI raster, Figma/vector, and CSS/SVG prompts, layer rules, refinement knobs, manifest paths, and review checklist:
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_prompt_pack.py \
+  --phase1-brief ./phase1-ui-brief.md \
+  --manifest ./asset-manifest.json \
+  --strategy hybrid \
+  --output ./phase2-asset-prompt-pack.md
+```
 
 ## 阶段二 Manifest 验收器 / Phase 2 Manifest Validator
 
