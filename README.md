@@ -535,11 +535,29 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+
+## 阶段一 Brief 验收器 / Phase 1 Brief Validator
+
+**中文**
+
+阶段一结束前，可以用内置验收器确认 `phase1-ui-brief.md` 真的能指导阶段二生成资产。它会检查源审计、预览图路径、阶段二生成指南、插画/界面分层、二次可调参数、命名/导出/响应式裁切规则、完整基础组件清单和 20 个常用 icons：
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/validate_phase1_brief.py ./phase1-ui-brief.md
+```
+
+**English**
+
+Before Phase 1 ends, validate that `phase1-ui-brief.md` can actually drive Phase 2 asset production. The validator checks source audit, preview image references, the Phase 2 generation guide, illustration/UI layer map, refinement parameters, naming/export/responsive crop rules, the complete foundation component inventory, and all 20 common icons:
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/validate_phase1_brief.py ./phase1-ui-brief.md
+```
 
 ## 阶段二 Manifest 生成器 / Phase 2 Manifest Generator
 

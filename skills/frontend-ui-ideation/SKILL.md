@@ -61,6 +61,7 @@ If the user provides no runnable app, screenshot, URL, Figma frame, or code targ
    - Write `phase1-ui-brief.md` in that folder.
    - Include all preview image paths and any source screenshots used.
    - Treat the document as the contract for asset production and implementation.
+   - Run `../../scripts/validate_phase1_brief.py <path-to-phase1-ui-brief.md>` when the plugin script is available. Fix missing guide, layer, parameter, component, icon, or preview coverage before handing off to Phase 2.
 
 5. Create an artifact index:
    - Write or include a short "handoff index" section listing every produced file, why it exists, and which phase consumes it.
@@ -115,5 +116,6 @@ Do not finish with prose only. Final output must provide:
 - At least one preview image that represents the redesigned target UI.
 - Evidence of source inspection, such as screenshots, route/component notes, or a clear statement that the source artifact was not available.
 - A Phase 2 generation guide with layer order, adjustable parameters, and the full foundational component inventory.
+- A passing `validate_phase1_brief.py` result when the bundled script is available.
 - A phase readiness checklist showing whether Phase 2 can start immediately.
 - A short handoff note naming the next recommended skill: `$frontend-asset-production`.

@@ -230,6 +230,9 @@ def main() -> None:
         "阶段二 Manifest 验收器",
         "Phase 2 Manifest Validator",
         "validate_foundation_manifest.py",
+        "阶段一 Brief 验收器",
+        "Phase 1 Brief Validator",
+        "validate_phase1_brief.py",
     ):
         if required not in readme:
             fail(f"README.md missing {required}")
@@ -244,6 +247,8 @@ def main() -> None:
 
     check_file(ROOT / ".github" / "workflows" / "quick-check.yml")
     check_file(ROOT / "scripts" / "install_local_marketplace.py")
+    phase1_validator = ROOT / "scripts" / "validate_phase1_brief.py"
+    check_file(phase1_validator)
     manifest_generator = ROOT / "scripts" / "generate_foundation_manifest.py"
     check_file(manifest_generator)
     manifest_validator = ROOT / "scripts" / "validate_foundation_manifest.py"
@@ -251,6 +256,90 @@ def main() -> None:
     review_server = ROOT / "scripts" / "serve_review.py"
     check_file(review_server)
     with tempfile.TemporaryDirectory() as temp_dir:
+        phase1_brief = Path(temp_dir) / "phase1-ui-brief.md"
+        phase1_brief.write_text(
+            """# Phase 1 UI Brief: Quick Check
+
+## Context
+Product context for a premium frontend flow.
+
+## Source Audit
+Route and source evidence were inspected.
+
+## Preview Files
+- `phase1-preview-desktop.png`
+- `phase1-preview-mobile.png`
+
+## Layout Spec
+Grid, spacing, viewport, alignment, and responsive layout.
+
+## Background Spec
+Background, grid, illustration, texture, lighting, mask, and placement.
+
+## Component Spec
+Buttons, cards, inputs, navigation, modal, and stateful components.
+
+## Copy Spec
+Headings, labels, helper text, and errors.
+
+## Button and Control Spec
+Hit areas, keyboard order, focus, pressed, hover, disabled, and loading.
+
+## Motion Spec
+Page enter, page exit, modal enter, modal exit, button press, hover, loading shimmer, and reduced-motion fallback.
+
+## Phase 2 Generation Guide
+
+Layer map:
+1. base background
+2. grid and illustration
+3. card surfaces
+4. controls and text
+5. effect overlays, special mask, and motion overlays
+
+Adjustable parameters:
+- opacity, blur, shadow, highlight intensity, saturation, stroke width, radius, spacing, duration, easing, and responsive crop.
+
+Asset naming rules:
+- lower-kebab-case with screen, component, state, and scale.
+
+Export rules:
+- SVG for icons and masks; PNG/WebP for raster illustration.
+
+Responsive crop rules:
+- anchor important illustration areas and never crop controls.
+
+Complete Phase 2 component inventory:
+- Buttons: primary, secondary, ghost, danger, disabled, loading, icon-only, pressed.
+- Numeric badges: neutral, accent, success, warning, danger, dot, count.
+- Generic cards: flat, elevated, selected, disabled, media, metric, action-card.
+- Combobox/select: closed, open, selected, search-filtered, empty, disabled, error.
+- Common icons: home, profile, generic page, scan, cart, payment, chat, confirm, close, back, forward, hot, like, settings, help, info, wallet, list, favorite, search.
+- Navigation bar: desktop sidebar, desktop topbar, mobile compact.
+- Notice bar: info, success, warning, danger, dismissible.
+- Search bar: idle, focused, with-value, loading, empty-result, clear-button.
+- Section title: eyebrow, title, subtitle, action slot, divider.
+- Modal: default, destructive confirmation, form modal, mobile sheet, overlay, close action, focus.
+- Transition animation: page enter, page exit, modal enter, modal exit, button press, hover, loading shimmer, reduced motion.
+
+## Asset Expectations
+Backgrounds, illustrations, masks, icons, component CSS, motion frames, and manifest.
+
+## Acceptance Checklist
+Phase 2 can start after validation passes.
+""",
+            encoding="utf-8",
+        )
+        phase1_check = subprocess.run(
+            [sys.executable, str(phase1_validator), str(phase1_brief)],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if "phase 1 brief is ready for Phase 2" not in phase1_check.stdout:
+            fail("phase 1 brief validator did not verify readiness")
+
         output_path = Path(temp_dir) / "asset-manifest.json"
         subprocess.run(
             [
