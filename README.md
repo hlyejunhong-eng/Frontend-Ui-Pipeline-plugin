@@ -535,11 +535,11 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 ## 阶段一 Brief 验收器 / Phase 1 Brief Validator
 
@@ -689,6 +689,32 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_phase2_handoff.py \
   --approved-by "user" \
   --approval-text "Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation." \
   --output ./phase2-asset-handoff.md
+```
+
+## 阶段三目标项目检查器 / Phase 3 Target Inspector
+
+**中文**
+
+进入真实前端实现前，用这个脚本检查目标项目是什么框架、目标路由文件在哪里、有没有 `npm run dev`、是否需要 HBuilderX、API 客户端在哪里、资产应该放到什么目录。它会输出 JSON 和 Markdown 报告，方便 `$frontend-implementation` 在动代码前先确定运行方式和风险。
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/inspect_frontend_target.py \
+  /path/to/frontend-app \
+  --target-route pages/grid/grid \
+  --output-md ./phase3-target-inspection.md \
+  --output-json ./phase3-target-inspection.json
+```
+
+**English**
+
+Before implementing into a real frontend, use this script to inspect the target app framework, route file, available `npm run` commands, whether HBuilderX or another external runtime is needed, API client locations, and recommended asset paths. It writes JSON and Markdown reports so `$frontend-implementation` can choose the correct run and replacement strategy before editing code.
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/inspect_frontend_target.py \
+  /path/to/frontend-app \
+  --target-route pages/grid/grid \
+  --output-md ./phase3-target-inspection.md \
+  --output-json ./phase3-target-inspection.json
 ```
 
 ## 视觉产物检查器 / Visual Artifact Checker

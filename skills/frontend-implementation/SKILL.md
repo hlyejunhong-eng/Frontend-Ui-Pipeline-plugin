@@ -39,6 +39,7 @@ If no existing frontend repo is provided, create a runnable standalone implement
 
 1. Inspect the application:
    - Read project structure, package metadata, router setup, component conventions, styling system, asset pipeline, and existing API clients.
+   - Run `../../scripts/inspect_frontend_target.py <repo-root> --target-route <route-or-component>` when the bundled script is available, and keep the JSON or Markdown report with the implementation handoff.
    - Detect special frontend runtimes. For uni-app, look for `pages.json`, `manifest.json`, `uni_modules`, `view`, `text`, `scroll-view`, and `rpx`.
    - Locate the route, screen, or component that should receive the hot replacement.
    - Preserve unrelated behavior and project patterns.
@@ -100,6 +101,20 @@ If no existing frontend repo is provided, create a runnable standalone implement
 - Do not leave final work as an isolated image when code can be produced. The final artifact must be runnable frontend code or a clear explanation of the external blocker.
 - Preserve the Phase 2 foundation kit so the style can expand to additional pages without regenerating every base component.
 
+## Target Inspector
+
+Use the bundled target inspector before editing the real app:
+
+```bash
+python3 ../../scripts/inspect_frontend_target.py \
+  "<repo-root>" \
+  --target-route "<route-or-component>" \
+  --output-md "<handoff-folder>/phase3-target-inspection.md" \
+  --output-json "<handoff-folder>/phase3-target-inspection.json"
+```
+
+Use the report to confirm framework/runtime, route file, available run commands, external runtime notes, API client files, recommended asset paths, and Phase 3 implementation cautions. For uni-app projects with no npm scripts, follow the HBuilderX/external-runtime guidance instead of claiming a normal dev-server verification.
+
 ## Final Output
 
 Report:
@@ -107,6 +122,7 @@ Report:
 - Files changed.
 - Real APIs connected or mocks created.
 - Foundation kit components imported, implemented, or documented for reuse.
+- Target inspection report path and key findings when the bundled inspector is available.
 - Verification commands run and their result.
 - Screenshot paths or a clear reason screenshots could not be captured.
 - Visual artifact check results for screenshots when the bundled checker is available.

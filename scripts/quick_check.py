@@ -189,7 +189,16 @@ def main() -> None:
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         if skill == "frontend-implementation":
-            for required in ("Run Mode", "uni-app", "HBuilderX", "check_visual_artifacts.py", "compare_visual_artifacts.py", "generate_phase2_handoff.py"):
+            for required in (
+                "Run Mode",
+                "uni-app",
+                "HBuilderX",
+                "check_visual_artifacts.py",
+                "compare_visual_artifacts.py",
+                "generate_phase2_handoff.py",
+                "inspect_frontend_target.py",
+                "Target Inspector",
+            ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         agent_yaml = check_file(skill_root / "agents" / "openai.yaml")
@@ -252,6 +261,9 @@ def main() -> None:
         "阶段二最终交接文档生成器",
         "Phase 2 Final Handoff Generator",
         "generate_phase2_handoff.py",
+        "阶段三目标项目检查器",
+        "Phase 3 Target Inspector",
+        "inspect_frontend_target.py",
         "视觉产物检查器",
         "Visual Artifact Checker",
         "check_visual_artifacts.py",
@@ -282,6 +294,8 @@ def main() -> None:
     check_file(review_packet_generator)
     handoff_generator = ROOT / "scripts" / "generate_phase2_handoff.py"
     check_file(handoff_generator)
+    target_inspector = ROOT / "scripts" / "inspect_frontend_target.py"
+    check_file(target_inspector)
     visual_checker = ROOT / "scripts" / "check_visual_artifacts.py"
     check_file(visual_checker)
     visual_diff_helper = ROOT / "scripts" / "compare_visual_artifacts.py"
@@ -609,6 +623,77 @@ Phase 2 can start after validation passes.
         )
         if rejected_handoff.returncode == 0:
             fail("phase 2 handoff generator must reject missing explicit approval")
+
+        target_root = Path(temp_dir) / "target-uni-app"
+        (target_root / "pages" / "grid").mkdir(parents=True)
+        (target_root / "common").mkdir()
+        (target_root / "static").mkdir()
+        (target_root / "package.json").write_text(
+            json.dumps(
+                {
+                    "id": "quick-check-uni-app",
+                    "engines": {"HBuilderX": "^3.2.6", "uni-app": "^4.07"},
+                    "dependencies": {"qrcodejs2": "^0.0.2"},
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        (target_root / "manifest.json").write_text('{"name":"quick-check"}\n', encoding="utf-8")
+        (target_root / "pages.json").write_text(
+            json.dumps(
+                {
+                    "pages": [
+                        {"path": "pages/grid/grid", "style": {"navigationStyle": "custom"}},
+                        {"path": "pages/list/list", "style": {"navigationStyle": "custom"}},
+                    ]
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        (target_root / "App.vue").write_text("<template><view /></template>\n", encoding="utf-8")
+        (target_root / "main.js").write_text("import App from './App.vue'\n", encoding="utf-8")
+        (target_root / "common" / "api.js").write_text(
+            "export default { chat: { send(){ return uniCloud.callFunction({name:'chat'}) } } }\n",
+            encoding="utf-8",
+        )
+        (target_root / "pages" / "grid" / "grid.vue").write_text(
+            "<template><view>{{title}}</view></template><script>import api from '@/common/api.js'; export default { mounted(){ api.chat.send() } }</script>\n",
+            encoding="utf-8",
+        )
+        inspection_json = Path(temp_dir) / "phase3-target-inspection.json"
+        inspection_md = Path(temp_dir) / "phase3-target-inspection.md"
+        inspection_check = subprocess.run(
+            [
+                sys.executable,
+                str(target_inspector),
+                str(target_root),
+                "--target-route",
+                "pages/grid/grid",
+                "--output-json",
+                str(inspection_json),
+                "--output-md",
+                str(inspection_md),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if "frameworks=uni-app" not in inspection_check.stdout or "target=matched" not in inspection_check.stdout:
+            fail("target inspector did not identify uni-app and the target route")
+        inspection = json.loads(inspection_json.read_text(encoding="utf-8"))
+        if "uni-app" not in inspection.get("frameworks", []):
+            fail("target inspector JSON missing uni-app framework")
+        if not inspection.get("target", {}).get("matched"):
+            fail("target inspector JSON did not match target route")
+        if not inspection.get("apiUsage", {}).get("apiFiles"):
+            fail("target inspector did not find API client files")
+        if not inspection.get("runtime", {}).get("externalRuntimeNotes"):
+            fail("target inspector did not report external runtime notes for uni-app")
+        if "Frontend Target Inspection" not in inspection_md.read_text(encoding="utf-8"):
+            fail("target inspector did not write Markdown output")
         server_check = subprocess.run(
             [
                 sys.executable,
