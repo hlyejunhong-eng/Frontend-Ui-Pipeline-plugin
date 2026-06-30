@@ -1,0 +1,232 @@
+:root {
+  --fp-paper: #f7f2ea;
+  --fp-surface: rgba(255, 252, 246, 0.88);
+  --fp-surface-strong: #fffaf1;
+  --fp-ink: #17201b;
+  --fp-muted: rgba(23, 32, 27, 0.66);
+  --fp-border: rgba(23, 32, 27, 0.12);
+  --fp-blue: #2e6bff;
+  --fp-green: #2e8b67;
+  --fp-gold: #bb7b2c;
+  --fp-danger: #b94132;
+  --fp-radius: 8px;
+  --fp-shadow: 0 18px 54px rgba(39, 31, 23, 0.12);
+}
+
+.fp-button {
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: var(--fp-radius);
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--fp-ink);
+  background: var(--fp-surface);
+  font-weight: 760;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.fp-button:hover { transform: translateY(-1px); }
+.fp-button:active, .fp-button.is-pressed { transform: scale(0.985); }
+.fp-button:disabled, .fp-button.is-disabled { opacity: 0.48; cursor: not-allowed; transform: none; }
+.fp-button--primary { color: #fff; background: var(--fp-ink); box-shadow: var(--fp-shadow); }
+.fp-button--secondary { border-color: var(--fp-border); }
+.fp-button--ghost { background: transparent; }
+.fp-button--danger { color: #fff; background: var(--fp-danger); }
+.fp-button--icon { width: 44px; padding: 0; }
+.fp-button--loading::after {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  content: "";
+  animation: fp-spin 800ms linear infinite;
+}
+
+.fp-badge {
+  min-height: 24px;
+  border-radius: 999px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--fp-muted);
+  background: rgba(23, 32, 27, 0.07);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.fp-badge--accent { color: var(--fp-blue); background: rgba(46, 107, 255, 0.12); }
+.fp-badge--success { color: var(--fp-green); background: rgba(46, 139, 103, 0.13); }
+.fp-badge--warning { color: var(--fp-gold); background: rgba(187, 123, 44, 0.14); }
+.fp-badge--danger { color: var(--fp-danger); background: rgba(185, 65, 50, 0.12); }
+.fp-badge--dot::before { width: 7px; height: 7px; border-radius: 999px; background: currentColor; content: ""; }
+
+.fp-card {
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  background: var(--fp-surface);
+  padding: 18px;
+}
+
+.fp-card--elevated { box-shadow: var(--fp-shadow); }
+.fp-card--selected { border-color: rgba(46, 107, 255, 0.5); box-shadow: 0 0 0 3px rgba(46, 107, 255, 0.12); }
+.fp-card--disabled { opacity: 0.5; }
+.fp-card--metric strong { display: block; font-size: 32px; }
+.fp-card--media { min-height: 160px; background: linear-gradient(135deg, #fffaf1, #f0dcc3); }
+.fp-card--action { cursor: pointer; transition: transform 160ms ease; }
+.fp-card--action:hover { transform: translateY(-2px); }
+
+.fp-combobox {
+  position: relative;
+  width: min(100%, 320px);
+}
+
+.fp-combobox__control,
+.fp-search {
+  min-height: 44px;
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: var(--fp-muted);
+  background: rgba(255, 252, 246, 0.82);
+}
+
+.fp-combobox.is-open .fp-combobox__menu {
+  display: grid;
+}
+
+.fp-combobox__menu {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  display: none;
+  gap: 4px;
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  padding: 6px;
+  background: var(--fp-surface-strong);
+  box-shadow: var(--fp-shadow);
+}
+
+.fp-combobox__option {
+  border-radius: 6px;
+  padding: 9px 10px;
+}
+
+.fp-combobox__option.is-selected {
+  color: #fff;
+  background: var(--fp-ink);
+}
+
+.fp-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  padding: 8px;
+  background: var(--fp-surface);
+}
+
+.fp-nav__item {
+  min-height: 38px;
+  border-radius: 7px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fp-muted);
+  text-decoration: none;
+}
+
+.fp-nav__item.is-active {
+  color: #fff;
+  background: var(--fp-ink);
+}
+
+.fp-notice {
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--fp-surface);
+}
+
+.fp-notice--success { border-color: rgba(46, 139, 103, 0.28); color: var(--fp-green); }
+.fp-notice--warning { border-color: rgba(187, 123, 44, 0.32); color: var(--fp-gold); }
+.fp-notice--danger { border-color: rgba(185, 65, 50, 0.28); color: var(--fp-danger); }
+
+.fp-section-title {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.fp-section-title__eyebrow {
+  margin: 0 0 6px;
+  color: var(--fp-blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fp-section-title h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.fp-modal {
+  width: min(100%, 420px);
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  padding: 20px;
+  background: var(--fp-surface-strong);
+  box-shadow: 0 30px 90px rgba(23, 32, 27, 0.22);
+}
+
+.fp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(23, 32, 27, 0.32);
+  animation: fp-fade-in 180ms ease both;
+}
+
+.fp-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+
+@keyframes fp-spin { to { transform: rotate(360deg); } }
+@keyframes fp-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fp-page-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fp-modal-enter { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes fp-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-button,
+  .fp-card--action,
+  .fp-modal-overlay {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+    transform: none !important;
+  }
+}

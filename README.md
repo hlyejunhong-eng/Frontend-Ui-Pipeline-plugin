@@ -79,6 +79,18 @@ For more starter prompts, use [PROMPTS.md](PROMPTS.md).
 
 This plugin is meant to create shippable frontend work, not just attractive mockups. See [docs/quality-bar.md](docs/quality-bar.md) for the pass/fail criteria each phase should meet.
 
+## End-To-End Demo
+
+The repository includes a full demo that proves the intended pipeline shape:
+
+- [DraftPilot demo overview](examples/demo-draftpilot/README.md)
+- [Phase 1 brief with Phase 2 generation guide](examples/demo-draftpilot/phase1/phase1-ui-brief.md)
+- [Phase 2 asset handoff with full foundation kit](examples/demo-draftpilot/phase2/phase2-asset-handoff.md)
+- [Foundation component gallery](examples/demo-draftpilot/phase2/design-system/component-gallery.html)
+- [Runnable Phase 3 implementation](examples/demo-draftpilot/phase3/implementation/index.html)
+
+The demo includes generated desktop/mobile screenshots and a component gallery covering buttons, numeric badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.
+
 ## How To Use
 
 Use one phase at a time when you want control, or run the whole pipeline when you already know the target app flow.
@@ -146,6 +158,7 @@ These examples show the expected handoff quality:
 
 - [Phase 1 brief example](examples/outputs/phase1-ui-brief.example.md)
 - [Phase 2 asset handoff example](examples/outputs/phase2-asset-handoff.example.md)
+- [Complete demo output](examples/demo-draftpilot/README.md)
 
 ## What You Need To Provide
 

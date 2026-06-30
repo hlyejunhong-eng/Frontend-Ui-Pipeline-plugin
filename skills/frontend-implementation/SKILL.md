@@ -38,6 +38,7 @@ If no existing frontend repo is provided, create a runnable standalone implement
    - Map each phase 2 asset to the correct public path, import path, CSS module, component prop, or animation primitive.
    - Decide which visual elements are image assets and which should be rendered with CSS, canvas, SVG, or native components.
    - Define responsive breakpoints and exact layout constraints from the phase 1 and phase 2 documents.
+   - Import or translate the Phase 2 foundational component kit before building screen-specific UI so future screens can reuse the same style system.
 
 3. Connect data:
    - Use existing real APIs or service clients when they are present and callable.
@@ -52,6 +53,7 @@ If no existing frontend repo is provided, create a runnable standalone implement
    - Implement click feedback, hover/focus/press states, page transitions, loading motion, and reduced-motion fallback.
    - Use the app's existing design system and utility conventions when they can satisfy the spec.
    - Add missing local components only when needed for fidelity or maintainability.
+   - Expose or document the reusable foundation kit components even when the target route uses only a subset.
 
 5. Hot replace into the real app:
    - Wire the new implementation into the actual route or component requested by the user.
@@ -77,6 +79,7 @@ If no existing frontend repo is provided, create a runnable standalone implement
 - Prefer real browser verification over code inspection for final visual acceptance.
 - Do not claim pixel matching if screenshots were not captured or compared.
 - Do not leave final work as an isolated image when code can be produced. The final artifact must be runnable frontend code or a clear explanation of the external blocker.
+- Preserve the Phase 2 foundation kit so the style can expand to additional pages without regenerating every base component.
 
 ## Final Output
 
@@ -84,6 +87,7 @@ Report:
 
 - Files changed.
 - Real APIs connected or mocks created.
+- Foundation kit components imported, implemented, or documented for reuse.
 - Verification commands run and their result.
 - Screenshot paths or a clear reason screenshots could not be captured.
 - Local URL for the running app when a dev server is required.

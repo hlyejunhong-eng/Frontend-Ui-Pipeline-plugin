@@ -8,7 +8,9 @@ Frontend UI Pipeline should produce work that can move from idea to shipped fron
 - The output includes `phase1-ui-brief.md`.
 - The output includes at least one preview image or screenshot of a generated HTML/CSS preview.
 - The brief specifies layout, background, components, copy, buttons, states, click feedback, and motion.
+- The brief includes a Phase 2 generation guide with illustration layer order, adjustable visual parameters, naming rules, export rules, and responsive crop rules.
 - The brief names the assets Phase 2 should produce.
+- The brief requires a complete foundation kit, including assets not used by the current screen.
 - A non-designer can read the brief and understand what will be built.
 
 ## Phase 1 Fails When
@@ -17,6 +19,7 @@ Frontend UI Pipeline should produce work that can move from idea to shipped fron
 - It does not produce a preview.
 - It ignores real product copy, route structure, or data states.
 - It cannot tell Phase 2 what assets to create.
+- It does not tell Phase 2 how to generate complete base components and reusable style assets.
 
 ## Phase 2 Succeeds When
 
@@ -25,6 +28,8 @@ Frontend UI Pipeline should produce work that can move from idea to shipped fron
 - The review package lets the user inspect the assets visually.
 - The user explicitly approves the assets before final handoff.
 - `phase2-asset-handoff.md` maps assets to layers, components, states, import paths, and motion triggers.
+- A complete foundation kit exists for buttons, numeric badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.
+- The common icon set includes home, profile, generic page, scan, cart, payment, chat, confirm, close, back, forward, hot, like, settings, help, info, wallet, list, favorite, and search.
 - Phase 3 can import the assets without guessing what each file is for.
 
 ## Phase 2 Fails When
@@ -33,6 +38,7 @@ Frontend UI Pipeline should produce work that can move from idea to shipped fron
 - It skips user asset review.
 - It writes prose about assets without producing files.
 - It cannot explain how assets should be composed in the frontend.
+- It only generates assets used by the current screen when Phase 1 asked for the full reusable kit.
 
 ## Phase 3 Succeeds When
 
@@ -61,6 +67,8 @@ A complete pipeline run should leave:
 - approved asset folder
 - asset review package
 - `phase2-asset-handoff.md`
+- complete foundation component kit
+- common icon set
 - frontend code changes
 - verification command output
 - desktop and mobile screenshots, when the app can run locally

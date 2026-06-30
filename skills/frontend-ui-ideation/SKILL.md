@@ -56,6 +56,13 @@ If the user provides no runnable app, screenshot, URL, Figma frame, or code targ
    - Write or include a short "handoff index" section listing every produced file, why it exists, and which phase consumes it.
    - Include unresolved questions only when they genuinely affect asset production or implementation.
 
+6. Create the Phase 2 generation guide:
+   - Include a dedicated "Phase 2 Generation Guide" section in `phase1-ui-brief.md`.
+   - Specify illustration and UI layer order, such as base background, illustration planes, component surfaces, buttons, text, effects, masks, particles, and motion overlays.
+   - Specify adjustable parameters for later refinement: opacity, blur, grain, shadow strength, highlight intensity, saturation, line weight, icon stroke, radius, spacing, motion duration, easing, and responsive crop rules.
+   - Specify a complete component asset inventory for Phase 2, including assets that are not used by the current screen but define the style system.
+   - Specify style tokens that Phase 2 and Phase 3 must preserve: color, typography, radius, elevation, border, icon style, illustration style, and motion language.
+
 ## Required Brief Content
 
 The Markdown document must include:
@@ -69,8 +76,25 @@ The Markdown document must include:
 - Copy spec: all headings, labels, button text, helper text, tooltips, empty-state text, and error text.
 - Button and control spec: hit area, icon usage, hover/press/focus/disabled states, cursor, and keyboard behavior.
 - Motion spec: page transitions, component entrance, click feedback, hover, drag, loading, idle motion, easing, durations, delays, transform origins, and reduced-motion alternatives.
-- Asset expectations: predicted asset list for phase 2, including backgrounds, illustrations, icons, motion frames, sprites, masks, and textures.
+- Phase 2 generation guide: layer map, adjustable visual parameters, asset naming rules, export rules, responsive crop rules, and component coverage rules.
+- Asset expectations: predicted asset list for phase 2, including backgrounds, illustrations, icons, motion frames, sprites, masks, textures, and the full foundational component kit.
 - Acceptance checklist: precise criteria that phase 2 and phase 3 must satisfy.
+
+## Required Phase 2 Component Inventory
+
+The Phase 1 brief must require Phase 2 to generate a complete style-matched foundation kit, even when the current screen uses only part of it:
+
+- Buttons: primary, secondary, ghost, danger, disabled, loading, icon-only, and pressed states.
+- Numeric badges: neutral, accent, success, warning, danger, dot, and count variants.
+- Generic cards: flat, elevated, selected, disabled, media, metric, and action-card variants.
+- Combobox/select: closed, open, selected, search-filtered, empty, disabled, and error states.
+- Common icons: home, profile, generic page, scan, cart, payment, chat, confirm, close, back, forward, hot, like, settings, help, info, wallet, list, favorite, and search.
+- Navigation bar: desktop sidebar/topbar and mobile compact navigation.
+- Notice bar: info, success, warning, danger, and dismissible variants.
+- Search bar: idle, focused, with-value, loading, empty-result, and clear-button states.
+- Section title: eyebrow, title, subtitle, action slot, and divider variants.
+- Modal: default, destructive confirmation, form modal, mobile sheet, overlay, close action, and focus state.
+- Transition animation: page enter/exit, modal enter/exit, button press, hover, loading shimmer, and reduced-motion fallback.
 
 ## Quality Gate
 
@@ -79,5 +103,6 @@ Do not finish with prose only. Final output must provide:
 - A `phase1-ui-brief.md` file.
 - At least one preview image that represents the redesigned target UI.
 - Evidence of source inspection, such as screenshots, route/component notes, or a clear statement that the source artifact was not available.
+- A Phase 2 generation guide with layer order, adjustable parameters, and the full foundational component inventory.
 - A phase readiness checklist showing whether Phase 2 can start immediately.
 - A short handoff note naming the next recommended skill: `$frontend-asset-production`.

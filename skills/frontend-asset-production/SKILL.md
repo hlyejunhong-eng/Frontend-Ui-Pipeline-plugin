@@ -31,6 +31,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Extract every required screen, layer, component, state, and motion requirement from the phase 1 brief.
    - Identify which visuals should be real image assets and which should remain CSS, native UI, or code-driven animation.
    - Create an asset plan before generating files.
+   - Confirm that the Phase 1 brief includes a Phase 2 generation guide. If missing, add a short supplement before producing assets.
 
 2. Produce assets:
    - Generate or build pixel-matched backgrounds, illustrations, masks, textures, icons, sprites, component overlays, and motion frames as needed.
@@ -39,6 +40,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Keep source and final assets separate when a tool produces editable source material.
    - If raster image generation is unavailable, produce the closest implementable asset set using SVG, CSS gradients, masks, and code-driven motion, then document what would improve with a dedicated raster generator.
    - Never use empty placeholder files as "assets"; every produced asset must render something meaningful.
+   - Produce the complete foundational component kit required by Phase 1, even if only some components are used by the target screen.
 
 3. Name and organize files:
    - Use lower-kebab-case names.
@@ -77,6 +79,24 @@ The final Markdown document must include:
 - Implementation notes: target import paths, bundler/public folder assumptions, preloading strategy, cache busting, and optimization instructions.
 - Acceptance checklist for `$frontend-implementation`.
 
+## Required Foundation Kit
+
+Phase 2 must generate the full style-matched kit below unless the user explicitly narrows scope after seeing the risk:
+
+- Buttons: primary, secondary, ghost, danger, disabled, loading, icon-only, and pressed states.
+- Numeric badges: neutral, accent, success, warning, danger, dot, and count variants.
+- Generic cards: flat, elevated, selected, disabled, media, metric, and action-card variants.
+- Combobox/select: closed, open, selected, search-filtered, empty, disabled, and error states.
+- Common icons: home, profile, generic page, scan, cart, payment, chat, confirm, close, back, forward, hot, like, settings, help, info, wallet, list, favorite, and search.
+- Navigation bar: desktop sidebar/topbar and mobile compact navigation.
+- Notice bar: info, success, warning, danger, and dismissible variants.
+- Search bar: idle, focused, with-value, loading, empty-result, and clear-button states.
+- Section title: eyebrow, title, subtitle, action slot, and divider variants.
+- Modal: default, destructive confirmation, form modal, mobile sheet, overlay, close action, and focus state.
+- Transition animation: page enter/exit, modal enter/exit, button press, hover, loading shimmer, and reduced-motion fallback.
+
+Represent this kit as real frontend-consumable assets: SVG icon sprites or files, CSS component tokens, motion keyframes, component preview HTML, raster/vector illustration layers, and `asset-manifest.json` entries.
+
 ## Quality Gate
 
 Final output must include:
@@ -85,6 +105,7 @@ Final output must include:
 - `phase2-asset-handoff.md`.
 - An asset review package the user can inspect visually.
 - A manifest or table that maps every asset to a component, state, layer, and import/calling path.
+- A complete foundational component kit covering buttons, badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.
 - A clear statement that the user approved the final asset package.
 - A phase readiness checklist showing whether Phase 3 can start immediately.
 - A short handoff note naming the next recommended skill: `$frontend-implementation`.
