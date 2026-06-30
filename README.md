@@ -1,5 +1,9 @@
 # Frontend UI Pipeline
 
+[![Quick Check](https://github.com/hlyejunhong-eng/Frontend-Ui-Pipeline-plugin/actions/workflows/quick-check.yml/badge.svg)](https://github.com/hlyejunhong-eng/Frontend-Ui-Pipeline-plugin/actions/workflows/quick-check.yml)
+[![Release](https://img.shields.io/github/v/release/hlyejunhong-eng/Frontend-Ui-Pipeline-plugin)](https://github.com/hlyejunhong-eng/Frontend-Ui-Pipeline-plugin/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Create premium custom UI, art assets, motion specs, and real frontend implementations from an existing app flow.
 
 This Codex plugin is built for people who do not draw UI, design visual systems, or write frontend code every day. Give Codex an existing screen, route, screenshot, Figma frame, or app flow, then run the pipeline in three focused stages:
@@ -62,6 +66,19 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 It verifies the manifest, three skills, UI metadata, and common placeholder mistakes without external dependencies.
 
+## Try It In 5 Minutes
+
+1. Install the plugin.
+2. Open [examples/quickstart/app-flow-brief.md](examples/quickstart/app-flow-brief.md).
+3. Paste the example prompt into a new Codex thread.
+4. Let Phase 1 create the first brief and preview.
+
+For more starter prompts, use [PROMPTS.md](PROMPTS.md).
+
+## Quality Bar
+
+This plugin is meant to create shippable frontend work, not just attractive mockups. See [docs/quality-bar.md](docs/quality-bar.md) for the pass/fail criteria each phase should meet.
+
 ## How To Use
 
 Use one phase at a time when you want control, or run the whole pipeline when you already know the target app flow.
@@ -122,6 +139,13 @@ Output:
 | `$frontend-ui-ideation` | Collect ideas from an existing app and produce a premium UI spec plus preview. |
 | `$frontend-asset-production` | Turn the approved spec into production art assets and an asset handoff. |
 | `$frontend-implementation` | Implement the approved assets into the real frontend app. |
+
+## Example Outputs
+
+These examples show the expected handoff quality:
+
+- [Phase 1 brief example](examples/outputs/phase1-ui-brief.example.md)
+- [Phase 2 asset handoff example](examples/outputs/phase2-asset-handoff.example.md)
 
 ## What You Need To Provide
 

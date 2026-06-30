@@ -9,6 +9,10 @@ description: "Phase 2 of the frontend UI pipeline. Use when the user has a phase
 
 Convert an approved phase 1 UI brief and preview into real production art assets plus an exact assembly handoff. This stage may iterate on assets, but it must not finalize until the user explicitly approves the asset review package.
 
+## Non-Expert Mode
+
+Assume the user cannot judge file formats, density variants, motion frames, or implementation paths. Present the review package visually and explain approval choices in plain language: "approve", "revise visual style", "revise naming/organization", or "revise implementation mapping".
+
 ## Inputs
 
 Require:
@@ -18,6 +22,8 @@ Require:
 - Any brand assets, source screenshots, icons, fonts, or target platform constraints supplied by the user.
 
 If phase 1 artifacts are missing, ask for them or run `$frontend-ui-ideation` first.
+
+If the phase 1 preview exists but is too vague to slice into assets, tighten the design contract first by adding a short supplement to the phase 1 brief before generating assets.
 
 ## Workflow
 
@@ -31,6 +37,8 @@ If phase 1 artifacts are missing, ask for them or run `$frontend-ui-ideation` fi
    - Use transparent PNG/WebP for layered raster assets, SVG for crisp vector icons or masks, and JSON/CSS/keyframe descriptions for procedural motion when appropriate.
    - Export density variants when the frontend target needs them, such as `@1x`, `@2x`, and `@3x`.
    - Keep source and final assets separate when a tool produces editable source material.
+   - If raster image generation is unavailable, produce the closest implementable asset set using SVG, CSS gradients, masks, and code-driven motion, then document what would improve with a dedicated raster generator.
+   - Never use empty placeholder files as "assets"; every produced asset must render something meaningful.
 
 3. Name and organize files:
    - Use lower-kebab-case names.
@@ -46,6 +54,7 @@ If phase 1 artifacts are missing, ask for them or run `$frontend-ui-ideation` fi
    - Build a contact sheet or preview folder that lets the user inspect every generated asset.
    - Include side-by-side comparison against the phase 1 preview when possible.
    - List known deviations, tradeoffs, and any assets that need user judgment.
+   - Include a machine-readable `asset-manifest.json` when practical so Phase 3 can import assets without re-parsing prose.
 
 5. Mandatory user approval:
    - Stop and ask the user to review the asset package.
@@ -74,5 +83,8 @@ Final output must include:
 
 - Approved real asset files.
 - `phase2-asset-handoff.md`.
+- An asset review package the user can inspect visually.
+- A manifest or table that maps every asset to a component, state, layer, and import/calling path.
 - A clear statement that the user approved the final asset package.
+- A phase readiness checklist showing whether Phase 3 can start immediately.
 - A short handoff note naming the next recommended skill: `$frontend-implementation`.

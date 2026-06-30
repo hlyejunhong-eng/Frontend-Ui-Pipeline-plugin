@@ -9,6 +9,10 @@ description: "Phase 1 of the frontend UI pipeline. Use when the user wants to re
 
 Turn an existing frontend experience into a premium redesign brief with visual previews and implementation-grade requirements. This is the concept and specification stage, not the final asset slicing or code implementation stage.
 
+## Non-Expert Mode
+
+Assume the user may not know design language, frontend architecture, or asset production terms. Translate vague goals into concrete product and UI decisions. When the user says "make it premium" or "you decide", do not ask for taste words; inspect the app, infer the strongest direction, and document the decision.
+
 ## Inputs
 
 Accept any combination of:
@@ -18,6 +22,8 @@ Accept any combination of:
 - Prior product context or design artifacts.
 
 Ask only for information that blocks a credible design brief. If the user provided a runnable app or source code, inspect it before asking broad questions.
+
+If the user provides no runnable app, screenshot, URL, Figma frame, or code target, create a small intake checklist and ask for one concrete source artifact before attempting visual ideation.
 
 ## Workflow
 
@@ -38,12 +44,17 @@ Ask only for information that blocks a credible design brief. If the user provid
    - Preview images must show the actual target screen or flow, not vague mood boards.
    - Use realistic UI composition, text, control density, stateful components, and motion cues.
    - Save preview files with stable names such as `phase1-preview-desktop.png`, `phase1-preview-mobile.png`, or `phase1-flow-preview.png`.
+   - If image generation is unavailable, create a static HTML/CSS preview or local prototype and capture screenshots from it. Do not skip the preview requirement.
 
 4. Write the phase 1 Markdown specification:
    - Create a handoff folder unless the user provided one. Suggested shape: `frontend-ui-pipeline/phase1-<screen-or-flow>/`.
    - Write `phase1-ui-brief.md` in that folder.
    - Include all preview image paths and any source screenshots used.
    - Treat the document as the contract for asset production and implementation.
+
+5. Create an artifact index:
+   - Write or include a short "handoff index" section listing every produced file, why it exists, and which phase consumes it.
+   - Include unresolved questions only when they genuinely affect asset production or implementation.
 
 ## Required Brief Content
 
@@ -67,4 +78,6 @@ Do not finish with prose only. Final output must provide:
 
 - A `phase1-ui-brief.md` file.
 - At least one preview image that represents the redesigned target UI.
+- Evidence of source inspection, such as screenshots, route/component notes, or a clear statement that the source artifact was not available.
+- A phase readiness checklist showing whether Phase 2 can start immediately.
 - A short handoff note naming the next recommended skill: `$frontend-asset-production`.

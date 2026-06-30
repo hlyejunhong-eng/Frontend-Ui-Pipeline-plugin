@@ -61,6 +61,12 @@ def main() -> None:
         skill_root = ROOT / "skills" / skill
         skill_md = check_file(skill_root / "SKILL.md")
         check_frontmatter(skill, skill_md)
+        if "Non-Expert Mode" not in skill_md:
+            fail(f"{skill}/SKILL.md must include Non-Expert Mode guidance")
+        if "Quality Gate" not in skill_md and skill != "frontend-implementation":
+            fail(f"{skill}/SKILL.md must include a Quality Gate")
+        if skill == "frontend-implementation" and "runnable" not in skill_md:
+            fail("frontend-implementation must require runnable frontend output")
         agent_yaml = check_file(skill_root / "agents" / "openai.yaml")
         if f"$%s" % skill not in agent_yaml:
             fail(f"{skill}/agents/openai.yaml default prompt should mention ${skill}")
@@ -70,6 +76,8 @@ def main() -> None:
     for required in (
         "Install",
         "codex plugin add frontend-ui-pipeline@personal",
+        "PROMPTS.md",
+        "examples/quickstart/app-flow-brief.md",
         "$frontend-ui-ideation",
         "$frontend-asset-production",
         "$frontend-implementation",
@@ -77,6 +85,14 @@ def main() -> None:
         if required not in readme:
             fail(f"README.md missing {required}")
     ok("README")
+
+    check_file(ROOT / "PROMPTS.md")
+    check_file(ROOT / "examples" / "quickstart" / "app-flow-brief.md")
+    check_file(ROOT / "examples" / "outputs" / "phase1-ui-brief.example.md")
+    check_file(ROOT / "examples" / "outputs" / "phase2-asset-handoff.example.md")
+    check_file(ROOT / ".github" / "workflows" / "quick-check.yml")
+    check_file(ROOT / "docs" / "quality-bar.md")
+    ok("examples and CI")
 
     check_file(ROOT / "LICENSE")
     ok("license")
