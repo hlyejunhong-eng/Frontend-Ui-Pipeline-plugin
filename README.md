@@ -535,11 +535,11 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 ## 阶段一 Brief 验收器 / Phase 1 Brief Validator
 
@@ -621,6 +621,36 @@ After asset generation, validate that the foundation component states and common
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/validate_foundation_manifest.py ./asset-manifest.json
+```
+
+## 阶段二资产审核包生成器 / Phase 2 Asset Review Packet Generator
+
+**中文**
+
+阶段二最终输出前，需要让用户明确审核资产是否通过。这个脚本会把 manifest、contact sheet、prompt pack 和 review URL 组合成普通用户能看懂的审核包，并给出四个回复选项：通过、改视觉、改命名/目录、改实现映射。
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_review_packet.py \
+  --manifest ./asset-manifest.json \
+  --phase1-brief ./phase1-ui-brief.md \
+  --prompt-pack ./phase2-asset-prompt-pack.md \
+  --contact-sheet ./review/phase2-contact-sheet.png \
+  --review-url http://127.0.0.1:8000/component-contact-sheet.html \
+  --output-dir ./review
+```
+
+**English**
+
+Before Phase 2 final output, the user must explicitly approve or revise assets. This script combines the manifest, contact sheet, prompt pack, and review URL into a plain review packet with four decisions: approve assets, revise visual style, revise naming/organization, or revise implementation mapping.
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_review_packet.py \
+  --manifest ./asset-manifest.json \
+  --phase1-brief ./phase1-ui-brief.md \
+  --prompt-pack ./phase2-asset-prompt-pack.md \
+  --contact-sheet ./review/phase2-contact-sheet.png \
+  --review-url http://127.0.0.1:8000/component-contact-sheet.html \
+  --output-dir ./review
 ```
 
 ## 阶段二本地审核服务器 / Phase 2 Local Review Server

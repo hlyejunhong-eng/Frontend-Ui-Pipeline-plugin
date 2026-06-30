@@ -71,6 +71,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Prefer one manifest entry per asset and per important component state when practical, rather than only one entry per component family.
    - If using the bundled manifest generator, keep its coverage counts in the review package so the user can see whether every required state is represented.
    - Run `../../scripts/validate_foundation_manifest.py <manifest-path>` before asking the user to approve assets; fix any missing component state, icon, or screen asset slot first.
+   - Use `../../scripts/generate_asset_review_packet.py` to create a non-designer approval packet with coverage, contact sheet, decision options, and exact user reply text for approval or revision.
 
 5. Mandatory user approval:
    - Stop and ask the user to review the asset package.
@@ -165,6 +166,22 @@ python3 ../../scripts/serve_review.py "<phase2-folder>/review" --entry component
 
 Report the printed `Review URL` to the user. If you only need to validate the folder in automation, add `--check`.
 
+## Asset Review Packet Generator
+
+Use the bundled review packet generator before the mandatory user approval gate:
+
+```bash
+python3 ../../scripts/generate_asset_review_packet.py \
+  --manifest "<phase2-folder>/asset-manifest.json" \
+  --phase1-brief "<path-to-phase1-ui-brief.md>" \
+  --prompt-pack "<phase2-folder>/phase2-asset-prompt-pack.md" \
+  --contact-sheet "<phase2-folder>/review/phase2-contact-sheet.png" \
+  --review-url "<review-server-url>" \
+  --output-dir "<phase2-folder>/review"
+```
+
+The packet must give the user four plain decisions: approve assets, revise visual style, revise naming/organization, or revise implementation mapping. Treat only an explicit approval as permission to write final `phase2-asset-handoff.md`.
+
 ## Quality Gate
 
 Final output must include:
@@ -173,6 +190,7 @@ Final output must include:
 - `phase2-asset-handoff.md`.
 - `phase2-asset-prompt-pack.md` or an equivalent asset-generation prompt record when generated assets used raster, Figma/vector, or CSS/SVG prompt production.
 - An asset review package the user can inspect visually.
+- `phase2-asset-approval-packet.md` and/or `phase2-asset-approval-packet.html` when the bundled review packet generator is available.
 - A manifest or table that maps every asset to a component, state, layer, and import/calling path.
 - A complete foundational component kit covering buttons, badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.
 - A clear statement that the user approved the final asset package.

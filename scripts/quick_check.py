@@ -175,7 +175,14 @@ def main() -> None:
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         if skill == "frontend-asset-production":
-            for required in ("Required Foundation Kit", "complete foundational component kit", "Run Mode", "SVG Sprite Review Rule", "Asset Prompt Pack Generator"):
+            for required in (
+                "Required Foundation Kit",
+                "complete foundational component kit",
+                "Run Mode",
+                "SVG Sprite Review Rule",
+                "Asset Prompt Pack Generator",
+                "Asset Review Packet Generator",
+            ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         if skill == "frontend-implementation":
@@ -236,6 +243,9 @@ def main() -> None:
         "阶段二资产提示包生成器",
         "Phase 2 Asset Prompt Pack Generator",
         "generate_asset_prompt_pack.py",
+        "阶段二资产审核包生成器",
+        "Phase 2 Asset Review Packet Generator",
+        "generate_asset_review_packet.py",
     ):
         if required not in readme:
             fail(f"README.md missing {required}")
@@ -256,6 +266,8 @@ def main() -> None:
     check_file(manifest_generator)
     prompt_pack_generator = ROOT / "scripts" / "generate_asset_prompt_pack.py"
     check_file(prompt_pack_generator)
+    review_packet_generator = ROOT / "scripts" / "generate_asset_review_packet.py"
+    check_file(review_packet_generator)
     manifest_validator = ROOT / "scripts" / "validate_foundation_manifest.py"
     check_file(manifest_validator)
     review_server = ROOT / "scripts" / "serve_review.py"
@@ -424,10 +436,48 @@ Phase 2 can start after validation passes.
             fail("foundation manifest validator did not verify common icon coverage")
         review_root = Path(temp_dir) / "review"
         review_root.mkdir()
+        contact_sheet = review_root / "phase2-contact-sheet.png"
+        contact_sheet.write_bytes(b"not-a-real-png-but-valid-path-for-review-packet")
         (review_root / "component-contact-sheet.html").write_text(
             "<!doctype html><title>Review</title><h1>ok</h1>\n",
             encoding="utf-8",
         )
+        review_packet_check = subprocess.run(
+            [
+                sys.executable,
+                str(review_packet_generator),
+                "--manifest",
+                str(output_path),
+                "--phase1-brief",
+                str(phase1_brief),
+                "--prompt-pack",
+                str(prompt_pack_path),
+                "--contact-sheet",
+                str(contact_sheet),
+                "--review-url",
+                "http://127.0.0.1:8000/component-contact-sheet.html",
+                "--output-dir",
+                str(review_root),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        approval_md = review_root / "phase2-asset-approval-packet.md"
+        approval_html = review_root / "phase2-asset-approval-packet.html"
+        if not approval_md.exists() or not approval_html.exists() or "Wrote" not in review_packet_check.stdout:
+            fail("asset review packet generator did not write expected outputs")
+        approval_text = approval_md.read_text(encoding="utf-8")
+        for required_approval_text in (
+            "Phase 2 Asset Approval Packet",
+            "Approve assets",
+            "Revise visual style",
+            "Revise naming or organization",
+            "Revise implementation mapping",
+        ):
+            if required_approval_text not in approval_text:
+                fail(f"asset review packet missing {required_approval_text}")
         server_check = subprocess.run(
             [
                 sys.executable,
