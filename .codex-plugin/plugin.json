@@ -3,14 +3,26 @@
   "version": "0.1.0",
   "description": "Three-stage frontend redesign pipeline for premium UI briefs, production art assets, and real app implementation.",
   "author": {
-    "name": "Local developer"
+    "name": "hlyejunhong-eng",
+    "url": "https://github.com/hlyejunhong-eng"
   },
+  "homepage": "https://github.com/hlyejunhong-eng/Frontend-Ui-Pipeline-plugin",
+  "repository": "https://github.com/hlyejunhong-eng/Frontend-Ui-Pipeline-plugin",
+  "license": "MIT",
+  "keywords": [
+    "codex-plugin",
+    "frontend",
+    "ui-generation",
+    "product-design",
+    "design-assets",
+    "motion"
+  ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Frontend UI Pipeline",
     "shortDescription": "Premium UI brief, asset, and frontend workflow.",
     "longDescription": "A three-skill pipeline that turns an existing frontend flow into a premium custom UI concept, named production art assets, and a pixel-matched implementation in the real app.",
-    "developerName": "Local developer",
+    "developerName": "hlyejunhong-eng",
     "category": "Design",
     "capabilities": [
       "Design",
