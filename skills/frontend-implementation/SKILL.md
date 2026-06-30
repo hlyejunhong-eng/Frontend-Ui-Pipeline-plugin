@@ -79,6 +79,7 @@ If no existing frontend repo is provided, create a runnable standalone implement
    - Start the local dev server for app-based work.
    - If the app cannot be started because the required runtime is external, state the blocker, provide exact run instructions for that runtime, and capture standalone preview screenshots if possible.
    - Capture desktop and mobile screenshots with Playwright or the available browser tool.
+   - Run `../../scripts/check_visual_artifacts.py <screenshot-paths>` when the bundled script is available so missing or zero-size screenshots are caught before claiming visual QA.
    - Compare screenshots against the approved preview and phase 2 assembly map.
    - Fix visible mismatches, broken assets, layout shifts, text overflow, inaccessible focus states, and animation defects before handing back.
 
@@ -105,5 +106,6 @@ Report:
 - Foundation kit components imported, implemented, or documented for reuse.
 - Verification commands run and their result.
 - Screenshot paths or a clear reason screenshots could not be captured.
+- Visual artifact check results for screenshots when the bundled checker is available.
 - Local URL for the running app when a dev server is required.
 - Any remaining visual, API, or product risks.

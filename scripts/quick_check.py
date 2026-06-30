@@ -171,7 +171,7 @@ def main() -> None:
         if skill == "frontend-implementation" and "runnable" not in skill_md:
             fail("frontend-implementation must require runnable frontend output")
         if skill == "frontend-ui-ideation":
-            for required in ("Phase 2 generation guide", "Required Phase 2 Component Inventory", "First Run Checklist"):
+            for required in ("Phase 2 generation guide", "Required Phase 2 Component Inventory", "First Run Checklist", "check_visual_artifacts.py"):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         if skill == "frontend-asset-production":
@@ -182,11 +182,12 @@ def main() -> None:
                 "SVG Sprite Review Rule",
                 "Asset Prompt Pack Generator",
                 "Asset Review Packet Generator",
+                "Visual Artifact Checker",
             ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         if skill == "frontend-implementation":
-            for required in ("Run Mode", "uni-app", "HBuilderX"):
+            for required in ("Run Mode", "uni-app", "HBuilderX", "check_visual_artifacts.py"):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         agent_yaml = check_file(skill_root / "agents" / "openai.yaml")
@@ -246,6 +247,9 @@ def main() -> None:
         "阶段二资产审核包生成器",
         "Phase 2 Asset Review Packet Generator",
         "generate_asset_review_packet.py",
+        "视觉产物检查器",
+        "Visual Artifact Checker",
+        "check_visual_artifacts.py",
     ):
         if required not in readme:
             fail(f"README.md missing {required}")
@@ -268,6 +272,8 @@ def main() -> None:
     check_file(prompt_pack_generator)
     review_packet_generator = ROOT / "scripts" / "generate_asset_review_packet.py"
     check_file(review_packet_generator)
+    visual_checker = ROOT / "scripts" / "check_visual_artifacts.py"
+    check_file(visual_checker)
     manifest_validator = ROOT / "scripts" / "validate_foundation_manifest.py"
     check_file(manifest_validator)
     review_server = ROOT / "scripts" / "serve_review.py"
@@ -437,11 +443,35 @@ Phase 2 can start after validation passes.
         review_root = Path(temp_dir) / "review"
         review_root.mkdir()
         contact_sheet = review_root / "phase2-contact-sheet.png"
-        contact_sheet.write_bytes(b"not-a-real-png-but-valid-path-for-review-packet")
-        (review_root / "component-contact-sheet.html").write_text(
+        contact_sheet.write_bytes(
+            bytes.fromhex(
+                "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489"
+                "0000000a49444154789c6360000002000100ff0d0a2db40000000049454e44ae426082"
+            )
+        )
+        review_html = review_root / "component-contact-sheet.html"
+        review_html.write_text(
             "<!doctype html><title>Review</title><h1>ok</h1>\n",
             encoding="utf-8",
         )
+        visual_check = subprocess.run(
+            [
+                sys.executable,
+                str(visual_checker),
+                str(contact_sheet),
+                str(review_html),
+                "--min-width",
+                "1",
+                "--min-height",
+                "1",
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if "png 1x1" not in visual_check.stdout or "html" not in visual_check.stdout:
+            fail("visual artifact checker did not inspect PNG and HTML outputs")
         review_packet_check = subprocess.run(
             [
                 sys.executable,

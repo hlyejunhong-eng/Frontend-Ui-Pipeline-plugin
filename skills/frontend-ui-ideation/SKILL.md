@@ -55,6 +55,7 @@ If the user provides no runnable app, screenshot, URL, Figma frame, or code targ
    - Use realistic UI composition, text, control density, stateful components, and motion cues.
    - Save preview files with stable names such as `phase1-preview-desktop.png`, `phase1-preview-mobile.png`, or `phase1-flow-preview.png`.
    - If image generation is unavailable, create a static HTML/CSS preview or local prototype and capture screenshots from it. Do not skip the preview requirement.
+   - Run `../../scripts/check_visual_artifacts.py <preview-paths>` when the bundled script is available so missing, empty, or wrong-size preview files are caught before Phase 2.
 
 4. Write the phase 1 Markdown specification:
    - Create a handoff folder unless the user provided one. Suggested shape: `frontend-ui-pipeline/phase1-<screen-or-flow>/`.
@@ -117,5 +118,6 @@ Do not finish with prose only. Final output must provide:
 - Evidence of source inspection, such as screenshots, route/component notes, or a clear statement that the source artifact was not available.
 - A Phase 2 generation guide with layer order, adjustable parameters, and the full foundational component inventory.
 - A passing `validate_phase1_brief.py` result when the bundled script is available.
+- A passing `check_visual_artifacts.py` result for preview images when the bundled script is available.
 - A phase readiness checklist showing whether Phase 2 can start immediately.
 - A short handoff note naming the next recommended skill: `$frontend-asset-production`.

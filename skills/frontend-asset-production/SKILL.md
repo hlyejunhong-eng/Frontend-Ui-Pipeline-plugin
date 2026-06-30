@@ -65,6 +65,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
 4. Create the review package:
    - Build a contact sheet or preview folder that lets the user inspect every generated asset.
    - Make the contact sheet work through `../../scripts/serve_review.py` or a local file open; do not rely only on browser support for external SVG sprite references under `file://`.
+   - Run `../../scripts/check_visual_artifacts.py` on contact sheet images and review HTML when the bundled script is available.
    - Include side-by-side comparison against the phase 1 preview when possible.
    - List known deviations, tradeoffs, and any assets that need user judgment.
    - Include a machine-readable `asset-manifest.json` when practical so Phase 3 can import assets without re-parsing prose.
@@ -182,6 +183,18 @@ python3 ../../scripts/generate_asset_review_packet.py \
 
 The packet must give the user four plain decisions: approve assets, revise visual style, revise naming/organization, or revise implementation mapping. Treat only an explicit approval as permission to write final `phase2-asset-handoff.md`.
 
+## Visual Artifact Checker
+
+Use the bundled visual artifact checker on Phase 2 review screenshots, contact sheets, SVGs, and HTML review pages:
+
+```bash
+python3 ../../scripts/check_visual_artifacts.py \
+  "<phase2-folder>/review/phase2-contact-sheet.png" \
+  "<phase2-folder>/review/phase2-asset-approval-packet.html" \
+  --min-width 320 \
+  --min-height 240
+```
+
 ## Quality Gate
 
 Final output must include:
@@ -191,6 +204,7 @@ Final output must include:
 - `phase2-asset-prompt-pack.md` or an equivalent asset-generation prompt record when generated assets used raster, Figma/vector, or CSS/SVG prompt production.
 - An asset review package the user can inspect visually.
 - `phase2-asset-approval-packet.md` and/or `phase2-asset-approval-packet.html` when the bundled review packet generator is available.
+- Passing visual artifact checks for review images or HTML when the bundled checker is available.
 - A manifest or table that maps every asset to a component, state, layer, and import/calling path.
 - A complete foundational component kit covering buttons, badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.
 - A clear statement that the user approved the final asset package.

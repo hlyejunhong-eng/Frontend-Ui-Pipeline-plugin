@@ -535,11 +535,11 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、视觉产物检查器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, visual artifact checker, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 ## 阶段一 Brief 验收器 / Phase 1 Brief Validator
 
@@ -651,6 +651,34 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_review_packet.py \
   --contact-sheet ./review/phase2-contact-sheet.png \
   --review-url http://127.0.0.1:8000/component-contact-sheet.html \
   --output-dir ./review
+```
+
+## 视觉产物检查器 / Visual Artifact Checker
+
+**中文**
+
+用这个脚本检查阶段一预览图、阶段二 contact sheet、审核 HTML 和阶段三截图是否存在、非空，并能读到尺寸。它不依赖 Pillow 或浏览器，适合在 CI 或普通用户电脑上快速排除空图、坏图、路径错误：
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/check_visual_artifacts.py \
+  ./phase1-preview-mobile.png \
+  ./review/phase2-contact-sheet.png \
+  ./review/phase2-asset-approval-packet.html \
+  --min-width 320 \
+  --min-height 240
+```
+
+**English**
+
+Use this script to check that Phase 1 previews, Phase 2 contact sheets, review HTML, and Phase 3 screenshots exist, are non-empty, and expose readable dimensions. It does not require Pillow or a browser, which makes it suitable for CI and non-expert local checks:
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/check_visual_artifacts.py \
+  ./phase1-preview-mobile.png \
+  ./review/phase2-contact-sheet.png \
+  ./review/phase2-asset-approval-packet.html \
+  --min-width 320 \
+  --min-height 240
 ```
 
 ## 阶段二本地审核服务器 / Phase 2 Local Review Server
