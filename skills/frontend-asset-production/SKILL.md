@@ -13,6 +13,13 @@ Convert an approved phase 1 UI brief and preview into real production art assets
 
 Assume the user cannot judge file formats, density variants, motion frames, or implementation paths. Present the review package visually and explain approval choices in plain language: "approve", "revise visual style", "revise naming/organization", or "revise implementation mapping".
 
+## Run Mode
+
+Default to `production` mode unless the user asks for a social-media demo, quick demo, sales demo, or non-final preview.
+
+- In `production` mode, stop at the user approval gate before final handoff or real app implementation.
+- In `demo` mode, you may create a clearly labeled non-final standalone preview for storytelling, but do not hot-replace the real app until the user approves the assets.
+
 ## Inputs
 
 Require:
@@ -34,6 +41,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Confirm that the Phase 1 brief includes a Phase 2 generation guide. If missing, add a short supplement before producing assets.
 
 2. Produce assets:
+   - Choose and document the asset strategy before generation: AI raster illustration, vector/Figma-style production, or CSS/SVG procedural assets.
    - Generate or build pixel-matched backgrounds, illustrations, masks, textures, icons, sprites, component overlays, and motion frames as needed.
    - Use transparent PNG/WebP for layered raster assets, SVG for crisp vector icons or masks, and JSON/CSS/keyframe descriptions for procedural motion when appropriate.
    - Export density variants when the frontend target needs them, such as `@1x`, `@2x`, and `@3x`.
@@ -54,9 +62,11 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
 
 4. Create the review package:
    - Build a contact sheet or preview folder that lets the user inspect every generated asset.
+   - Make the contact sheet work under a local file open or provide a local static-server command; do not rely only on browser support for external SVG sprite references under `file://`.
    - Include side-by-side comparison against the phase 1 preview when possible.
    - List known deviations, tradeoffs, and any assets that need user judgment.
    - Include a machine-readable `asset-manifest.json` when practical so Phase 3 can import assets without re-parsing prose.
+   - Prefer one manifest entry per asset and per important component state when practical, rather than only one entry per component family.
 
 5. Mandatory user approval:
    - Stop and ask the user to review the asset package.
@@ -96,6 +106,10 @@ Phase 2 must generate the full style-matched kit below unless the user explicitl
 - Transition animation: page enter/exit, modal enter/exit, button press, hover, loading shimmer, and reduced-motion fallback.
 
 Represent this kit as real frontend-consumable assets: SVG icon sprites or files, CSS component tokens, motion keyframes, component preview HTML, raster/vector illustration layers, and `asset-manifest.json` entries.
+
+## SVG Sprite Review Rule
+
+If you generate SVG sprites, verify the review page actually shows every icon. If external `<use href="sprite.svg#id">` is blank in a local `file://` review, inline the preview paths in the contact sheet or run a local static server. Keep the production sprite if it is still the best import format.
 
 ## Quality Gate
 

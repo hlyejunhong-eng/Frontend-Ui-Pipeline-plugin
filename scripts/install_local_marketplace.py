@@ -76,9 +76,14 @@ def main() -> None:
 
     marketplace_name = payload.get("name", "personal")
     print(f"Registered {PLUGIN_NAME} in {MARKETPLACE_PATH}")
-    print("Next:")
-    print(f"  codex plugin add {PLUGIN_NAME}@{marketplace_name}")
-    print("Then start a new Codex thread.")
+    print("")
+    print("Next steps:")
+    print(f"  1. Run: codex plugin add {PLUGIN_NAME}@{marketplace_name}")
+    print("  2. Open Codex Desktop or Codex CLI.")
+    print("  3. Start a new Codex thread so the newly installed skills are loaded.")
+    print("  4. Paste a screenshot, local project path, localhost URL, Figma link, or page description.")
+    print("")
+    print("If the three skills do not appear, close this thread and open another new Codex thread.")
 
 
 if __name__ == "__main__":

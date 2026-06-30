@@ -13,6 +13,13 @@ Implement the approved phase 2 design handoff into the actual frontend applicati
 
 Assume the user may not know how to run the app, choose a route, or verify visual quality. Inspect the repo, choose the safest implementation path, start the app when possible, and report the final URL and checks in plain language.
 
+## Run Mode
+
+Default to `production` mode. If the user asks for a social-media demo, quick demo, sales demo, or non-final preview, use `demo` mode:
+
+- `production`: require approved Phase 2 assets before hot-replacing the real app.
+- `demo`: you may create a standalone runnable preview with the same assets and mock data, but clearly label it non-final and do not alter the real app without approval.
+
 ## Inputs
 
 Prefer:
@@ -30,6 +37,7 @@ If no existing frontend repo is provided, create a runnable standalone implement
 
 1. Inspect the application:
    - Read project structure, package metadata, router setup, component conventions, styling system, asset pipeline, and existing API clients.
+   - Detect special frontend runtimes. For uni-app, look for `pages.json`, `manifest.json`, `uni_modules`, `view`, `text`, `scroll-view`, and `rpx`.
    - Locate the route, screen, or component that should receive the hot replacement.
    - Preserve unrelated behavior and project patterns.
    - Ask before changing scope if the target replacement area is ambiguous.
@@ -60,9 +68,16 @@ If no existing frontend repo is provided, create a runnable standalone implement
    - Avoid unrelated refactors, broad styling resets, or deleting existing code outside the requested surface.
    - Keep the app runnable after every major edit.
 
+   For uni-app projects:
+   - Preserve `view`, `text`, `scroll-view`, `input`, `uni.*`, `uniCloud`, and `rpx` conventions unless the repo already uses another pattern.
+   - Copy approved static assets to `static/frontend-ui-pipeline/...` unless the app has a clearer existing asset convention.
+   - Preserve existing page methods and API contracts, especially `api.*` clients and `uniCloud.callFunction` wrappers.
+   - If no CLI dev script exists, provide HBuilderX run instructions and build a standalone browser preview for visual QA instead of claiming full app verification.
+
 6. Verify:
    - Run the relevant formatter, typecheck, lint, tests, and build commands when available.
    - Start the local dev server for app-based work.
+   - If the app cannot be started because the required runtime is external, state the blocker, provide exact run instructions for that runtime, and capture standalone preview screenshots if possible.
    - Capture desktop and mobile screenshots with Playwright or the available browser tool.
    - Compare screenshots against the approved preview and phase 2 assembly map.
    - Fix visible mismatches, broken assets, layout shifts, text overflow, inaccessible focus states, and animation defects before handing back.

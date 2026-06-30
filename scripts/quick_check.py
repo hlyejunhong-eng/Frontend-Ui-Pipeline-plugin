@@ -97,11 +97,15 @@ def main() -> None:
         if skill == "frontend-implementation" and "runnable" not in skill_md:
             fail("frontend-implementation must require runnable frontend output")
         if skill == "frontend-ui-ideation":
-            for required in ("Phase 2 generation guide", "Required Phase 2 Component Inventory"):
+            for required in ("Phase 2 generation guide", "Required Phase 2 Component Inventory", "First Run Checklist"):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         if skill == "frontend-asset-production":
-            for required in ("Required Foundation Kit", "complete foundational component kit"):
+            for required in ("Required Foundation Kit", "complete foundational component kit", "Run Mode", "SVG Sprite Review Rule"):
+                if required not in skill_md:
+                    fail(f"{skill}/SKILL.md missing {required}")
+        if skill == "frontend-implementation":
+            for required in ("Run Mode", "uni-app", "HBuilderX"):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         agent_yaml = check_file(skill_root / "agents" / "openai.yaml")
@@ -131,6 +135,11 @@ def main() -> None:
         "Figma link",
         "通用全流程 Prompt",
         "Full Pipeline Prompt",
+        "First Run Checklist",
+        "Demo 模式",
+        "Demo Mode",
+        "uni-app",
+        "HBuilderX",
         "阶段输出标准",
         "Phase Output Standards",
         "Phase 1",

@@ -13,6 +13,15 @@ Turn an existing frontend experience into a premium redesign brief with visual p
 
 Assume the user may not know design language, frontend architecture, or asset production terms. Translate vague goals into concrete product and UI decisions. When the user says "make it premium" or "you decide", do not ask for taste words; inspect the app, infer the strongest direction, and document the decision.
 
+## First Run Checklist
+
+When this is the user's first run or the input is vague, state the concrete starting point in plain language:
+
+- Confirm the target artifact: screenshot, project path, localhost URL, Figma link, or page description.
+- Name the exact screen, route, or component you will inspect first.
+- If the installed skills are not visible in the current thread, tell the user to open a new Codex thread after plugin installation.
+- If the user wants a quick public demo, mark the run as `demo`; otherwise use `production`.
+
 ## Inputs
 
 Accept any combination of:
@@ -30,6 +39,7 @@ If the user provides no runnable app, screenshot, URL, Figma frame, or code targ
 1. Establish the design target:
    - Identify the exact screen, route, component set, or product flow.
    - Capture the current state with screenshots when possible.
+   - If screenshots cannot be captured, create source evidence from route paths, code excerpts, API maps, state inventories, and a clear reason screenshots were unavailable.
    - Inventory real copy, controls, data states, loading states, error states, empty states, and navigation transitions.
    - Note existing API/data constraints and implementation boundaries that later stages must respect.
 
@@ -79,6 +89,7 @@ The Markdown document must include:
 - Phase 2 generation guide: layer map, adjustable visual parameters, asset naming rules, export rules, responsive crop rules, and component coverage rules.
 - Asset expectations: predicted asset list for phase 2, including backgrounds, illustrations, icons, motion frames, sprites, masks, textures, and the full foundational component kit.
 - Acceptance checklist: precise criteria that phase 2 and phase 3 must satisfy.
+- First run notes: what was opened, what was inspected, and what the user should do next if this is a new plugin install.
 
 ## Required Phase 2 Component Inventory
 

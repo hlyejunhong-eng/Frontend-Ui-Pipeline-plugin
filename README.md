@@ -63,6 +63,24 @@ codex plugin add frontend-ui-pipeline@personal
 
 After installation, close the current thread and create a new Codex thread. The newly installed skills are loaded only in a new thread.
 
+## 首次运行检查清单 / First Run Checklist
+
+**中文**
+
+1. 确认已经运行：`codex plugin add frontend-ui-pipeline@personal`。
+2. 打开 Codex 应用或 Codex CLI。
+3. 新建一个线程；如果三个 skills 没出现，再新开一个线程。
+4. 在底部消息输入框粘贴旧页面截图、本地项目路径、localhost 地址、Figma 链接或页面描述。
+5. 发送包含 `$frontend-ui-ideation` 的启动 prompt。
+
+**English**
+
+1. Confirm that you ran: `codex plugin add frontend-ui-pipeline@personal`.
+2. Open the Codex app or Codex CLI.
+3. Create a new thread; if the three skills do not appear, create another new thread.
+4. Paste an old screenshot, local project path, localhost URL, Figma link, or page description into the bottom message box.
+5. Send a start prompt that includes `$frontend-ui-ideation`.
+
 ## 更新插件 / Update
 
 ```bash
@@ -264,6 +282,38 @@ Output requirements:
 - Phase 2: Complete foundation asset kit, named assets, asset manifest, asset handoff, and an explicit asset review checkpoint before final output.
 - Phase 3: Runnable frontend, asset integration, real APIs or mocks, desktop/mobile screenshots, and verification commands.
 ```
+
+## Demo 模式和生产模式 / Demo Mode And Production Mode
+
+**中文**
+
+- `production`：默认模式。阶段二必须等用户明确审核通过，阶段三才可以热替换真实应用。
+- `demo`：适合自媒体、销售演示或方向验证。可以先生成独立可运行预览，但必须标记为非最终产物；没有用户审核通过前，不要改真实应用代码。
+
+**English**
+
+- `production`: Default mode. Phase 2 must wait for explicit user approval before Phase 3 hot-replaces the real app.
+- `demo`: Useful for social posts, sales demos, or direction validation. It may create a standalone runnable preview first, but it must be labeled non-final; do not modify the real app before user approval.
+
+## uni-app / HBuilderX 项目 / uni-app And HBuilderX Projects
+
+**中文**
+
+如果项目里有 `pages.json`、`manifest.json`、`uni_modules`，它通常是 uni-app 项目。很多这类项目没有 `npm run dev`。阶段三应该优先：
+
+- 保留 `rpx`、`view`、`text`、`scroll-view` 等 uni-app 写法。
+- 把资产放到 `static/frontend-ui-pipeline/`。
+- 保留现有 `api`、`uniCloud.callFunction` 和页面方法。
+- 如果 CLI 跑不起来，先给出 HBuilderX 运行说明和独立预览截图，不要假装已经完成像素级验证。
+
+**English**
+
+If the project contains `pages.json`, `manifest.json`, and `uni_modules`, it is usually a uni-app project. Many such projects do not have `npm run dev`. Phase 3 should:
+
+- Preserve uni-app primitives such as `rpx`, `view`, `text`, and `scroll-view`.
+- Put assets under `static/frontend-ui-pipeline/`.
+- Preserve existing `api`, `uniCloud.callFunction`, and page methods.
+- If the CLI cannot run it, provide HBuilderX run instructions and standalone preview screenshots instead of claiming pixel-perfect verification.
 
 ## 单独调用某个 Skill / Run One Skill Only
 
