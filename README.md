@@ -91,6 +91,18 @@ The repository includes a full demo that proves the intended pipeline shape:
 
 The demo includes generated desktop/mobile screenshots and a component gallery covering buttons, numeric badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.
 
+## Creator Launch Kit
+
+Want to promote or explain the plugin in Chinese social channels? Use the ready-made launch kit:
+
+- [Install-to-use guide](launch-kit/install-to-use.zh-CN.md)
+- [Three-phase workflow explainer](launch-kit/workflow.zh-CN.md)
+- [DraftPilot case study](launch-kit/case-draftpilot.zh-CN.md)
+- [Creator post scripts and titles](launch-kit/creator-posts.zh-CN.md)
+- [Social poster source](launch-kit/social-assets/index.html)
+
+The poster exports are built for a 16:9 video cover, a square before/after post, and a vertical short-video cover.
+
 ## How To Use
 
 Use one phase at a time when you want control, or run the whole pipeline when you already know the target app flow.

@@ -50,6 +50,19 @@ FOUNDATION_TERMS = [
     "Modal",
     "Transition animation",
 ]
+LAUNCH_KIT_FILES = [
+    "README.md",
+    "install-to-use.zh-CN.md",
+    "workflow.zh-CN.md",
+    "case-draftpilot.zh-CN.md",
+    "creator-posts.zh-CN.md",
+    "social-assets/index.html",
+]
+SOCIAL_EXPORTS = [
+    "cover-wide.png",
+    "case-square.png",
+    "story-vertical.png",
+]
 
 
 def fail(message: str) -> None:
@@ -130,6 +143,7 @@ def main() -> None:
         "codex plugin add frontend-ui-pipeline@personal",
         "PROMPTS.md",
         "examples/quickstart/app-flow-brief.md",
+        "launch-kit",
         "$frontend-ui-ideation",
         "$frontend-asset-production",
         "$frontend-implementation",
@@ -137,6 +151,25 @@ def main() -> None:
         if required not in readme:
             fail(f"README.md missing {required}")
     ok("README")
+
+    launch_root = ROOT / "launch-kit"
+    launch_text = "\n".join(check_file(launch_root / path) for path in LAUNCH_KIT_FILES)
+    for required in (
+        "codex plugin add frontend-ui-pipeline@personal",
+        "阶段一",
+        "阶段二",
+        "阶段三",
+        "高端定制",
+        "自媒体",
+        "DraftPilot",
+    ):
+        if required not in launch_text:
+            fail(f"launch kit missing {required}")
+    for export_name in SOCIAL_EXPORTS:
+        png = check_binary(launch_root / "social-assets" / "export" / export_name, min_bytes=1024)
+        if not png.startswith(b"\x89PNG\r\n\x1a\n"):
+            fail(f"launch-kit/social-assets/export/{export_name} is not a PNG")
+    ok("launch kit")
 
     check_file(ROOT / "PROMPTS.md")
     check_file(ROOT / "examples" / "quickstart" / "app-flow-brief.md")
