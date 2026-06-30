@@ -46,6 +46,25 @@ IGNORED_NON_PLUGIN_PATHS = [
     "launch-kit/",
     ".github/ISSUE_TEMPLATE/",
 ]
+ALLOWED_TRACKED_FILES = {
+    ".gitignore",
+    "LICENSE",
+    "README.md",
+}
+ALLOWED_TRACKED_PREFIXES = (
+    ".codex-plugin/",
+    ".github/workflows/",
+    "assets/",
+    "scripts/",
+    "skills/",
+)
+DISALLOWED_TRACKED_PREFIXES = (
+    "docs/",
+    "examples/",
+    "launch-kit/",
+    ".github/ISSUE_TEMPLATE/",
+    ".validation-yaml-shim/",
+)
 
 
 def fail(message: str) -> None:
@@ -75,6 +94,59 @@ def check_frontmatter(skill: str, text: str) -> None:
         fail(f"{skill}/SKILL.md frontmatter name is wrong")
     if "description:" not in frontmatter:
         fail(f"{skill}/SKILL.md frontmatter description is missing")
+
+
+def check_tracked_repository_contents() -> None:
+    """Fail if the published Git repository tracks non-plugin material."""
+    top_level = subprocess.run(
+        ["git", "-C", str(ROOT), "rev-parse", "--show-toplevel"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+    )
+    if top_level.returncode != 0:
+        ok("tracked repository contents")
+        return
+
+    try:
+        git_root = Path(top_level.stdout.strip()).resolve()
+    except OSError:
+        ok("tracked repository contents")
+        return
+
+    if git_root != ROOT.resolve():
+        ok("tracked repository contents")
+        return
+
+    tracked = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files"],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    ).stdout.splitlines()
+
+    forbidden = []
+    unexpected = []
+    for path in tracked:
+        is_forbidden = (
+            path == "PROMPTS.md"
+            or path.endswith(".pyc")
+            or "__pycache__/" in path
+            or path.startswith(DISALLOWED_TRACKED_PREFIXES)
+        )
+        if is_forbidden:
+            forbidden.append(path)
+            continue
+        is_allowed = path in ALLOWED_TRACKED_FILES or path.startswith(ALLOWED_TRACKED_PREFIXES)
+        if not is_allowed:
+            unexpected.append(path)
+
+    if forbidden:
+        fail("Non-plugin files are tracked: " + ", ".join(forbidden))
+    if unexpected:
+        fail("Unexpected tracked files: " + ", ".join(unexpected))
+    ok("tracked repository contents")
 
 
 def main() -> None:
@@ -168,6 +240,7 @@ def main() -> None:
         if ignored_path not in gitignore:
             fail(f".gitignore missing {ignored_path}")
     ok("ignore rules")
+    check_tracked_repository_contents()
 
     check_file(ROOT / ".github" / "workflows" / "quick-check.yml")
     check_file(ROOT / "scripts" / "install_local_marketplace.py")
