@@ -66,6 +66,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Build a contact sheet or preview folder that lets the user inspect every generated asset.
    - Make the contact sheet work through `../../scripts/serve_review.py` or a local file open; do not rely only on browser support for external SVG sprite references under `file://`.
    - Run `../../scripts/check_visual_artifacts.py` on contact sheet images and review HTML when the bundled script is available.
+   - Run `../../scripts/compare_visual_artifacts.py` when you have a Phase 1 preview PNG and a comparable Phase 2 contact sheet or asset preview PNG; attach the JSON or Markdown report to the review package.
    - Include side-by-side comparison against the phase 1 preview when possible.
    - List known deviations, tradeoffs, and any assets that need user judgment.
    - Include a machine-readable `asset-manifest.json` when practical so Phase 3 can import assets without re-parsing prose.
@@ -195,6 +196,21 @@ python3 ../../scripts/check_visual_artifacts.py \
   --min-height 240
 ```
 
+## Visual Diff Helper
+
+Use the bundled visual diff helper when a Phase 2 asset preview or contact sheet is meant to match an approved Phase 1 preview. It compares two PNG files without external dependencies and can write JSON and Markdown evidence:
+
+```bash
+python3 ../../scripts/compare_visual_artifacts.py \
+  "<phase1-folder>/phase1-preview-mobile.png" \
+  "<phase2-folder>/review/phase2-contact-sheet.png" \
+  --allow-size-mismatch \
+  --output-md "<phase2-folder>/review/visual-diff-report.md" \
+  --output-json "<phase2-folder>/review/visual-diff-report.json"
+```
+
+Use this report as QA evidence, not as a replacement for user approval. If the diff fails, either fix visible mismatches or document why the compared artifacts are intentionally different compositions.
+
 ## Quality Gate
 
 Final output must include:
@@ -205,6 +221,7 @@ Final output must include:
 - An asset review package the user can inspect visually.
 - `phase2-asset-approval-packet.md` and/or `phase2-asset-approval-packet.html` when the bundled review packet generator is available.
 - Passing visual artifact checks for review images or HTML when the bundled checker is available.
+- A visual diff report when a comparable Phase 1 preview and Phase 2 asset preview/contact sheet are available.
 - A manifest or table that maps every asset to a component, state, layer, and import/calling path.
 - A complete foundational component kit covering buttons, badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.
 - A clear statement that the user approved the final asset package.

@@ -183,11 +183,12 @@ def main() -> None:
                 "Asset Prompt Pack Generator",
                 "Asset Review Packet Generator",
                 "Visual Artifact Checker",
+                "Visual Diff Helper",
             ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         if skill == "frontend-implementation":
-            for required in ("Run Mode", "uni-app", "HBuilderX", "check_visual_artifacts.py"):
+            for required in ("Run Mode", "uni-app", "HBuilderX", "check_visual_artifacts.py", "compare_visual_artifacts.py"):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         agent_yaml = check_file(skill_root / "agents" / "openai.yaml")
@@ -250,6 +251,9 @@ def main() -> None:
         "视觉产物检查器",
         "Visual Artifact Checker",
         "check_visual_artifacts.py",
+        "视觉差异对比器",
+        "Visual Diff Helper",
+        "compare_visual_artifacts.py",
     ):
         if required not in readme:
             fail(f"README.md missing {required}")
@@ -274,6 +278,8 @@ def main() -> None:
     check_file(review_packet_generator)
     visual_checker = ROOT / "scripts" / "check_visual_artifacts.py"
     check_file(visual_checker)
+    visual_diff_helper = ROOT / "scripts" / "compare_visual_artifacts.py"
+    check_file(visual_diff_helper)
     manifest_validator = ROOT / "scripts" / "validate_foundation_manifest.py"
     check_file(manifest_validator)
     review_server = ROOT / "scripts" / "serve_review.py"
@@ -446,7 +452,7 @@ Phase 2 can start after validation passes.
         contact_sheet.write_bytes(
             bytes.fromhex(
                 "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489"
-                "0000000a49444154789c6360000002000100ff0d0a2db40000000049454e44ae426082"
+                "0000000b49444154789c636000020000050001e221bc330000000049454e44ae426082"
             )
         )
         review_html = review_root / "component-contact-sheet.html"
@@ -472,6 +478,31 @@ Phase 2 can start after validation passes.
         )
         if "png 1x1" not in visual_check.stdout or "html" not in visual_check.stdout:
             fail("visual artifact checker did not inspect PNG and HTML outputs")
+        diff_json = review_root / "visual-diff-report.json"
+        diff_md = review_root / "visual-diff-report.md"
+        visual_diff_check = subprocess.run(
+            [
+                sys.executable,
+                str(visual_diff_helper),
+                str(contact_sheet),
+                str(contact_sheet),
+                "--output-json",
+                str(diff_json),
+                "--output-md",
+                str(diff_md),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if "visual diff 0.0%" not in visual_diff_check.stdout:
+            fail("visual diff helper did not report a zero-difference comparison")
+        diff_report = json.loads(diff_json.read_text(encoding="utf-8"))
+        if not diff_report.get("passed") or diff_report.get("differingPixels") != 0:
+            fail("visual diff helper JSON did not prove matching PNGs")
+        if "Visual Diff Report" not in diff_md.read_text(encoding="utf-8"):
+            fail("visual diff helper did not write Markdown output")
         review_packet_check = subprocess.run(
             [
                 sys.executable,

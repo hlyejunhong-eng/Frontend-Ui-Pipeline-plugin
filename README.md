@@ -535,11 +535,11 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、视觉产物检查器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, visual artifact checker, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 ## 阶段一 Brief 验收器 / Phase 1 Brief Validator
 
@@ -680,6 +680,42 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/check_visual_artifacts.py \
   --min-width 320 \
   --min-height 240
 ```
+
+## 视觉差异对比器 / Visual Diff Helper
+
+**中文**
+
+当阶段二资产预览或阶段三真实截图需要对齐已批准的阶段一预览图时，用这个脚本生成 PNG 像素差异报告。它会输出尺寸、差异像素比例、平均通道差异、最大通道差异，并可写出 JSON/Markdown 证据文件：
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/compare_visual_artifacts.py \
+  ./phase1-preview-mobile.png \
+  ./implementation-screenshot-mobile.png \
+  --pixel-tolerance 4 \
+  --max-diff-pct 1 \
+  --max-mean-delta 3 \
+  --output-md ./visual-diff-report.md \
+  --output-json ./visual-diff-report.json
+```
+
+如果两个图不是同一个尺寸，但你只想对比重叠区域，可以加 `--allow-size-mismatch`。这个报告用于 QA 证据和返工定位，不会替代用户在阶段二的明确审核通过。
+
+**English**
+
+When a Phase 2 asset preview or Phase 3 implementation screenshot should match an approved Phase 1 preview, use this script to generate a PNG pixel-diff report. It reports dimensions, differing-pixel ratio, mean channel delta, max channel delta, and optional JSON/Markdown evidence files:
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/compare_visual_artifacts.py \
+  ./phase1-preview-mobile.png \
+  ./implementation-screenshot-mobile.png \
+  --pixel-tolerance 4 \
+  --max-diff-pct 1 \
+  --max-mean-delta 3 \
+  --output-md ./visual-diff-report.md \
+  --output-json ./visual-diff-report.json
+```
+
+Use `--allow-size-mismatch` if the two PNGs have different dimensions and you only want to compare the overlapping area. The report is QA evidence for refinement and handoff; it does not replace explicit Phase 2 asset approval.
 
 ## 阶段二本地审核服务器 / Phase 2 Local Review Server
 

@@ -81,6 +81,7 @@ If no existing frontend repo is provided, create a runnable standalone implement
    - Capture desktop and mobile screenshots with Playwright or the available browser tool.
    - Run `../../scripts/check_visual_artifacts.py <screenshot-paths>` when the bundled script is available so missing or zero-size screenshots are caught before claiming visual QA.
    - Compare screenshots against the approved preview and phase 2 assembly map.
+   - Run `../../scripts/compare_visual_artifacts.py <approved-preview.png> <implementation-screenshot.png>` when comparable PNG screenshots are available, and keep the JSON or Markdown report with the implementation handoff.
    - Fix visible mismatches, broken assets, layout shifts, text overflow, inaccessible focus states, and animation defects before handing back.
 
 7. Package the handoff:
@@ -107,5 +108,6 @@ Report:
 - Verification commands run and their result.
 - Screenshot paths or a clear reason screenshots could not be captured.
 - Visual artifact check results for screenshots when the bundled checker is available.
+- Visual diff report path and summary when comparable approved preview and implementation PNGs are available.
 - Local URL for the running app when a dev server is required.
 - Any remaining visual, API, or product risks.
