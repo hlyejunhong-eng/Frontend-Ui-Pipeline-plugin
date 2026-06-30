@@ -4,50 +4,46 @@
 [![Release](https://img.shields.io/github/v/release/hlyejunhong-eng/Frontend-Ui-Pipeline-plugin)](https://github.com/hlyejunhong-eng/Frontend-Ui-Pipeline-plugin/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Create premium custom UI, art assets, motion specs, and real frontend implementations from an existing app flow.
+Frontend UI Pipeline 是一个 Codex 插件。它把一个已有页面、截图、Figma、localhost 地址或本地前端项目，拆成三阶段处理：
 
-This Codex plugin is built for people who do not draw UI, design visual systems, or write frontend code every day. Give Codex an existing screen, route, screenshot, Figma frame, or app flow, then run the pipeline in three focused stages:
+1. `$frontend-ui-ideation`：收集当前页面信息，生成高级定制 UI brief 和预览方案。
+2. `$frontend-asset-production`：根据 brief 和预览图生成命名清晰的美术资产、基础组件资产、动效规则和 asset handoff，并在最终输出前要求用户审核通过。
+3. `$frontend-implementation`：把审核通过的资产接入真实前端；有真实 API 就接真实 API，没有就用同结构 mock 数据实现。
 
-1. **Ideation**: turn the current product flow into a high-end UI direction, preview image, and pixel-level Markdown spec.
-2. **Asset Production**: generate and name production art assets, motion frames, backgrounds, icons, masks, sprites, and an exact assembly handoff.
-3. **Implementation**: install the approved assets into the real frontend app, connect real APIs when available, and use faithful mocks when needed.
+这个仓库只放插件本体、skills、安装脚本和这份 README。示例、营销物料、草稿说明、发布素材等不会上传到 GitHub。
 
-The goal is simple: help non-designers and non-frontend specialists ship a polished, custom interface that can actually land in production.
+## 安装什么
 
-## Why This Exists
+你安装的是这个 Codex 插件：`frontend-ui-pipeline`。
 
-Most AI UI generators stop at a pretty picture. This plugin forces the missing handoff:
+安装后使用的应用是 **Codex 应用** 或 **Codex CLI**。开始使用的位置是新 Codex 线程底部的消息输入框。
 
-- **Phase 1 creates the design contract**: background, components, copy, buttons, state rules, motion, and acceptance criteria.
-- **Phase 2 creates the real asset package**: named files, dimensions, layer order, responsive placement, and user approval before final handoff.
-- **Phase 3 changes the actual app**: imports assets, builds layout, wires APIs or mocks, runs checks, and verifies screenshots.
+## 安装步骤
 
-## Install
-
-### 1. Clone the plugin
+### 1. 下载插件
 
 ```bash
 mkdir -p ~/plugins
 git clone https://github.com/hlyejunhong-eng/Frontend-Ui-Pipeline-plugin.git ~/plugins/frontend-ui-pipeline
 ```
 
-### 2. Register it in your personal Codex marketplace
+### 2. 注册到 Codex 个人 marketplace
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/install_local_marketplace.py
 ```
 
-### 3. Add it in Codex
+### 3. 在 Codex 中添加插件
 
 ```bash
 codex plugin add frontend-ui-pipeline@personal
 ```
 
-Then start a new Codex thread so the plugin skills are loaded.
+### 4. 新开 Codex 线程
 
-In practical terms: install this repository as a Codex plugin, open the Codex app, create a new thread, then paste your old screen screenshot, local project path, localhost URL, Figma link, or page description into the thread message box with one of the prompts below.
+安装后关闭当前线程，重新打开一个新 Codex 线程。新线程才会加载刚安装的三个 skills。
 
-## Update
+## 更新插件
 
 ```bash
 cd ~/plugins/frontend-ui-pipeline
@@ -56,162 +52,283 @@ python3 scripts/install_local_marketplace.py
 codex plugin add frontend-ui-pipeline@personal
 ```
 
-Start a new thread after updating.
+更新后同样需要新开一个 Codex 线程。
 
-## Quick Check
+## 打开哪里开始用
 
-Run this after cloning or changing the plugin:
+使用 Codex 应用时：
 
-```bash
-python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
-```
+1. 打开 Codex 应用。
+2. 新建一个线程。
+3. 选择或确认你的工作目录。
+4. 在底部消息输入框粘贴页面材料和启动 prompt。
+5. 回车发送。
 
-It verifies the manifest, three skills, UI metadata, and common placeholder mistakes without external dependencies.
+使用 Codex CLI 时：
 
-## Try It In 5 Minutes
+1. 在终端进入你的工作目录。
+2. 启动 Codex。
+3. 在对话输入区粘贴页面材料和启动 prompt。
+4. 回车发送。
 
-1. Install the plugin.
-2. Open [examples/quickstart/app-flow-brief.md](examples/quickstart/app-flow-brief.md).
-3. Paste the example prompt into a new Codex thread.
-4. Let Phase 1 create the first brief and preview.
+## 可以给什么输入
 
-For more starter prompts, use [PROMPTS.md](PROMPTS.md).
+你至少给其中一种就能开始：
 
-## Quality Bar
+- 旧页面截图
+- 本地项目路径
+- 本地运行地址，例如 `http://localhost:3000/dashboard`
+- Figma 链接
+- 页面功能描述
 
-This plugin is meant to create shippable frontend work, not just attractive mockups. See [docs/quality-bar.md](docs/quality-bar.md) for the pass/fail criteria each phase should meet.
+更好的输入包括：
 
-## End-To-End Demo
+- 目标用户是谁
+- 想把页面做高级的原因
+- 品牌颜色、字体、Logo 或参考风格
+- 要替换的路由或组件路径
+- 是否已有真实 API
 
-The repository includes a full demo that proves the intended pipeline shape:
+## 五种启动方式
 
-- [DraftPilot demo overview](examples/demo-draftpilot/README.md)
-- [Phase 1 brief with Phase 2 generation guide](examples/demo-draftpilot/phase1/phase1-ui-brief.md)
-- [Phase 2 asset handoff with full foundation kit](examples/demo-draftpilot/phase2/phase2-asset-handoff.md)
-- [Foundation component gallery](examples/demo-draftpilot/phase2/design-system/component-gallery.html)
-- [Runnable Phase 3 implementation](examples/demo-draftpilot/phase3/implementation/index.html)
-
-The demo includes generated desktop/mobile screenshots and a component gallery covering buttons, numeric badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.
-
-## Creator Launch Kit
-
-Want to promote or explain the plugin in Chinese social channels? Use the ready-made launch kit:
-
-- [Install-to-use guide](launch-kit/install-to-use.zh-CN.md)
-- [Three-phase workflow explainer](launch-kit/workflow.zh-CN.md)
-- [DraftPilot case study](launch-kit/case-draftpilot.zh-CN.md)
-- [Creator post scripts and titles](launch-kit/creator-posts.zh-CN.md)
-- [Social poster source](launch-kit/social-assets/index.html)
-
-The poster exports are built for a 16:9 video cover, a square before/after post, and a vertical short-video cover.
-
-## How To Use
-
-Use one phase at a time when you want control, or run the whole pipeline when you already know the target app flow.
-
-### Full Pipeline Prompt
+### 方式 A：只有截图
 
 ```text
-Use the Frontend UI Pipeline on this app flow.
-Target: <route, screen, repo path, screenshot, Figma link, or local URL>
-Goal: make it feel like a premium custom product, then create assets and implement it in the real frontend.
+Use the Frontend UI Pipeline on this old page screenshot.
+
+Input:
+- 我上传了一张旧页面截图。
+
+Goal:
+请把这个页面重做成高端定制 UI，先输出阶段一 brief 和预览图，再进入阶段二资产生产，最后实现可运行前端。如果没有真实项目，就先生成独立可运行 demo。
 ```
 
-### Phase 1: UI Ideation
+### 方式 B：有本地项目路径
+
+```text
+Use the Frontend UI Pipeline on this real frontend route.
+
+Project path:
+/Users/<你的用户名>/path/to/your-frontend-project
+
+Target route or screen:
+/dashboard/onboarding
+
+Goal:
+请基于当前页面重新设计高端 UI，生成完整组件资产包和动效规则。阶段三请直接在这个项目里实现；如果接口不清楚，先用同结构 mock 数据。
+```
+
+### 方式 C：项目已经在 localhost 跑起来
+
+```text
+Use the Frontend UI Pipeline on this running local app.
+
+Local URL:
+http://localhost:3000/dashboard/onboarding
+
+Project path:
+/Users/<你的用户名>/path/to/your-frontend-project
+
+Goal:
+请先审视这个页面，再生成阶段一高端 UI brief 和预览图。阶段二生成完整资产包，阶段三热更替换到真实前端项目。
+```
+
+### 方式 D：有 Figma 链接
+
+```text
+Use the Frontend UI Pipeline on this Figma screen.
+
+Figma:
+<粘贴 Figma 链接>
+
+Goal:
+请基于这个页面重新生成高端定制方向、资产系统和真实前端实现方案。如果不能直接读取 Figma，请告诉我需要补充哪些截图或节点信息。
+```
+
+### 方式 E：只有页面描述
+
+```text
+Use the Frontend UI Pipeline to create a premium frontend flow.
+
+Page description:
+这是一个给小商家使用的 AI 文案助手 onboarding 页面。页面需要展示欢迎语、三个设置步骤、品牌语气、网站连接、创建第一条营销内容，以及右侧进度建议。
+
+Goal:
+请从阶段一开始，生成高端 UI brief、预览图、阶段二资产包，最后做一个可运行前端 demo。
+```
+
+## 通用全流程 prompt
+
+```text
+Use the Frontend UI Pipeline to redesign and implement this app flow.
+
+Input:
+- <粘贴旧页面截图、本地项目路径、localhost 地址、Figma 链接或页面描述>
+
+Target user:
+- <这个页面给谁用>
+
+Business goal:
+- <为什么要把它做高级>
+
+Implementation target:
+- 如果有真实前端项目，请直接改真实项目。
+- 如果没有真实项目，请生成独立可运行 demo。
+- 如果有真实 API 就接 API，没有就用同结构 mock 数据。
+
+Output requirements:
+- Phase 1: 高端 UI brief、桌面/移动预览图、像素级布局/文字/按钮/动效要求。
+- Phase 2: 完整基础组件资产包、命名资产、asset manifest、asset handoff，并在最终输出前让我审核资产是否通过。
+- Phase 3: 可运行前端、资产接入、接口或 mock、桌面/移动截图和验证命令。
+```
+
+## 单独调用某个 skill
+
+只做阶段一：
 
 ```text
 Use $frontend-ui-ideation to redesign this existing app flow into a premium UI brief and preview.
 ```
 
-Output:
-
-- `phase1-ui-brief.md`
-- one or more preview images
-- pixel-level requirements for layout, background, components, text, buttons, states, click feedback, and motion
-
-### Phase 2: Asset Production
+只做阶段二：
 
 ```text
 Use $frontend-asset-production with this phase 1 brief and preview. Generate the real assets, then ask me to review before finalizing.
 ```
 
-Output:
-
-- approved asset files
-- named backgrounds, component overlays, icons, masks, textures, sprites, or motion frames
-- `phase2-asset-handoff.md`
-- exact layer order, placement, responsive rules, import paths, and motion calling rules
-
-Phase 2 must stop for user review before final output.
-
-### Phase 3: Frontend Implementation
+只做阶段三：
 
 ```text
 Use $frontend-implementation with the approved phase 2 assets. Hot-replace the real frontend route. Connect real APIs if available; otherwise mock it to match the preview.
 ```
 
-Output:
+## 每个阶段应该输出什么
 
-- real frontend code changes
-- imported assets and motion
-- real API wiring or isolated mock data
-- verification commands and screenshots
-- local dev server URL when needed
+### 阶段一：UI Ideation
 
-## Included Skills
+必须输出：
 
-| Skill | When to use it |
-| --- | --- |
-| `$frontend-ui-ideation` | Collect ideas from an existing app and produce a premium UI spec plus preview. |
-| `$frontend-asset-production` | Turn the approved spec into production art assets and an asset handoff. |
-| `$frontend-implementation` | Implement the approved assets into the real frontend app. |
+- `phase1-ui-brief.md`
+- 桌面或移动预览图
+- 组件、背景、文字、按钮、状态、点击反馈和动效要求
+- 给阶段二使用的生成指南
+- 完整基础组件资产清单
 
-## Example Outputs
+成功标准：
 
-These examples show the expected handoff quality:
+- 不是只写“现代、简洁、高级”
+- 要写清楚布局、像素、层级、状态和动效
+- 非设计人员也能读懂下一步要生成什么资产
 
-- [Phase 1 brief example](examples/outputs/phase1-ui-brief.example.md)
-- [Phase 2 asset handoff example](examples/outputs/phase2-asset-handoff.example.md)
-- [Complete demo output](examples/demo-draftpilot/README.md)
+### 阶段二：Asset Production
 
-## What You Need To Provide
+必须输出：
 
-Best inputs:
+- 背景、插图、遮罩、图标、sprites 或 motion frames
+- 完整基础组件资产包
+- `asset-manifest.json`
+- `phase2-asset-handoff.md`
+- 资产预览或审核包
 
-- a repo path, local route, or running app URL
-- screenshots or Figma frames if the app is not runnable
-- the business goal and target users
-- any brand assets or style references
-- API docs or notes, if available
+基础组件资产包至少覆盖：
 
-If you do not know the design direction, say that. Phase 1 is designed to discover it with you.
+- buttons
+- numeric badges
+- cards
+- combobox
+- common icons
+- navigation bar
+- notice bar
+- search bar
+- section title
+- modal
+- transition animation
 
-## What This Plugin Does Not Promise
+常用 icon 至少覆盖：
 
-- It cannot guarantee GitHub stars, product-market fit, or production approval by itself.
-- It does not replace legal review, accessibility certification, brand approval, or security review.
-- It should not silently overwrite unrelated app code; Phase 3 is scoped to the requested screen or flow.
+- home
+- profile
+- page
+- scan
+- cart
+- payment
+- chat
+- confirm
+- close
+- back
+- forward
+- hot
+- like
+- settings
+- help
+- info
+- wallet
+- list
+- favorite
+- search
 
-## Roadmap To A 2k-Star Repo
+阶段二必须停下来让用户审核资产。用户明确说通过后，才能输出最终 handoff。
 
-The practical path is:
+### 阶段三：Frontend Implementation
 
-- ship a frictionless install path
-- publish before/after demos from real app flows
-- keep the README short enough to try in five minutes
-- collect issues from early users and improve the pipeline prompts
-- add a gallery of successful UI transformations
-- make Phase 2 asset review especially reliable
+必须输出：
 
-See [docs/launch-playbook.md](docs/launch-playbook.md) for the public launch checklist.
+- 真实可运行前端代码
+- 阶段二资产和基础组件库接入
+- 真实 API 接入，或同结构 mock 数据
+- hover、focus、pressed、loading、reduced-motion 等状态
+- 桌面和移动截图，或说明为什么无法截图
+- 验证命令、结果和本地运行方式
 
-## Contributing
+## 完整运行的最低证据
 
-Issues and pull requests are welcome. Good contributions improve one of three things:
+一次完整运行至少应该留下：
 
-- better output quality for non-designers
-- fewer steps from install to first successful UI
-- more reliable frontend implementation handoff
+- `phase1-ui-brief.md`
+- Phase 1 预览图或截图
+- 已审核通过的资产目录
+- 资产审核包
+- `phase2-asset-handoff.md`
+- 完整 foundation component kit
+- common icon set
+- 前端代码改动
+- 验证命令输出
+- 桌面和移动截图
+
+## 仓库内容
+
+GitHub 仓库保留：
+
+- `.codex-plugin/plugin.json`
+- `skills/`
+- `scripts/install_local_marketplace.py`
+- `scripts/quick_check.py`
+- `README.md`
+- `LICENSE`
+- `.github/workflows/quick-check.yml`
+
+GitHub 仓库不追踪：
+
+- `examples/`
+- `launch-kit/`
+- `docs/`
+- `PROMPTS.md`
+
+这些内容如果在本地存在，会被 `.gitignore` 忽略。
+
+## 本地校验
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
+```
+
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README 和 ignore 规则。
+
+## 不承诺什么
+
+- 不保证 GitHub star、流量或产品成功。
+- 不替代法务、安全、品牌或无障碍认证。
+- 不应该静默覆盖和目标页面无关的项目代码。
 
 ## License
 

@@ -1,0 +1,7 @@
+PROMPTS.md
+docs/
+examples/
+launch-kit/
+.github/ISSUE_TEMPLATE/
+.DS_Store
+.validation-yaml-shim/

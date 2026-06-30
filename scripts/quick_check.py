@@ -37,31 +37,12 @@ COMMON_ICONS = [
     "favorite",
     "search",
 ]
-FOUNDATION_TERMS = [
-    "Buttons",
-    "Numeric badges",
-    "Generic cards",
-    "Combobox",
-    "Common icons",
-    "Navigation bar",
-    "Notice bar",
-    "Search bar",
-    "Section title",
-    "Modal",
-    "Transition animation",
-]
-LAUNCH_KIT_FILES = [
-    "README.md",
-    "install-to-use.zh-CN.md",
-    "workflow.zh-CN.md",
-    "case-draftpilot.zh-CN.md",
-    "creator-posts.zh-CN.md",
-    "social-assets/index.html",
-]
-SOCIAL_EXPORTS = [
-    "cover-wide.png",
-    "case-square.png",
-    "story-vertical.png",
+IGNORED_NON_PLUGIN_PATHS = [
+    "PROMPTS.md",
+    "docs/",
+    "examples/",
+    "launch-kit/",
+    ".github/ISSUE_TEMPLATE/",
 ]
 
 
@@ -81,15 +62,6 @@ def check_file(path: Path) -> str:
     if "TODO" in text or "[TODO" in text:
         fail(f"Placeholder text found in {path.relative_to(ROOT)}")
     return text
-
-
-def check_binary(path: Path, *, min_bytes: int = 1) -> bytes:
-    if not path.exists():
-        fail(f"Missing {path.relative_to(ROOT)}")
-    data = path.read_bytes()
-    if len(data) < min_bytes:
-        fail(f"{path.relative_to(ROOT)} is unexpectedly small")
-    return data
 
 
 def check_frontmatter(skill: str, text: str) -> None:
@@ -139,104 +111,39 @@ def main() -> None:
 
     readme = check_file(ROOT / "README.md")
     for required in (
-        "Install",
+        "安装步骤",
         "codex plugin add frontend-ui-pipeline@personal",
-        "PROMPTS.md",
-        "examples/quickstart/app-flow-brief.md",
-        "launch-kit",
+        "Codex 应用",
+        "新建一个线程",
+        "底部消息输入框",
+        "旧页面截图",
+        "本地项目路径",
+        "localhost",
+        "Figma 链接",
+        "通用全流程 prompt",
+        "Phase 1",
+        "Phase 2",
+        "Phase 3",
         "$frontend-ui-ideation",
         "$frontend-asset-production",
         "$frontend-implementation",
+        "examples/",
+        "launch-kit/",
+        "PROMPTS.md",
     ):
         if required not in readme:
             fail(f"README.md missing {required}")
     ok("README")
 
-    launch_root = ROOT / "launch-kit"
-    launch_text = "\n".join(check_file(launch_root / path) for path in LAUNCH_KIT_FILES)
-    for required in (
-        "codex plugin add frontend-ui-pipeline@personal",
-        "阶段一",
-        "阶段二",
-        "阶段三",
-        "高端定制",
-        "自媒体",
-        "DraftPilot",
-        "Codex 应用",
-        "新建线程",
-        "消息输入框",
-        "本地项目路径",
-        "localhost",
-        "Figma 链接",
-    ):
-        if required not in launch_text:
-            fail(f"launch kit missing {required}")
-    for export_name in SOCIAL_EXPORTS:
-        png = check_binary(launch_root / "social-assets" / "export" / export_name, min_bytes=1024)
-        if not png.startswith(b"\x89PNG\r\n\x1a\n"):
-            fail(f"launch-kit/social-assets/export/{export_name} is not a PNG")
-    ok("launch kit")
+    gitignore = check_file(ROOT / ".gitignore")
+    for ignored_path in IGNORED_NON_PLUGIN_PATHS:
+        if ignored_path not in gitignore:
+            fail(f".gitignore missing {ignored_path}")
+    ok("ignore rules")
 
-    check_file(ROOT / "PROMPTS.md")
-    check_file(ROOT / "examples" / "quickstart" / "app-flow-brief.md")
-    check_file(ROOT / "examples" / "outputs" / "phase1-ui-brief.example.md")
-    check_file(ROOT / "examples" / "outputs" / "phase2-asset-handoff.example.md")
     check_file(ROOT / ".github" / "workflows" / "quick-check.yml")
-    check_file(ROOT / "docs" / "quality-bar.md")
-    ok("examples and CI")
-
-    demo_root = ROOT / "examples" / "demo-draftpilot"
-    phase1 = check_file(demo_root / "phase1" / "phase1-ui-brief.md")
-    for required in ("Phase 2 Generation Guide", "Layer Order", "Adjustable Parameters", "Required Foundation Kit"):
-        if required not in phase1:
-            fail(f"demo phase1 brief missing {required}")
-
-    phase2 = check_file(demo_root / "phase2" / "phase2-asset-handoff.md")
-    for required in FOUNDATION_TERMS:
-        if required not in phase2:
-            fail(f"demo phase2 handoff missing {required}")
-
-    manifest = json.loads(check_file(demo_root / "phase2" / "asset-manifest.json"))
-    manifest_paths = {asset.get("path") for asset in manifest.get("assets", [])}
-    for required_path in (
-        "design-system/component-kit.css",
-        "design-system/icon-sprite.svg",
-        "design-system/component-gallery.html",
-    ):
-        if required_path not in manifest_paths:
-            fail(f"demo asset manifest missing {required_path}")
-
-    sprite = check_file(demo_root / "phase2" / "design-system" / "icon-sprite.svg")
-    gallery = check_file(demo_root / "phase2" / "design-system" / "component-gallery.html")
-    for icon in COMMON_ICONS:
-        if f"id=\"icon-{icon}\"" not in sprite:
-            fail(f"icon sprite missing icon-{icon}")
-        if f">{icon}</span>" not in gallery:
-            fail(f"component gallery missing visible label for {icon}")
-
-    component_kit = check_file(demo_root / "phase2" / "design-system" / "component-kit.css")
-    for required in (".fp-button", ".fp-badge", ".fp-card", ".fp-combobox", ".fp-nav", ".fp-notice", ".fp-search", ".fp-modal", "@keyframes fp-page-enter"):
-        if required not in component_kit:
-            fail(f"component kit missing {required}")
-
-    implementation = check_file(demo_root / "phase3" / "implementation" / "index.html")
-    for required in ("component-kit.css", "campaignType", "demoModal", "phase2/assets"):
-        if required not in implementation:
-            fail(f"demo implementation missing {required}")
-    check_file(demo_root / "phase3" / "implementation" / "implementation-note.md")
-
-    for png_path in (
-        demo_root / "phase1" / "phase1-preview-desktop.png",
-        demo_root / "phase1" / "phase1-preview-mobile.png",
-        demo_root / "phase2" / "asset-review" / "contact-sheet.png",
-        demo_root / "phase2" / "design-system" / "component-gallery.png",
-        demo_root / "evidence" / "screenshots" / "draftpilot-desktop.png",
-        demo_root / "evidence" / "screenshots" / "draftpilot-mobile.png",
-    ):
-        png = check_binary(png_path, min_bytes=1024)
-        if not png.startswith(b"\x89PNG\r\n\x1a\n"):
-            fail(f"{png_path.relative_to(ROOT)} is not a PNG")
-    ok("end-to-end demo")
+    check_file(ROOT / "scripts" / "install_local_marketplace.py")
+    ok("scripts and CI")
 
     check_file(ROOT / "LICENSE")
     ok("license")
