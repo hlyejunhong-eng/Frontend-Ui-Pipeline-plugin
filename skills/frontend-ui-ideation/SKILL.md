@@ -67,6 +67,7 @@ If the user provides no runnable app, screenshot, URL, Figma frame, or code targ
 5. Create an artifact index:
    - Write or include a short "handoff index" section listing every produced file, why it exists, and which phase consumes it.
    - Include unresolved questions only when they genuinely affect asset production or implementation.
+   - Run `../../scripts/generate_pipeline_runbook.py --run-root <handoff-root>` when the bundled script is available so a non-expert user can see the current phase, produced artifacts, and the exact next prompt.
 
 6. Create the Phase 2 generation guide:
    - Include a dedicated "Phase 2 Generation Guide" section in `phase1-ui-brief.md`.
@@ -119,5 +120,6 @@ Do not finish with prose only. Final output must provide:
 - A Phase 2 generation guide with layer order, adjustable parameters, and the full foundational component inventory.
 - A passing `validate_phase1_brief.py` result when the bundled script is available.
 - A passing `check_visual_artifacts.py` result for preview images when the bundled script is available.
+- A generated `pipeline-runbook.md` when the bundled script is available.
 - A phase readiness checklist showing whether Phase 2 can start immediately.
 - A short handoff note naming the next recommended skill: `$frontend-asset-production`.

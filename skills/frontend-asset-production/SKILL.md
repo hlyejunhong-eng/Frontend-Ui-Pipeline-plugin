@@ -74,6 +74,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - If using the bundled manifest generator, keep its coverage counts in the review package so the user can see whether every required state is represented.
    - Run `../../scripts/validate_foundation_manifest.py <manifest-path>` before asking the user to approve assets; fix any missing component state, icon, or screen asset slot first.
    - Use `../../scripts/generate_asset_review_packet.py` to create a non-designer approval packet with coverage, contact sheet, decision options, and exact user reply text for approval or revision.
+   - Run `../../scripts/generate_pipeline_runbook.py --run-root <run-root>` when the bundled script is available so the user can see that the next required action is asset approval.
 
 5. Mandatory user approval:
    - Stop and ask the user to review the asset package.
@@ -84,6 +85,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Use `../../scripts/generate_phase2_handoff.py` when the bundled script is available so approval text, manifest entries, assembly rules, component usage, motion rules, and Phase 3 acceptance checks are captured consistently.
    - Write `phase2-asset-handoff.md` beside the asset folder or in the user-provided output directory.
    - Supplement the phase 1 brief rather than replacing it.
+   - Regenerate `pipeline-runbook.md` after the final handoff so the next prompt points to `$frontend-implementation`.
 
 ## Required Handoff Content
 
@@ -245,6 +247,7 @@ Final output must include:
 - A visual diff report when a comparable Phase 1 preview and Phase 2 asset preview/contact sheet are available.
 - A manifest or table that maps every asset to a component, state, layer, and import/calling path.
 - A complete foundational component kit covering buttons, badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.
+- A generated or refreshed `pipeline-runbook.md` when the bundled script is available.
 - A clear statement that the user approved the final asset package.
 - A phase readiness checklist showing whether Phase 3 can start immediately.
 - A short handoff note naming the next recommended skill: `$frontend-implementation`.

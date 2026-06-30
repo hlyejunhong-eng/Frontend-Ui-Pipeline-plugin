@@ -171,7 +171,7 @@ def main() -> None:
         if skill == "frontend-implementation" and "runnable" not in skill_md:
             fail("frontend-implementation must require runnable frontend output")
         if skill == "frontend-ui-ideation":
-            for required in ("Phase 2 generation guide", "Required Phase 2 Component Inventory", "First Run Checklist", "check_visual_artifacts.py"):
+            for required in ("Phase 2 generation guide", "Required Phase 2 Component Inventory", "First Run Checklist", "check_visual_artifacts.py", "generate_pipeline_runbook.py"):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         if skill == "frontend-asset-production":
@@ -185,6 +185,7 @@ def main() -> None:
                 "Phase 2 Handoff Generator",
                 "Visual Artifact Checker",
                 "Visual Diff Helper",
+                "generate_pipeline_runbook.py",
             ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
@@ -198,6 +199,7 @@ def main() -> None:
                 "generate_phase2_handoff.py",
                 "inspect_frontend_target.py",
                 "generate_screenshot_qa_plan.py",
+                "generate_pipeline_runbook.py",
                 "Target Inspector",
                 "Screenshot QA Plan",
             ):
@@ -245,6 +247,9 @@ def main() -> None:
         "$frontend-implementation",
         "本地校验",
         "Local Check",
+        "流水线运行索引生成器",
+        "Pipeline Runbook Generator",
+        "generate_pipeline_runbook.py",
         "阶段二本地审核服务器",
         "Phase 2 Local Review Server",
         "serve_review.py",
@@ -289,6 +294,8 @@ def main() -> None:
 
     check_file(ROOT / ".github" / "workflows" / "quick-check.yml")
     check_file(ROOT / "scripts" / "install_local_marketplace.py")
+    runbook_generator = ROOT / "scripts" / "generate_pipeline_runbook.py"
+    check_file(runbook_generator)
     phase1_validator = ROOT / "scripts" / "validate_phase1_brief.py"
     check_file(phase1_validator)
     manifest_generator = ROOT / "scripts" / "generate_foundation_manifest.py"
@@ -482,6 +489,8 @@ Phase 2 can start after validation passes.
                 "0000000b49444154789c636000020000050001e221bc330000000049454e44ae426082"
             )
         )
+        phase1_preview = Path(temp_dir) / "phase1-preview-mobile.png"
+        phase1_preview.write_bytes(contact_sheet.read_bytes())
         review_html = review_root / "component-contact-sheet.html"
         review_html.write_text(
             "<!doctype html><title>Review</title><h1>ok</h1>\n",
@@ -566,6 +575,45 @@ Phase 2 can start after validation passes.
         ):
             if required_approval_text not in approval_text:
                 fail(f"asset review packet missing {required_approval_text}")
+        runbook_md = Path(temp_dir) / "pipeline-runbook.md"
+        runbook_json = Path(temp_dir) / "pipeline-runbook.json"
+        runbook_check = subprocess.run(
+            [
+                sys.executable,
+                str(runbook_generator),
+                "--run-root",
+                str(temp_dir),
+                "--project",
+                "quick-check",
+                "--target",
+                "/dashboard",
+                "--output-md",
+                str(runbook_md),
+                "--output-json",
+                str(runbook_json),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if "asset-approval-required" not in runbook_check.stdout or not runbook_md.exists() or not runbook_json.exists():
+            fail("pipeline runbook generator did not report the Phase 2 approval gate")
+        runbook = json.loads(runbook_json.read_text(encoding="utf-8"))
+        if runbook.get("status", {}).get("key") != "asset-approval-required":
+            fail("pipeline runbook should require asset approval before handoff")
+        if not runbook.get("artifacts") or not runbook.get("approvalGate", {}).get("approvalText"):
+            fail("pipeline runbook missing artifacts or approval text")
+        runbook_text = runbook_md.read_text(encoding="utf-8")
+        for required_runbook_text in (
+            "Frontend UI Pipeline Runbook",
+            "Next Prompt",
+            "Approval Gate",
+            "Artifact Index",
+            "Assets approved. Generate phase2-asset-handoff.md",
+        ):
+            if required_runbook_text not in runbook_text:
+                fail(f"pipeline runbook missing {required_runbook_text}")
         handoff_path = Path(temp_dir) / "phase2-asset-handoff.md"
         handoff_check = subprocess.run(
             [

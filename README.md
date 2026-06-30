@@ -527,6 +527,30 @@ A complete run should leave at least:
 - Verification command output
 - Desktop and mobile screenshots
 
+## 流水线运行索引生成器 / Pipeline Runbook Generator
+
+**中文**
+
+每跑完一个阶段，建议生成一次运行索引。它会扫描当前运行目录，告诉普通用户现在卡在哪一步、下一句应该发给 Codex 什么、阶段二是否还在等审核、哪些文件可以用于交付或自媒体展示。
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_pipeline_runbook.py \
+  --run-root ./frontend-ui-pipeline-run \
+  --project "my-app" \
+  --target "/dashboard"
+```
+
+**English**
+
+After each phase, generate a runbook. It scans the current run folder and tells a non-expert user what is done, what to send to Codex next, whether Phase 2 is still waiting for approval, and which files are useful for handoff or social proof.
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_pipeline_runbook.py \
+  --run-root ./frontend-ui-pipeline-run \
+  --project "my-app" \
+  --target "/dashboard"
+```
+
 ## 本地校验 / Local Check
 
 ```bash
@@ -535,11 +559,11 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、流水线运行索引生成器、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, pipeline runbook generator, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 ## 阶段一 Brief 验收器 / Phase 1 Brief Validator
 
