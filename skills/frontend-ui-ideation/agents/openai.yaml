@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend UI Ideation"
+  short_description: "Generate premium UI briefs and previews"
+  default_prompt: "Use $frontend-ui-ideation to redesign an existing app flow into a premium UI brief and preview."

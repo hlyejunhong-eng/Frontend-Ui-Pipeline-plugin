@@ -1,0 +1,27 @@
+{
+  "name": "frontend-ui-pipeline",
+  "version": "0.1.0",
+  "description": "Three-stage frontend redesign pipeline for premium UI briefs, production art assets, and real app implementation.",
+  "author": {
+    "name": "Local developer"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Frontend UI Pipeline",
+    "shortDescription": "Premium UI brief, asset, and frontend workflow.",
+    "longDescription": "A three-skill pipeline that turns an existing frontend flow into a premium custom UI concept, named production art assets, and a pixel-matched implementation in the real app.",
+    "developerName": "Local developer",
+    "category": "Design",
+    "capabilities": [
+      "Design",
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use the full frontend UI pipeline on this app flow.",
+      "Create the phase 1 premium UI brief and preview.",
+      "Implement the approved assets into the real frontend."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

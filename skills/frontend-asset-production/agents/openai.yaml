@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend Asset Production"
+  short_description: "Create exact UI art assets and specs"
+  default_prompt: "Use $frontend-asset-production to turn an approved UI brief into named production assets."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend Implementation"
+  short_description: "Implement pixel-matched frontend flows"
+  default_prompt: "Use $frontend-implementation to implement the approved UI assets into the real frontend app."
