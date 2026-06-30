@@ -27,6 +27,14 @@
 
 所以我做了 Frontend UI Pipeline。
 
+怎么开始：
+
+1. 先把插件下载到 `~/plugins/frontend-ui-pipeline`
+2. 用 `install_local_marketplace.py` 注册到 Codex 个人 marketplace
+3. 执行 `codex plugin add frontend-ui-pipeline@personal`
+4. 打开 Codex 应用，新建线程
+5. 在底部输入框粘贴旧页面截图、项目路径、localhost 地址、Figma 链接或页面描述，再粘贴启动 prompt
+
 它分三步：
 
 1. 阶段一：看旧页面，生成高端 UI brief 和预览图
@@ -47,20 +55,24 @@ GitHub 搜：Frontend-Ui-Pipeline-plugin
 
 左边是普通白底 onboarding，右边是高端定制 SaaS 工作台。
 
-10-20 秒：
+10-18 秒：
+
+怎么用很具体：下载插件，注册到 Codex，打开 Codex 新线程，把旧页面截图或项目路径发到输入框。
+
+18-28 秒：
 
 我做了一个 Codex 插件，分三阶段：
 先锁风格，再生成完整组件资产包，最后落到真实代码。
 
-20-32 秒：
+28-38 秒：
 
 重点是阶段二：按钮、数字角标、卡片、组合框、常用 icons、导航、通告、搜索、弹窗、过渡动画，全都生成。
 
-32-40 秒：
+38-44 秒：
 
 阶段三接真实 API；没有 API，就用同结构 mock 先跑起来。
 
-40-45 秒：
+44-50 秒：
 
 GitHub 已开源，想看案例和安装命令，评论区拿链接。
 
@@ -86,4 +98,10 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/install_local_marketplace.py
 codex plugin add frontend-ui-pipeline@personal
 ```
 
-安装后新开 Codex 线程，复制仓库里的 `PROMPTS.md` 开始跑。
+启动方式：
+
+1. 打开 Codex 应用
+2. 新建线程
+3. 在底部消息输入框粘贴旧页面截图、项目路径、localhost 地址、Figma 链接或页面描述
+4. 再粘贴 `launch-kit/install-to-use.zh-CN.md` 里的万能 prompt
+5. 回车发送

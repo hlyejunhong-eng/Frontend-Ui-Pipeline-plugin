@@ -162,6 +162,12 @@ def main() -> None:
         "高端定制",
         "自媒体",
         "DraftPilot",
+        "Codex 应用",
+        "新建线程",
+        "消息输入框",
+        "本地项目路径",
+        "localhost",
+        "Figma 链接",
     ):
         if required not in launch_text:
             fail(f"launch kit missing {required}")

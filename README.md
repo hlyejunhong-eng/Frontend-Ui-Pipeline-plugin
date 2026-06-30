@@ -45,6 +45,8 @@ codex plugin add frontend-ui-pipeline@personal
 
 Then start a new Codex thread so the plugin skills are loaded.
 
+In practical terms: install this repository as a Codex plugin, open the Codex app, create a new thread, then paste your old screen screenshot, local project path, localhost URL, Figma link, or page description into the thread message box with one of the prompts below.
+
 ## Update
 
 ```bash
