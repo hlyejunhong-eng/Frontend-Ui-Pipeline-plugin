@@ -60,6 +60,7 @@ def repo_status(repo: Path) -> tuple[list[str], str]:
 
     for script in (
         "install_local_marketplace.py",
+        "start_pipeline.py",
         "quick_check.py",
         "generate_pipeline_runbook.py",
         "generate_pipeline_completion_audit.py",

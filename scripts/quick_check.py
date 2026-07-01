@@ -266,6 +266,10 @@ def main() -> None:
         "First Run Checklist",
         "Install Doctor",
         "安装诊断",
+        "启动向导",
+        "Start Wizard",
+        "start_pipeline.py",
+        "pipeline-start.md",
         "Demo 模式",
         "Demo Mode",
         "uni-app",
@@ -351,6 +355,8 @@ def main() -> None:
 
     check_file(ROOT / ".github" / "workflows" / "quick-check.yml")
     check_file(ROOT / "scripts" / "install_local_marketplace.py")
+    start_wizard = ROOT / "scripts" / "start_pipeline.py"
+    check_file(start_wizard)
     install_doctor = ROOT / "scripts" / "diagnose_install.py"
     check_file(install_doctor)
     runbook_generator = ROOT / "scripts" / "generate_pipeline_runbook.py"
@@ -592,6 +598,7 @@ Phase 2 can start after validation passes.
         for required_doctor_text in (
             "Frontend UI Pipeline Install Doctor",
             "Plugin manifest",
+            "Script start_pipeline.py",
             "Script generate_pipeline_completion_audit.py",
             "Marketplace entry",
             "Installed cache",
@@ -712,6 +719,53 @@ Phase 2 can start after validation passes.
             fail("visual diff helper JSON did not prove matching PNGs")
         if "Visual Diff Report" not in diff_md.read_text(encoding="utf-8"):
             fail("visual diff helper did not write Markdown output")
+        pipeline_start_dir = Path(temp_dir) / "pipeline-start-run"
+        start_check = subprocess.run(
+            [
+                sys.executable,
+                str(start_wizard),
+                "--input",
+                str(phase1_brief),
+                "--input",
+                "http://127.0.0.1:5173/#/pages/grid/grid",
+                "--project",
+                "quick-check",
+                "--target",
+                "/dashboard",
+                "--mode",
+                "demo",
+                "--context",
+                "Verify that non-expert users get a ready-to-send prompt.",
+                "--run-root",
+                str(pipeline_start_dir),
+                "--output-md",
+                str(Path(temp_dir) / "pipeline-start.md"),
+                "--output-json",
+                str(Path(temp_dir) / "pipeline-start.json"),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        start_md = Path(temp_dir) / "pipeline-start.md"
+        start_json = Path(temp_dir) / "pipeline-start.json"
+        if "Use $frontend-ui-ideation" not in start_check.stdout or not start_md.exists() or not start_json.exists():
+            fail("start wizard did not write expected outputs")
+        start_payload = json.loads(start_json.read_text(encoding="utf-8"))
+        if start_payload.get("schemaVersion") != "frontend-ui-pipeline.start.v1":
+            fail("start wizard JSON schema version is wrong")
+        if start_payload.get("mode") != "demo" or len(start_payload.get("inputs", [])) != 2:
+            fail("start wizard did not preserve mode and inputs")
+        start_text = start_md.read_text(encoding="utf-8")
+        for required_start_text in (
+            "Ready-To-Send Codex Prompt",
+            "$frontend-ui-ideation",
+            "complete Phase 2 asset kit",
+            "Do not hot-replace production code",
+        ):
+            if required_start_text not in start_text:
+                fail(f"start wizard output missing {required_start_text}")
         design_qa_md = review_root / "design-qa.md"
         design_qa_json = review_root / "design-qa.json"
         design_qa_check = subprocess.run(
@@ -826,6 +880,7 @@ Phase 2 can start after validation passes.
         runbook_text = runbook_md.read_text(encoding="utf-8")
         for required_runbook_text in (
             "Frontend UI Pipeline Runbook",
+            "Pipeline start prompt",
             "Next Prompt",
             "Approval Gate",
             "Artifact Index",

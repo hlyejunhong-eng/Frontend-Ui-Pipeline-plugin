@@ -17,6 +17,7 @@ Assume the user may not know design language, frontend architecture, or asset pr
 
 When this is the user's first run or the input is vague, state the concrete starting point in plain language:
 
+- If `pipeline-start.md` or `pipeline-start.json` exists in the run folder, read it first and use its project, target, mode, input list, run root, and ready-to-send prompt as the brief lock source.
 - Confirm the target artifact: screenshot, project path, localhost URL, Figma link, or page description.
 - Name the exact screen, route, or component you will inspect first.
 - If the installed skills are not visible in the current thread, tell the user to open a new Codex thread after plugin installation.

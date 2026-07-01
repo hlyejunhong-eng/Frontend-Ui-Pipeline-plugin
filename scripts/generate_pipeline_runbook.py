@@ -47,6 +47,7 @@ def artifact(path: Path, root: Path, phase: str, label: str, kind: str) -> dict[
 def collect_artifacts(root: Path) -> dict[str, list[Path]]:
     return {
         "phase1Briefs": find_all(root, ["**/phase1-ui-brief.md"]),
+        "pipelineStarts": find_all(root, ["**/pipeline-start.md", "**/pipeline-start.json"]),
         "phase1Previews": find_all(root, ["**/phase1-preview*.png", "**/phase1-flow-preview*.png"]),
         "phase1VisualGates": find_all(root, ["**/phase1-visual-excellence-gate.md", "**/phase1-visual-excellence-gate.json"]),
         "phase2Manifests": find_all(root, ["**/asset-manifest.json", "**/foundation-asset-manifest*.json"]),
@@ -213,6 +214,7 @@ def build_runbook(root: Path, project: str, target: str) -> dict[str, Any]:
     status = status_from(artifacts)
     display_artifacts: list[dict[str, str]] = []
     groups = [
+        ("pipelineStarts", "Setup", "Pipeline start prompt", "start"),
         ("phase1Briefs", "Phase 1", "UI brief", "spec"),
         ("phase1Previews", "Phase 1", "Preview image", "visual"),
         ("phase1VisualGates", "Phase 1", "Visual excellence gate", "qa"),

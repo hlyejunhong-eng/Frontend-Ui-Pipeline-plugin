@@ -85,6 +85,46 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/diagnose_install.py
 
 It checks the plugin manifest, three skills, personal marketplace entry, installed Codex cache, and prints a ready-to-send start prompt.
 
+### 6. 启动向导 / Start Wizard
+
+**中文**
+
+如果你不知道第一句话该怎么写，可以让脚本根据旧页面截图、本地项目路径、localhost、Figma 链接或页面描述生成启动 prompt：
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/start_pipeline.py \
+  --input /path/to/old-screen.png \
+  --project "my-app" \
+  --target "/dashboard" \
+  --run-root ./frontend-ui-pipeline-run
+```
+
+它会生成：
+
+- `pipeline-start.md`
+- `pipeline-start.json`
+
+打开新 Codex 线程后，把 `pipeline-start.md` 里的 `Ready-To-Send Codex Prompt` 粘贴到底部消息输入框即可。
+
+**English**
+
+If you do not know what first message to send, let the script generate a start prompt from an old screenshot, local project path, localhost URL, Figma link, or page description:
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/start_pipeline.py \
+  --input /path/to/old-screen.png \
+  --project "my-app" \
+  --target "/dashboard" \
+  --run-root ./frontend-ui-pipeline-run
+```
+
+It writes:
+
+- `pipeline-start.md`
+- `pipeline-start.json`
+
+Open a new Codex thread, then paste the `Ready-To-Send Codex Prompt` from `pipeline-start.md` into the bottom message box.
+
 ## 首次运行检查清单 / First Run Checklist
 
 **中文**
@@ -92,16 +132,18 @@ It checks the plugin manifest, three skills, personal marketplace entry, install
 1. 确认已经运行：`codex plugin add frontend-ui-pipeline@personal`。
 2. 打开 Codex 应用或 Codex CLI。
 3. 新建一个线程；如果三个 skills 没出现，再新开一个线程。
-4. 在底部消息输入框粘贴旧页面截图、本地项目路径、localhost 地址、Figma 链接或页面描述。
-5. 发送包含 `$frontend-ui-ideation` 的启动 prompt。
+4. 可选：运行 `start_pipeline.py` 生成 `pipeline-start.md`。
+5. 在底部消息输入框粘贴旧页面截图、本地项目路径、localhost 地址、Figma 链接或页面描述。
+6. 发送包含 `$frontend-ui-ideation` 的启动 prompt。
 
 **English**
 
 1. Confirm that you ran: `codex plugin add frontend-ui-pipeline@personal`.
 2. Open the Codex app or Codex CLI.
 3. Create a new thread; if the three skills do not appear, create another new thread.
-4. Paste an old screenshot, local project path, localhost URL, Figma link, or page description into the bottom message box.
-5. Send a start prompt that includes `$frontend-ui-ideation`.
+4. Optional: run `start_pipeline.py` to generate `pipeline-start.md`.
+5. Paste an old screenshot, local project path, localhost URL, Figma link, or page description into the bottom message box.
+6. Send a start prompt that includes `$frontend-ui-ideation`.
 
 ## 更新插件 / Update
 
@@ -664,7 +706,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、流水线运行索引生成器、流水线完成度审计生成器、阶段一视觉卓越门、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、阶段三 design QA 门、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、启动向导、流水线运行索引生成器、流水线完成度审计生成器、阶段一视觉卓越门、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、阶段三 design QA 门、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 如果你是普通使用者，不需要跑完整 CI，可以优先运行安装诊断：
 
@@ -674,7 +716,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/diagnose_install.py
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, pipeline runbook generator, pipeline completion audit generator, Phase 1 visual excellence gate, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, Phase 3 design QA gate, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, start wizard, pipeline runbook generator, pipeline completion audit generator, Phase 1 visual excellence gate, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, Phase 3 design QA gate, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 If you are a regular user and do not need the full CI check, run the install doctor first:
 
