@@ -59,6 +59,7 @@ If the user provides no runnable app, screenshot, URL, Figma frame, or code targ
    - Save the three direction previews with stable names such as `phase1-option-1.png`, `phase1-option-2.png`, and `phase1-option-3.png` before writing the final selected preview.
    - Prefer real generated bitmap imagery for backgrounds, illustrations, textures, hero moments, rich lighting, and custom visual motifs. Use SVG/CSS only for crisp icons, masks, UI primitives, or fallback assets when image generation is unavailable.
    - If image generation is unavailable, create a static HTML/CSS preview or local prototype and capture screenshots from it. Do not skip the preview requirement.
+   - When the preview contains CJK, RTL, emoji, or other non-Latin copy, inspect the rendered image for missing glyphs, tofu boxes, fallback emoji, or clipped text. Choose a font with the required glyph coverage and regenerate before scoring the visual direction.
    - Run `../../scripts/check_visual_artifacts.py <preview-paths>` when the bundled script is available so missing, empty, or wrong-size preview files are caught before Phase 2.
    - Run `../../scripts/generate_visual_excellence_gate.py` when the bundled script is available to record the three visual options, the selected option, taste scores, and whether Phase 2 is allowed.
 
@@ -142,6 +143,7 @@ Do not finish with prose only. Final output must provide:
 - Three independent visual direction previews, one selected visual target, and a passing `phase1-visual-excellence-gate.md`.
 - A passing `validate_phase1_brief.py` result when the bundled script is available.
 - A passing `check_visual_artifacts.py` result for preview images when the bundled script is available.
+- Visual inspection confirming no missing glyphs, tofu boxes, fallback emoji, clipped CJK/RTL copy, or unreadable text remains in the preview images.
 - A generated `pipeline-runbook.md` when the bundled script is available.
 - A phase readiness checklist showing whether Phase 2 can start immediately.
 - A short handoff note naming the next recommended skill: `$frontend-asset-production`.

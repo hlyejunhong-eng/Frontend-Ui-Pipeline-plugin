@@ -605,6 +605,8 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/validate_phase1_brief.py ./phase1
 
 阶段一不能只给一个“还行”的方向。先生成三个独立视觉方向，选中一个，再给选中方向按构图、层级、字体、间距、资产丰富度、交互清晰度、产品真实度和实现可行性打分。每项默认至少 8/10，才能进入阶段二。
 
+如果预览图包含中文、日文、韩文、RTL 文本、emoji 或其他非拉丁字符，阶段一必须人工检查渲染结果，确认没有缺字、方块字、错误 fallback emoji、文字裁切或不可读文本。发现字体问题时先换成覆盖对应字符集的字体并重新截图，再运行视觉卓越门。
+
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_visual_excellence_gate.py \
   --root ./phase1 \
@@ -627,6 +629,8 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_visual_excellence_gate.p
 **English**
 
 Phase 1 should not settle for one "okay" direction. Generate three independent visual directions, select one, then score it for composition, hierarchy, typography, spacing, asset richness, interaction clarity, product fidelity, and implementation feasibility. Each criterion defaults to at least 8/10 before Phase 2 can start.
+
+If the preview contains Chinese, Japanese, Korean, RTL text, emoji, or other non-Latin characters, Phase 1 must visually inspect the rendered image for missing glyphs, tofu boxes, wrong fallback emoji, clipped text, or unreadable copy. Fix font coverage and recapture the preview before running the visual excellence gate.
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_visual_excellence_gate.py \
