@@ -318,6 +318,8 @@ Output requirements:
 - `production`: Default mode. Phase 2 must wait for explicit user approval before Phase 3 hot-replaces the real app.
 - `demo`: Useful for social posts, sales demos, or direction validation. It may create a standalone runnable preview first, but it must be labeled non-final; do not modify the real app before user approval.
 
+Demo artifacts such as `phase3-demo*/index.html`, `README.md`, and `phase3-demo-evidence.md` are indexed by the pipeline runbook so non-expert users can find and open the preview without digging through folders.
+
 ## 质量门禁 / Quality Gates
 
 **中文**
@@ -606,6 +608,8 @@ A complete run should leave at least:
 
 每跑完一个阶段，建议生成一次运行索引。它会扫描当前运行目录，告诉普通用户现在卡在哪一步、下一句应该发给 Codex 什么、阶段二是否还在等审核、哪些文件可以用于交付或自媒体展示。
 
+如果运行目录里有 `phase3-demo*/index.html`、`README.md` 或 `phase3-demo-evidence.md`，索引也会把这些 demo 入口列出来。
+
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_pipeline_runbook.py \
   --run-root ./frontend-ui-pipeline-run \
@@ -616,6 +620,8 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_pipeline_runbook.py \
 **English**
 
 After each phase, generate a runbook. It scans the current run folder and tells a non-expert user what is done, what to send to Codex next, whether Phase 2 is still waiting for approval, and which files are useful for handoff or social proof.
+
+If the run folder contains `phase3-demo*/index.html`, `README.md`, or `phase3-demo-evidence.md`, the runbook also lists those standalone demo entrypoints.
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_pipeline_runbook.py \
@@ -922,6 +928,8 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_screenshot_qa_plan.py \
 
 真实改项目之前，用这个脚本把“要复制哪些资产、要改哪些文件、哪些 API 必须保留、哪些运行/截图检查要做”先写成计划。没有阶段二明确通过或目标路由没有匹配时，它会标记 `blockedBeforeEditing: true`，防止误改正式应用。
 
+复制清单会按 `kind + source + destination` 去重；共享的 foundation CSS 或 icon sprite 只会列一次，同时在 JSON 中保留聚合后的 `components`、`states` 和 `entryCount`。
+
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_implementation_patch_plan.py \
   --manifest ./asset-manifest.json \
@@ -934,6 +942,8 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_implementation_patch_pla
 **English**
 
 Before editing a real project, use this script to plan exactly which assets to copy, which files to edit, which APIs to preserve, and which runtime/screenshot checks to run. If Phase 2 approval is missing or the target route is not matched, it records `blockedBeforeEditing: true` so the production app is not changed accidentally.
+
+Copy operations are deduplicated by `kind + source + destination`; shared foundation CSS or icon sprites are listed once while aggregated `components`, `states`, and `entryCount` remain in the JSON plan.
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_implementation_patch_plan.py \

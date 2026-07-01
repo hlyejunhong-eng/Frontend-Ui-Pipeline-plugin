@@ -1059,6 +1059,12 @@ Phase 2 can start after validation passes.
         approved_plan = json.loads(patch_plan_json.read_text(encoding="utf-8"))
         if approved_plan.get("blockedBeforeEditing") or not approved_plan.get("copyOperations") or not approved_plan.get("fileOperations"):
             fail("implementation patch plan missing copy/file operations after approval")
+        copy_keys = [
+            (item.get("kind"), item.get("source"), item.get("destination"))
+            for item in approved_plan.get("copyOperations", [])
+        ]
+        if len(copy_keys) != len(set(copy_keys)):
+            fail("implementation patch plan copy operations must be deduplicated")
         patch_plan_text = patch_plan_md.read_text(encoding="utf-8")
         for required_patch_plan_text in (
             "Phase 3 Implementation Patch Plan",
@@ -1071,6 +1077,11 @@ Phase 2 can start after validation passes.
                 fail(f"implementation patch plan missing {required_patch_plan_text}")
         runbook_after_patch_md = Path(temp_dir) / "pipeline-runbook-after-patch.md"
         runbook_after_patch_json = Path(temp_dir) / "pipeline-runbook-after-patch.json"
+        demo_dir = Path(temp_dir) / "phase3-demo-command-center"
+        demo_dir.mkdir()
+        (demo_dir / "index.html").write_text("<!doctype html><title>Phase 3 Demo</title>\n", encoding="utf-8")
+        (demo_dir / "README.md").write_text("# Phase 3 Demo\n", encoding="utf-8")
+        (demo_dir / "phase3-demo-evidence.md").write_text("# Phase 3 Demo Evidence\n", encoding="utf-8")
         subprocess.run(
             [
                 sys.executable,
@@ -1094,8 +1105,11 @@ Phase 2 can start after validation passes.
         runbook_after_patch = json.loads(runbook_after_patch_json.read_text(encoding="utf-8"))
         if not runbook_after_patch.get("status", {}).get("phaseReadiness", {}).get("phase3PatchPlanned"):
             fail("pipeline runbook did not detect the implementation patch plan")
-        if "Implementation patch plan" not in runbook_after_patch_md.read_text(encoding="utf-8"):
+        runbook_after_patch_text = runbook_after_patch_md.read_text(encoding="utf-8")
+        if "Implementation patch plan" not in runbook_after_patch_text:
             fail("pipeline runbook did not index the implementation patch plan")
+        if "Standalone implementation demo" not in runbook_after_patch_text:
+            fail("pipeline runbook did not index the standalone Phase 3 demo")
         server_check = subprocess.run(
             [
                 sys.executable,

@@ -162,6 +162,7 @@ def source_for(entry: dict[str, Any], manifest_path: Path) -> Path:
 def build_copy_operations(entries: list[dict[str, Any]], manifest_path: Path, inspection: dict[str, Any]) -> list[dict[str, Any]]:
     paths = asset_path_map(inspection)
     operations = []
+    by_copy_key: dict[tuple[str, str, str], dict[str, Any]] = {}
     for entry in entries:
         if not entry.get("assetPath"):
             continue
@@ -170,8 +171,9 @@ def build_copy_operations(entries: list[dict[str, Any]], manifest_path: Path, in
             continue
         source = source_for(entry, manifest_path)
         destination = destination_for(entry, paths)
-        operations.append(
-            {
+        key = (kind, str(source), destination)
+        if key not in by_copy_key:
+            operation = {
                 "kind": kind,
                 "source": str(source),
                 "sourceExists": source.exists(),
@@ -179,8 +181,20 @@ def build_copy_operations(entries: list[dict[str, Any]], manifest_path: Path, in
                 "component": entry.get("component", ""),
                 "state": entry.get("state", ""),
                 "importRule": entry.get("importRule", ""),
+                "components": [],
+                "states": [],
+                "entryCount": 0,
             }
-        )
+            by_copy_key[key] = operation
+            operations.append(operation)
+        operation = by_copy_key[key]
+        component = str(entry.get("component", "") or "")
+        state = str(entry.get("state", "") or "")
+        if component and component not in operation["components"]:
+            operation["components"].append(component)
+        if state and state not in operation["states"]:
+            operation["states"].append(state)
+        operation["entryCount"] += 1
     return operations
 
 
