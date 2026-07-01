@@ -185,6 +185,7 @@ def main() -> None:
                 "generate_visual_excellence_gate.py",
                 "check_visual_artifacts.py",
                 "generate_pipeline_runbook.py",
+                "generate_pipeline_completion_audit.py",
             ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
@@ -208,6 +209,7 @@ def main() -> None:
                 "clipped titles",
                 "overflowing labels",
                 "generate_pipeline_runbook.py",
+                "generate_pipeline_completion_audit.py",
             ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
@@ -224,6 +226,7 @@ def main() -> None:
                 "generate_implementation_patch_plan.py",
                 "generate_design_qa_gate.py",
                 "generate_pipeline_runbook.py",
+                "generate_pipeline_completion_audit.py",
                 "Target Inspector",
                 "Screenshot QA Plan",
                 "Implementation Patch Plan",
@@ -286,6 +289,9 @@ def main() -> None:
         "流水线运行索引生成器",
         "Pipeline Runbook Generator",
         "generate_pipeline_runbook.py",
+        "流水线完成度审计",
+        "Pipeline Completion Audit Generator",
+        "generate_pipeline_completion_audit.py",
         "阶段一视觉卓越门",
         "Phase 1 Visual Excellence Gate",
         "generate_visual_excellence_gate.py",
@@ -349,6 +355,8 @@ def main() -> None:
     check_file(install_doctor)
     runbook_generator = ROOT / "scripts" / "generate_pipeline_runbook.py"
     check_file(runbook_generator)
+    completion_audit_generator = ROOT / "scripts" / "generate_pipeline_completion_audit.py"
+    check_file(completion_audit_generator)
     visual_excellence_gate = ROOT / "scripts" / "generate_visual_excellence_gate.py"
     check_file(visual_excellence_gate)
     phase1_validator = ROOT / "scripts" / "validate_phase1_brief.py"
@@ -584,6 +592,7 @@ Phase 2 can start after validation passes.
         for required_doctor_text in (
             "Frontend UI Pipeline Install Doctor",
             "Plugin manifest",
+            "Script generate_pipeline_completion_audit.py",
             "Marketplace entry",
             "Installed cache",
             "Next Start Prompt",
@@ -1082,6 +1091,52 @@ Phase 2 can start after validation passes.
         (demo_dir / "index.html").write_text("<!doctype html><title>Phase 3 Demo</title>\n", encoding="utf-8")
         (demo_dir / "README.md").write_text("# Phase 3 Demo\n", encoding="utf-8")
         (demo_dir / "phase3-demo-evidence.md").write_text("# Phase 3 Demo Evidence\n", encoding="utf-8")
+        social_dir = Path(temp_dir) / "social"
+        social_dir.mkdir()
+        (social_dir / "case-post.md").write_text("# Case Post\n", encoding="utf-8")
+        audit_md = Path(temp_dir) / "pipeline-completion-audit.md"
+        audit_json = Path(temp_dir) / "pipeline-completion-audit.json"
+        audit_check = subprocess.run(
+            [
+                sys.executable,
+                str(completion_audit_generator),
+                "--run-root",
+                str(temp_dir),
+                "--repo-root",
+                str(ROOT),
+                "--project",
+                "quick-check",
+                "--target",
+                "/dashboard",
+                "--output-md",
+                str(audit_md),
+                "--output-json",
+                str(audit_json),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if "Overall status:" not in audit_check.stdout or not audit_md.exists() or not audit_json.exists():
+            fail("completion audit generator did not write expected outputs")
+        audit = json.loads(audit_json.read_text(encoding="utf-8"))
+        if audit.get("schemaVersion") != "frontend-ui-pipeline.completion-audit.v1":
+            fail("completion audit JSON schema version is wrong")
+        if audit.get("phase2Manifest", {}).get("commonIconCount") != len(COMMON_ICONS):
+            fail("completion audit did not verify common icon coverage")
+        if audit.get("phase3PatchPlan", {}).get("duplicateCopyOperations") != 0:
+            fail("completion audit did not verify deduplicated patch plan copy operations")
+        audit_text = audit_md.read_text(encoding="utf-8")
+        for required_audit_text in (
+            "Pipeline Completion Audit",
+            "phase2-foundation-kit",
+            "phase3-demo-mode",
+            "Phase 2 Manifest",
+            "Phase 3 Patch Plan",
+        ):
+            if required_audit_text not in audit_text:
+                fail(f"completion audit missing {required_audit_text}")
         subprocess.run(
             [
                 sys.executable,
@@ -1110,6 +1165,8 @@ Phase 2 can start after validation passes.
             fail("pipeline runbook did not index the implementation patch plan")
         if "Standalone implementation demo" not in runbook_after_patch_text:
             fail("pipeline runbook did not index the standalone Phase 3 demo")
+        if "Pipeline completion audit" not in runbook_after_patch_text:
+            fail("pipeline runbook did not index the completion audit")
         server_check = subprocess.run(
             [
                 sys.executable,

@@ -62,6 +62,7 @@ def repo_status(repo: Path) -> tuple[list[str], str]:
         "install_local_marketplace.py",
         "quick_check.py",
         "generate_pipeline_runbook.py",
+        "generate_pipeline_completion_audit.py",
     ):
         script_path = repo / "scripts" / script
         lines.append(status_line(f"Script {script}", "ok" if script_path.exists() else "missing"))

@@ -98,6 +98,7 @@ If no existing frontend repo is provided, create a runnable standalone implement
    - Add or update a short implementation note that lists how to run the screen, where assets live, where mocks live, and how to swap mocks for real APIs.
    - Keep this note close to the changed frontend code or in the phase handoff folder.
    - Run `../../scripts/generate_pipeline_runbook.py --run-root <run-root>` when the bundled script is available so final evidence, screenshots, QA reports, and remaining blockers are indexed for the user.
+   - Run `../../scripts/generate_pipeline_completion_audit.py --run-root <run-root>` when the bundled script is available so final status is checked against the original pipeline requirements before claiming completion.
 
 ## Implementation Standards
 
@@ -180,6 +181,7 @@ Report:
 - Screenshot QA plan path and whether screenshots were captured by generated Playwright script, browser tool, or external runtime.
 - Implementation patch plan path and whether it was blocked before editing.
 - Pipeline runbook path when the bundled generator is available.
+- Pipeline completion audit path and its overall status when the bundled generator is available.
 - Verification commands run and their result.
 - Screenshot paths or a clear reason screenshots could not be captured.
 - Visual artifact check results for screenshots when the bundled checker is available.

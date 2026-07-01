@@ -80,6 +80,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Use `../../scripts/generate_asset_review_packet.py` to create a non-designer approval packet with coverage, contact sheet, decision options, and exact user reply text for approval or revision.
    - Include an asset-assembled primary screen preview in the review package. This preview must be rendered from the generated Phase 2 assets and component treatments, not copied from the Phase 1 preview screenshot.
    - Run `../../scripts/generate_pipeline_runbook.py --run-root <run-root>` when the bundled script is available so the user can see that the next required action is asset approval.
+   - Run `../../scripts/generate_pipeline_completion_audit.py --run-root <run-root>` when the bundled script is available so the approval blocker and foundation-kit coverage are explicit evidence.
 
 5. Mandatory user approval:
    - Stop and ask the user to review the asset package.
@@ -91,6 +92,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Write `phase2-asset-handoff.md` beside the asset folder or in the user-provided output directory.
    - Supplement the phase 1 brief rather than replacing it.
    - Regenerate `pipeline-runbook.md` after the final handoff so the next prompt points to `$frontend-implementation`.
+   - Regenerate `pipeline-completion-audit.md` after the final handoff so Phase 3 can see which objective requirements are already proven and which still need screenshots or Design QA.
 
 ## Required Handoff Content
 

@@ -630,6 +630,32 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_pipeline_runbook.py \
   --target "/dashboard"
 ```
 
+## 流水线完成度审计 / Pipeline Completion Audit Generator
+
+**中文**
+
+完成度审计会按目标逐条检查证据：插件是否易安装、阶段一是否有 Phase 2 生成指南、阶段二是否覆盖完整基础组件和 20 个 icons、阶段三是否只有 demo 还是已经有真实截图和 Design QA、自媒体材料是否存在。它会诚实输出 `complete`、`blocked-on-asset-approval`、`in-progress` 或 `incomplete`。
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_pipeline_completion_audit.py \
+  --run-root ./frontend-ui-pipeline-run \
+  --repo-root ~/plugins/frontend-ui-pipeline \
+  --project "my-app" \
+  --target "/dashboard"
+```
+
+**English**
+
+The completion audit checks evidence requirement by requirement: installability, Phase 1 Phase 2 guide, Phase 2 foundation coverage and 20 icons, Phase 3 demo versus production screenshots and Design QA, and social proof material. It honestly reports `complete`, `blocked-on-asset-approval`, `in-progress`, or `incomplete`.
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_pipeline_completion_audit.py \
+  --run-root ./frontend-ui-pipeline-run \
+  --repo-root ~/plugins/frontend-ui-pipeline \
+  --project "my-app" \
+  --target "/dashboard"
+```
+
 ## 本地校验 / Local Check
 
 ```bash
@@ -638,7 +664,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、流水线运行索引生成器、阶段一视觉卓越门、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、阶段三 design QA 门、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、流水线运行索引生成器、流水线完成度审计生成器、阶段一视觉卓越门、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、阶段三 design QA 门、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 如果你是普通使用者，不需要跑完整 CI，可以优先运行安装诊断：
 
@@ -648,7 +674,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/diagnose_install.py
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, pipeline runbook generator, Phase 1 visual excellence gate, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, Phase 3 design QA gate, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, pipeline runbook generator, pipeline completion audit generator, Phase 1 visual excellence gate, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, Phase 3 design QA gate, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 If you are a regular user and do not need the full CI check, run the install doctor first:
 
