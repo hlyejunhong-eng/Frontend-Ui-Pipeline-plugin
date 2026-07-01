@@ -261,6 +261,8 @@ def main() -> None:
         "通用全流程 Prompt",
         "Full Pipeline Prompt",
         "First Run Checklist",
+        "Install Doctor",
+        "安装诊断",
         "Demo 模式",
         "Demo Mode",
         "uni-app",
@@ -280,6 +282,7 @@ def main() -> None:
         "$frontend-implementation",
         "本地校验",
         "Local Check",
+        "diagnose_install.py",
         "流水线运行索引生成器",
         "Pipeline Runbook Generator",
         "generate_pipeline_runbook.py",
@@ -342,6 +345,8 @@ def main() -> None:
 
     check_file(ROOT / ".github" / "workflows" / "quick-check.yml")
     check_file(ROOT / "scripts" / "install_local_marketplace.py")
+    install_doctor = ROOT / "scripts" / "diagnose_install.py"
+    check_file(install_doctor)
     runbook_generator = ROOT / "scripts" / "generate_pipeline_runbook.py"
     check_file(runbook_generator)
     visual_excellence_gate = ROOT / "scripts" / "generate_visual_excellence_gate.py"
@@ -536,6 +541,56 @@ Phase 2 can start after validation passes.
             fail("foundation manifest validator did not verify common icon coverage")
         review_root = Path(temp_dir) / "review"
         review_root.mkdir()
+        doctor_home = Path(temp_dir) / "doctor-home"
+        doctor_marketplace = doctor_home / ".agents" / "plugins" / "marketplace.json"
+        doctor_cache = doctor_home / ".codex" / "plugins" / "cache" / "personal" / "frontend-ui-pipeline" / manifest.get("version", "")
+        doctor_marketplace.parent.mkdir(parents=True)
+        doctor_cache.mkdir(parents=True)
+        doctor_marketplace.write_text(
+            json.dumps(
+                {
+                    "name": "personal",
+                    "interface": {"displayName": "Personal"},
+                    "plugins": [
+                        {
+                            "name": "frontend-ui-pipeline",
+                            "source": {"source": "local", "path": "./plugins/frontend-ui-pipeline"},
+                            "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+                            "category": "Design",
+                        }
+                    ],
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        doctor_check = subprocess.run(
+            [
+                sys.executable,
+                str(install_doctor),
+                "--repo",
+                str(ROOT),
+                "--home",
+                str(doctor_home),
+                "--marketplace",
+                str(doctor_marketplace),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        for required_doctor_text in (
+            "Frontend UI Pipeline Install Doctor",
+            "Plugin manifest",
+            "Marketplace entry",
+            "Installed cache",
+            "Next Start Prompt",
+            "$frontend-ui-ideation",
+        ):
+            if required_doctor_text not in doctor_check.stdout:
+                fail(f"install doctor missing {required_doctor_text}")
         contact_sheet = review_root / "phase2-contact-sheet.png"
         contact_sheet.write_bytes(
             bytes.fromhex(

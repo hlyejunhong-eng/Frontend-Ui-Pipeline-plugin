@@ -82,6 +82,7 @@ def main() -> None:
     print("  2. Open Codex Desktop or Codex CLI.")
     print("  3. Start a new Codex thread so the newly installed skills are loaded.")
     print("  4. Paste a screenshot, local project path, localhost URL, Figma link, or page description.")
+    print("  5. Optional check: python3 scripts/diagnose_install.py")
     print("")
     print("If the three skills do not appear, close this thread and open another new Codex thread.")
 

@@ -63,6 +63,28 @@ codex plugin add frontend-ui-pipeline@personal
 
 After installation, close the current thread and create a new Codex thread. The newly installed skills are loaded only in a new thread.
 
+### 5. 安装诊断 / Install Doctor
+
+**中文**
+
+如果你不确定插件有没有装好，运行：
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/diagnose_install.py
+```
+
+它会检查插件 manifest、三个 skills、个人 marketplace 条目、Codex 已安装缓存，并打印下一句可以直接发给 Codex 的启动 prompt。
+
+**English**
+
+If you are not sure whether the plugin is installed correctly, run:
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/diagnose_install.py
+```
+
+It checks the plugin manifest, three skills, personal marketplace entry, installed Codex cache, and prints a ready-to-send start prompt.
+
 ## 首次运行检查清单 / First Run Checklist
 
 **中文**
@@ -88,6 +110,7 @@ cd ~/plugins/frontend-ui-pipeline
 git pull
 python3 scripts/install_local_marketplace.py
 codex plugin add frontend-ui-pipeline@personal
+python3 scripts/diagnose_install.py
 ```
 
 **中文**
@@ -611,9 +634,21 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、流水线运行索引生成器、阶段一视觉卓越门、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、阶段三 design QA 门、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
+如果你是普通使用者，不需要跑完整 CI，可以优先运行安装诊断：
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/diagnose_install.py
+```
+
 **English**
 
 This checks the plugin manifest, three skills, agent YAML files, install script, README, pipeline runbook generator, Phase 1 visual excellence gate, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, Phase 3 design QA gate, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+
+If you are a regular user and do not need the full CI check, run the install doctor first:
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/diagnose_install.py
+```
 
 ## 阶段一 Brief 验收器 / Phase 1 Brief Validator
 
