@@ -275,12 +275,12 @@ Implementation target:
 - If real APIs exist, connect them. Otherwise, use same-shape mock data.
 
 Output requirements:
-- Phase 1: 高端 UI brief、桌面/移动预览图、像素级布局/文字/按钮/动效要求。
-- Phase 2: 完整基础组件资产包、命名资产、asset manifest、asset handoff，并在最终输出前让我审核资产是否通过。
-- Phase 3: 可运行前端、资产接入、接口或 mock、桌面/移动截图和验证命令。
-- Phase 1: Premium UI brief, desktop/mobile previews, pixel-level layout/copy/button/motion requirements.
-- Phase 2: Complete foundation asset kit, named assets, asset manifest, asset handoff, and an explicit asset review checkpoint before final output.
-- Phase 3: Runnable frontend, asset integration, real APIs or mocks, desktop/mobile screenshots, and verification commands.
+- Phase 1: 三个独立视觉方向、选中的视觉目标、高端 UI brief、桌面/移动预览图、像素级布局/文字/按钮/动效要求。
+- Phase 2: 先做主屏封面级资产，再扩展完整基础组件资产包、命名资产、asset manifest、asset handoff，并在最终输出前让我审核资产是否通过。
+- Phase 3: 可运行前端、资产接入、接口或 mock、桌面/移动截图、design QA 和验证命令。
+- Phase 1: Three independent visual directions, a selected visual target, premium UI brief, desktop/mobile previews, pixel-level layout/copy/button/motion requirements.
+- Phase 2: Primary selected-screen assets first, then the complete foundation asset kit, named assets, asset manifest, asset handoff, and an explicit asset review checkpoint before final output.
+- Phase 3: Runnable frontend, asset integration, real APIs or mocks, desktop/mobile screenshots, design QA, and verification commands.
 ```
 
 ## Demo 模式和生产模式 / Demo Mode And Production Mode
@@ -344,6 +344,9 @@ Use $frontend-implementation with the approved phase 2 assets. Hot-replace the r
 必须输出：
 
 - `phase1-ui-brief.md`
+- 三个独立视觉方向预览图
+- 选中的视觉目标
+- `phase1-visual-excellence-gate.md`
 - 桌面或移动预览图
 - 组件、背景、文字、按钮、状态、点击反馈和动效要求
 - 给阶段二使用的生成指南
@@ -360,6 +363,9 @@ Use $frontend-implementation with the approved phase 2 assets. Hot-replace the r
 Required outputs:
 
 - `phase1-ui-brief.md`
+- Three independent visual direction previews
+- Selected visual target
+- `phase1-visual-excellence-gate.md`
 - Desktop or mobile preview image
 - Requirements for components, background, copy, buttons, states, click feedback, and motion
 - Generation guide for Phase 2
@@ -377,6 +383,7 @@ Success criteria:
 
 必须输出：
 
+- 主屏封面级资产集
 - 背景、插图、遮罩、图标、sprites 或 motion frames
 - 完整基础组件资产包
 - `asset-manifest.json`
@@ -426,6 +433,7 @@ Success criteria:
 
 Required outputs:
 
+- Primary selected-screen asset set
 - Backgrounds, illustrations, masks, icons, sprites, or motion frames
 - Complete foundation component asset kit
 - `asset-manifest.json`
@@ -482,6 +490,7 @@ Phase 2 must stop for user asset review. The final handoff should be written onl
 - 真实 API 接入，或同结构 mock 数据
 - hover、focus、pressed、loading、reduced-motion 等状态
 - 桌面和移动截图，或说明为什么无法截图
+- `design-qa.md`，且最终交付前必须是 `final result: passed`
 - 验证命令、结果和本地运行方式
 
 **English**
@@ -493,6 +502,7 @@ Required outputs:
 - Real API integration, or same-shape mock data
 - Hover, focus, pressed, loading, and reduced-motion states
 - Desktop and mobile screenshots, or a clear explanation for why screenshots could not be captured
+- `design-qa.md`, with `final result: passed` before final handoff
 - Verification commands, results, and local run instructions
 
 ## 完整运行的最低证据 / Minimum Evidence For A Complete Run
@@ -502,7 +512,8 @@ Required outputs:
 一次完整运行至少应该留下：
 
 - `phase1-ui-brief.md`
-- Phase 1 预览图或截图
+- 三个 Phase 1 视觉方向和选中的预览图
+- `phase1-visual-excellence-gate.md`
 - 已审核通过的资产目录
 - 资产审核包
 - `phase2-asset-handoff.md`
@@ -511,6 +522,7 @@ Required outputs:
 - 阶段三实现补丁计划
 - 前端代码改动
 - 验证命令输出
+- `design-qa.md`
 - 桌面和移动截图
 
 **English**
@@ -518,7 +530,8 @@ Required outputs:
 A complete run should leave at least:
 
 - `phase1-ui-brief.md`
-- Phase 1 preview image or screenshot
+- Three Phase 1 visual directions and the selected preview
+- `phase1-visual-excellence-gate.md`
 - Approved asset directory
 - Asset review package
 - `phase2-asset-handoff.md`
@@ -527,6 +540,7 @@ A complete run should leave at least:
 - Phase 3 implementation patch plan
 - Frontend code changes
 - Verification command output
+- `design-qa.md`
 - Desktop and mobile screenshots
 
 ## 流水线运行索引生成器 / Pipeline Runbook Generator
@@ -561,11 +575,11 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、流水线运行索引生成器、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、流水线运行索引生成器、阶段一视觉卓越门、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、阶段三 design QA 门、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, pipeline runbook generator, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, pipeline runbook generator, Phase 1 visual excellence gate, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, Phase 3 design QA gate, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 ## 阶段一 Brief 验收器 / Phase 1 Brief Validator
 
@@ -583,6 +597,54 @@ Before Phase 1 ends, validate that `phase1-ui-brief.md` can actually drive Phase
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/validate_phase1_brief.py ./phase1-ui-brief.md
+```
+
+## 阶段一视觉卓越门 / Phase 1 Visual Excellence Gate
+
+**中文**
+
+阶段一不能只给一个“还行”的方向。先生成三个独立视觉方向，选中一个，再给选中方向按构图、层级、字体、间距、资产丰富度、交互清晰度、产品真实度和实现可行性打分。每项默认至少 8/10，才能进入阶段二。
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_visual_excellence_gate.py \
+  --root ./phase1 \
+  --phase1-brief ./phase1/phase1-ui-brief.md \
+  --option "option-a|Executive Command|phase1-option-a.png|Dark command-center direction" \
+  --option "option-b|Signal Desk|phase1-option-b.png|Lighter operational dashboard direction" \
+  --option "option-c|Private Console|phase1-option-c.png|Minimal secure assistant direction" \
+  --selected-option option-a \
+  --score composition=9 \
+  --score hierarchy=9 \
+  --score typography=8 \
+  --score spacing=8 \
+  --score asset_richness=9 \
+  --score interaction_clarity=8 \
+  --score product_fidelity=9 \
+  --score implementation_feasibility=8 \
+  --output-dir ./phase1
+```
+
+**English**
+
+Phase 1 should not settle for one "okay" direction. Generate three independent visual directions, select one, then score it for composition, hierarchy, typography, spacing, asset richness, interaction clarity, product fidelity, and implementation feasibility. Each criterion defaults to at least 8/10 before Phase 2 can start.
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_visual_excellence_gate.py \
+  --root ./phase1 \
+  --phase1-brief ./phase1/phase1-ui-brief.md \
+  --option "option-a|Executive Command|phase1-option-a.png|Dark command-center direction" \
+  --option "option-b|Signal Desk|phase1-option-b.png|Lighter operational dashboard direction" \
+  --option "option-c|Private Console|phase1-option-c.png|Minimal secure assistant direction" \
+  --selected-option option-a \
+  --score composition=9 \
+  --score hierarchy=9 \
+  --score typography=8 \
+  --score spacing=8 \
+  --score asset_richness=9 \
+  --score interaction_clarity=8 \
+  --score product_fidelity=9 \
+  --score implementation_feasibility=8 \
+  --output-dir ./phase1
 ```
 
 ## 阶段二 Manifest 生成器 / Phase 2 Manifest Generator
@@ -862,6 +924,36 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/compare_visual_artifacts.py \
 ```
 
 Use `--allow-size-mismatch` if the two PNGs have different dimensions and you only want to compare the overlapping area. The report is QA evidence for refinement and handoff; it does not replace explicit Phase 2 asset approval.
+
+## 阶段三 Design QA 门 / Phase 3 Design QA Gate
+
+**中文**
+
+阶段三截图和视觉差异报告出来后，用这个脚本生成 blocking `design-qa.md`。只有 `final result: passed` 才能最终交付；如果缺截图、缺 diff 或外部运行环境没法捕获，它会写成 `final result: blocked` 并列出阻塞原因。
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_design_qa_gate.py \
+  --source-preview ./phase1-preview-mobile.png \
+  --implementation-screenshot ./implementation-screenshot-mobile.png \
+  --visual-diff-json ./visual-diff-report.json \
+  --require-diff \
+  --output-md ./design-qa.md \
+  --output-json ./design-qa.json
+```
+
+**English**
+
+After Phase 3 screenshots and visual diff reports exist, use this script to generate the blocking `design-qa.md`. Final handoff is allowed only when it says `final result: passed`; if screenshots, diff evidence, or external runtime capture is missing, it writes `final result: blocked` with concrete blockers.
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_design_qa_gate.py \
+  --source-preview ./phase1-preview-mobile.png \
+  --implementation-screenshot ./implementation-screenshot-mobile.png \
+  --visual-diff-json ./visual-diff-report.json \
+  --require-diff \
+  --output-md ./design-qa.md \
+  --output-json ./design-qa.json
+```
 
 ## 阶段二本地审核服务器 / Phase 2 Local Review Server
 

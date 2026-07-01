@@ -36,6 +36,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
 
 1. Read and normalize the design contract:
    - Extract every required screen, layer, component, state, and motion requirement from the phase 1 brief.
+   - Confirm that Phase 1 has a selected visual target and a passing visual excellence gate. If missing, return to `$frontend-ui-ideation` before generating assets.
    - Identify which visuals should be real image assets and which should remain CSS, native UI, or code-driven animation.
    - Create an asset plan before generating files.
    - Confirm that the Phase 1 brief includes a Phase 2 generation guide. If missing, add a short supplement before producing assets.
@@ -44,7 +45,9 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
 
 2. Produce assets:
    - Choose and document the asset strategy before generation: AI raster illustration, vector/Figma-style production, or CSS/SVG procedural assets.
+   - Produce the primary screen hero asset set first: selected-preview background, primary illustration or motif, texture/depth layer, key icon treatment, component surface treatment, and the first motion/feedback cue. Do not spread effort across the whole foundation kit until the selected screen can look excellent.
    - Generate or build pixel-matched backgrounds, illustrations, masks, textures, icons, sprites, component overlays, and motion frames as needed.
+   - Prefer real raster/ImageGen or editable bitmap assets for backgrounds, illustrations, textures, rich lighting, and custom motifs. Use CSS/SVG procedural assets only for crisp UI primitives, masks, scalable icons, keyframes, or fallback when image generation is unavailable.
    - Use transparent PNG/WebP for layered raster assets, SVG for crisp vector icons or masks, and JSON/CSS/keyframe descriptions for procedural motion when appropriate.
    - Export density variants when the frontend target needs them, such as `@1x`, `@2x`, and `@3x`.
    - Keep source and final assets separate when a tool produces editable source material.
@@ -116,6 +119,16 @@ Phase 2 must generate the full style-matched kit below unless the user explicitl
 - Transition animation: page enter/exit, modal enter/exit, button press, hover, loading shimmer, and reduced-motion fallback.
 
 Represent this kit as real frontend-consumable assets: SVG icon sprites or files, CSS component tokens, motion keyframes, component preview HTML, raster/vector illustration layers, and `asset-manifest.json` entries.
+
+## Primary Screen First Rule
+
+Before expanding the complete foundation kit, make the selected Phase 1 screen visually convincing:
+
+- Lock the selected Phase 1 preview as the visual source of truth.
+- Generate or assemble the main background, illustration/motif, surface material, key icon style, and one representative motion/feedback cue.
+- Produce a contact sheet section that compares the primary screen asset set against the selected preview.
+- Only after the primary screen set is visually strong, expand the full foundation kit for buttons, badges, cards, combobox, common icons, navigation, notice bar, search bar, section title, modal, and transitions.
+- If the primary screen does not pass the review, revise it before spending time on the unused foundation states.
 
 ## Foundation Manifest Generator
 
@@ -241,6 +254,7 @@ Final output must include:
 - Approved real asset files.
 - `phase2-asset-handoff.md`, preferably generated with `generate_phase2_handoff.py` after explicit approval.
 - `phase2-asset-prompt-pack.md` or an equivalent asset-generation prompt record when generated assets used raster, Figma/vector, or CSS/SVG prompt production.
+- Evidence that the primary selected screen asset set was produced before the full foundation expansion.
 - An asset review package the user can inspect visually.
 - `phase2-asset-approval-packet.md` and/or `phase2-asset-approval-packet.html` when the bundled review packet generator is available.
 - Passing visual artifact checks for review images or HTML when the bundled checker is available.

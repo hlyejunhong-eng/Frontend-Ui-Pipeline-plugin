@@ -88,6 +88,8 @@ If no existing frontend repo is provided, create a runnable standalone implement
    - Run `../../scripts/check_visual_artifacts.py <screenshot-paths>` when the bundled script is available so missing or zero-size screenshots are caught before claiming visual QA.
    - Compare screenshots against the approved preview and phase 2 assembly map.
    - Run `../../scripts/compare_visual_artifacts.py <approved-preview.png> <implementation-screenshot.png>` when comparable PNG screenshots are available, and keep the JSON or Markdown report with the implementation handoff.
+   - Run `../../scripts/generate_design_qa_gate.py` when the bundled script is available to write `design-qa.md` and a JSON report from the approved preview, implementation screenshot, and visual diff JSON.
+   - Treat `design-qa.md` as a blocking gate. Do not hand off Phase 3 unless it says `final result: passed`; if capture or comparison is impossible, the report must say `final result: blocked` with concrete blockers.
    - Fix visible mismatches, broken assets, layout shifts, text overflow, inaccessible focus states, and animation defects before handing back.
 
 7. Package the handoff:
@@ -149,6 +151,22 @@ python3 ../../scripts/generate_implementation_patch_plan.py \
 
 The generator writes a Markdown plan and JSON plan with asset copy operations, source-exists checks, destination import paths, target file operations, API preservation rules, runtime notes, implementation order, and verification steps. Treat `blockedBeforeEditing: true` as a hard stop for production edits.
 
+## Design QA Gate
+
+Use the bundled design QA gate after screenshots and visual diff are available:
+
+```bash
+python3 ../../scripts/generate_design_qa_gate.py \
+  --source-preview "<approved-preview.png>" \
+  --implementation-screenshot "<implementation-screenshot.png>" \
+  --visual-diff-json "<visual-diff-report.json>" \
+  --require-diff \
+  --output-md "<handoff-folder>/design-qa.md" \
+  --output-json "<handoff-folder>/design-qa.json"
+```
+
+Do not hand off Phase 3 unless `design-qa.md` says `final result: passed`. If the app needs HBuilderX or another external runtime and screenshots cannot be captured in this environment, write `final result: blocked` and list the exact runtime/capture steps needed.
+
 ## Final Output
 
 Report:
@@ -164,5 +182,6 @@ Report:
 - Screenshot paths or a clear reason screenshots could not be captured.
 - Visual artifact check results for screenshots when the bundled checker is available.
 - Visual diff report path and summary when comparable approved preview and implementation PNGs are available.
+- `design-qa.md` path and its `final result`.
 - Local URL for the running app when a dev server is required.
 - Any remaining visual, API, or product risks.

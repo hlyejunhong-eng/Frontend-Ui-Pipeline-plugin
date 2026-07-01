@@ -171,7 +171,16 @@ def main() -> None:
         if skill == "frontend-implementation" and "runnable" not in skill_md:
             fail("frontend-implementation must require runnable frontend output")
         if skill == "frontend-ui-ideation":
-            for required in ("Phase 2 generation guide", "Required Phase 2 Component Inventory", "First Run Checklist", "check_visual_artifacts.py", "generate_pipeline_runbook.py"):
+            for required in (
+                "Phase 2 generation guide",
+                "Required Phase 2 Component Inventory",
+                "First Run Checklist",
+                "Visual Taste Rubric",
+                "three visual",
+                "generate_visual_excellence_gate.py",
+                "check_visual_artifacts.py",
+                "generate_pipeline_runbook.py",
+            ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
         if skill == "frontend-asset-production":
@@ -185,6 +194,9 @@ def main() -> None:
                 "Phase 2 Handoff Generator",
                 "Visual Artifact Checker",
                 "Visual Diff Helper",
+                "Primary Screen First Rule",
+                "selected visual target",
+                "real raster/ImageGen",
                 "generate_pipeline_runbook.py",
             ):
                 if required not in skill_md:
@@ -200,10 +212,12 @@ def main() -> None:
                 "inspect_frontend_target.py",
                 "generate_screenshot_qa_plan.py",
                 "generate_implementation_patch_plan.py",
+                "generate_design_qa_gate.py",
                 "generate_pipeline_runbook.py",
                 "Target Inspector",
                 "Screenshot QA Plan",
                 "Implementation Patch Plan",
+                "Design QA Gate",
             ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
@@ -252,6 +266,9 @@ def main() -> None:
         "流水线运行索引生成器",
         "Pipeline Runbook Generator",
         "generate_pipeline_runbook.py",
+        "阶段一视觉卓越门",
+        "Phase 1 Visual Excellence Gate",
+        "generate_visual_excellence_gate.py",
         "阶段二本地审核服务器",
         "Phase 2 Local Review Server",
         "serve_review.py",
@@ -279,6 +296,9 @@ def main() -> None:
         "阶段三实现补丁计划生成器",
         "Phase 3 Implementation Patch Plan Generator",
         "generate_implementation_patch_plan.py",
+        "阶段三 Design QA 门",
+        "Phase 3 Design QA Gate",
+        "generate_design_qa_gate.py",
         "视觉产物检查器",
         "Visual Artifact Checker",
         "check_visual_artifacts.py",
@@ -301,6 +321,8 @@ def main() -> None:
     check_file(ROOT / "scripts" / "install_local_marketplace.py")
     runbook_generator = ROOT / "scripts" / "generate_pipeline_runbook.py"
     check_file(runbook_generator)
+    visual_excellence_gate = ROOT / "scripts" / "generate_visual_excellence_gate.py"
+    check_file(visual_excellence_gate)
     phase1_validator = ROOT / "scripts" / "validate_phase1_brief.py"
     check_file(phase1_validator)
     manifest_generator = ROOT / "scripts" / "generate_foundation_manifest.py"
@@ -317,6 +339,8 @@ def main() -> None:
     check_file(screenshot_plan_generator)
     patch_plan_generator = ROOT / "scripts" / "generate_implementation_patch_plan.py"
     check_file(patch_plan_generator)
+    design_qa_gate = ROOT / "scripts" / "generate_design_qa_gate.py"
+    check_file(design_qa_gate)
     visual_checker = ROOT / "scripts" / "check_visual_artifacts.py"
     check_file(visual_checker)
     visual_diff_helper = ROOT / "scripts" / "compare_visual_artifacts.py"
@@ -498,6 +522,59 @@ Phase 2 can start after validation passes.
         )
         phase1_preview = Path(temp_dir) / "phase1-preview-mobile.png"
         phase1_preview.write_bytes(contact_sheet.read_bytes())
+        visual_options = []
+        for option_id in ("option-a", "option-b", "option-c"):
+            option_path = Path(temp_dir) / f"{option_id}.png"
+            option_path.write_bytes(contact_sheet.read_bytes())
+            visual_options.extend(
+                [
+                    "--option",
+                    f"{option_id}|{option_id.title()}|{option_path}|Quick check visual direction",
+                ]
+            )
+        visual_gate_dir = Path(temp_dir) / "phase1-visual-gate"
+        visual_gate_check = subprocess.run(
+            [
+                sys.executable,
+                str(visual_excellence_gate),
+                "--root",
+                str(temp_dir),
+                "--phase1-brief",
+                str(phase1_brief),
+                *visual_options,
+                "--selected-option",
+                "option-a",
+                "--score",
+                "composition=9",
+                "--score",
+                "hierarchy=9",
+                "--score",
+                "typography=8",
+                "--score",
+                "spacing=8",
+                "--score",
+                "asset_richness=9",
+                "--score",
+                "interaction_clarity=8",
+                "--score",
+                "product_fidelity=9",
+                "--score",
+                "implementation_feasibility=8",
+                "--output-dir",
+                str(visual_gate_dir),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        visual_gate_md = visual_gate_dir / "phase1-visual-excellence-gate.md"
+        visual_gate_json = visual_gate_dir / "phase1-visual-excellence-gate.json"
+        if "Gate passed: yes" not in visual_gate_check.stdout or not visual_gate_md.exists() or not visual_gate_json.exists():
+            fail("visual excellence gate did not pass with three valid options")
+        visual_gate = json.loads(visual_gate_json.read_text(encoding="utf-8"))
+        if visual_gate.get("optionCount") != 3 or visual_gate.get("selectedOption") != "option-a" or not visual_gate.get("phase2Allowed"):
+            fail("visual excellence gate JSON did not prove Phase 2 readiness")
         review_html = review_root / "component-contact-sheet.html"
         review_html.write_text(
             "<!doctype html><title>Review</title><h1>ok</h1>\n",
@@ -546,6 +623,38 @@ Phase 2 can start after validation passes.
             fail("visual diff helper JSON did not prove matching PNGs")
         if "Visual Diff Report" not in diff_md.read_text(encoding="utf-8"):
             fail("visual diff helper did not write Markdown output")
+        design_qa_md = review_root / "design-qa.md"
+        design_qa_json = review_root / "design-qa.json"
+        design_qa_check = subprocess.run(
+            [
+                sys.executable,
+                str(design_qa_gate),
+                "--source-preview",
+                str(contact_sheet),
+                "--implementation-screenshot",
+                str(contact_sheet),
+                "--visual-diff-json",
+                str(diff_json),
+                "--require-diff",
+                "--min-width",
+                "1",
+                "--min-height",
+                "1",
+                "--output-md",
+                str(design_qa_md),
+                "--output-json",
+                str(design_qa_json),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if "final result: passed" not in design_qa_check.stdout:
+            fail("design QA gate did not pass matching screenshots")
+        design_qa = json.loads(design_qa_json.read_text(encoding="utf-8"))
+        if design_qa.get("finalResult") != "passed" or "final result: passed" not in design_qa_md.read_text(encoding="utf-8"):
+            fail("design QA gate did not write a passing report")
         review_packet_check = subprocess.run(
             [
                 sys.executable,
@@ -609,6 +718,11 @@ Phase 2 can start after validation passes.
         runbook = json.loads(runbook_json.read_text(encoding="utf-8"))
         if runbook.get("status", {}).get("key") != "asset-approval-required":
             fail("pipeline runbook should require asset approval before handoff")
+        readiness = runbook.get("status", {}).get("phaseReadiness", {})
+        if not readiness.get("phase1VisualGateReady"):
+            fail("pipeline runbook did not detect the Phase 1 visual excellence gate")
+        if not readiness.get("phase3DesignQaPassed"):
+            fail("pipeline runbook did not detect the passing Phase 3 design QA gate")
         if not runbook.get("artifacts") or not runbook.get("approvalGate", {}).get("approvalText"):
             fail("pipeline runbook missing artifacts or approval text")
         runbook_text = runbook_md.read_text(encoding="utf-8")
@@ -617,6 +731,8 @@ Phase 2 can start after validation passes.
             "Next Prompt",
             "Approval Gate",
             "Artifact Index",
+            "Visual excellence gate",
+            "Design QA gate",
             "Assets approved. Generate phase2-asset-handoff.md",
         ):
             if required_runbook_text not in runbook_text:

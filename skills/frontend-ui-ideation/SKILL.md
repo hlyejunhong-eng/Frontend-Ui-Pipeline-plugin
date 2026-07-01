@@ -45,17 +45,22 @@ If the user provides no runnable app, screenshot, URL, Figma frame, or code targ
 
 2. Collect and shape ideas:
    - Derive product background, user intent, emotional tone, and visual opportunity from the existing app.
-   - If the design direction is open, propose three distinct art directions and ask the user to choose one.
-   - If the user says to decide, pick the strongest direction and record the rationale in the brief.
+   - Generate exactly three distinct visual directions before Phase 2. Each direction must have its own preview image, not three text descriptions in one document.
+   - If the design direction is open, ask the user to choose one of the three visual directions.
+   - If the user says to decide, pick the strongest direction, record the rationale in the brief, and mark it as the selected visual target.
    - Prefer high-craft, custom interface ideas over generic dashboard, card, or landing-page patterns.
+   - Score the selected direction against the visual taste rubric before Phase 2. If it fails, revise the selected direction rather than moving forward.
 
 3. Create preview imagery:
    - Generate or assemble preview images for the selected direction.
    - Preview images must show the actual target screen or flow, not vague mood boards.
    - Use realistic UI composition, text, control density, stateful components, and motion cues.
    - Save preview files with stable names such as `phase1-preview-desktop.png`, `phase1-preview-mobile.png`, or `phase1-flow-preview.png`.
+   - Save the three direction previews with stable names such as `phase1-option-1.png`, `phase1-option-2.png`, and `phase1-option-3.png` before writing the final selected preview.
+   - Prefer real generated bitmap imagery for backgrounds, illustrations, textures, hero moments, rich lighting, and custom visual motifs. Use SVG/CSS only for crisp icons, masks, UI primitives, or fallback assets when image generation is unavailable.
    - If image generation is unavailable, create a static HTML/CSS preview or local prototype and capture screenshots from it. Do not skip the preview requirement.
    - Run `../../scripts/check_visual_artifacts.py <preview-paths>` when the bundled script is available so missing, empty, or wrong-size preview files are caught before Phase 2.
+   - Run `../../scripts/generate_visual_excellence_gate.py` when the bundled script is available to record the three visual options, the selected option, taste scores, and whether Phase 2 is allowed.
 
 4. Write the phase 1 Markdown specification:
    - Create a handoff folder unless the user provided one. Suggested shape: `frontend-ui-pipeline/phase1-<screen-or-flow>/`.
@@ -90,6 +95,7 @@ The Markdown document must include:
 - Button and control spec: hit area, icon usage, hover/press/focus/disabled states, cursor, and keyboard behavior.
 - Motion spec: page transitions, component entrance, click feedback, hover, drag, loading, idle motion, easing, durations, delays, transform origins, and reduced-motion alternatives.
 - Phase 2 generation guide: layer map, adjustable visual parameters, asset naming rules, export rules, responsive crop rules, and component coverage rules.
+- Visual excellence gate: three visual option names, preview paths, selected option, selected visual target, taste scores, and a clear pass/fail result.
 - Asset expectations: predicted asset list for phase 2, including backgrounds, illustrations, icons, motion frames, sprites, masks, textures, and the full foundational component kit.
 - Acceptance checklist: precise criteria that phase 2 and phase 3 must satisfy.
 - First run notes: what was opened, what was inspected, and what the user should do next if this is a new plugin install.
@@ -110,6 +116,21 @@ The Phase 1 brief must require Phase 2 to generate a complete style-matched foun
 - Modal: default, destructive confirmation, form modal, mobile sheet, overlay, close action, and focus state.
 - Transition animation: page enter/exit, modal enter/exit, button press, hover, loading shimmer, and reduced-motion fallback.
 
+## Visual Taste Rubric
+
+Score the selected visual direction from 0 to 10 on every criterion below. Phase 2 cannot start unless every score is at least 8:
+
+- Composition: the whole screen has a memorable shape, rhythm, and focal point instead of a stack of generic cards.
+- Hierarchy: primary action, secondary actions, data, and navigation read in the intended order.
+- Typography: font choice, size, weight, line-height, and density feel like a finished product, not placeholder UI.
+- Spacing: whitespace and grouping create clarity without making the screen sparse or cramped.
+- Asset richness: backgrounds, illustrations, textures, icons, and motifs feel custom to the product rather than generic decoration.
+- Interaction clarity: click feedback, motion cues, loading, empty, and error states are visible in the concept.
+- Product fidelity: real product functions, copy, API constraints, and state density are preserved.
+- Implementation feasibility: Phase 2 can slice or generate the visual system and Phase 3 can implement it without guessing.
+
+If any criterion fails, revise or regenerate the visual direction before continuing.
+
 ## Quality Gate
 
 Do not finish with prose only. Final output must provide:
@@ -118,6 +139,7 @@ Do not finish with prose only. Final output must provide:
 - At least one preview image that represents the redesigned target UI.
 - Evidence of source inspection, such as screenshots, route/component notes, or a clear statement that the source artifact was not available.
 - A Phase 2 generation guide with layer order, adjustable parameters, and the full foundational component inventory.
+- Three independent visual direction previews, one selected visual target, and a passing `phase1-visual-excellence-gate.md`.
 - A passing `validate_phase1_brief.py` result when the bundled script is available.
 - A passing `check_visual_artifacts.py` result for preview images when the bundled script is available.
 - A generated `pipeline-runbook.md` when the bundled script is available.

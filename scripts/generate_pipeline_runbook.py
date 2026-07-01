@@ -48,6 +48,7 @@ def collect_artifacts(root: Path) -> dict[str, list[Path]]:
     return {
         "phase1Briefs": find_all(root, ["**/phase1-ui-brief.md"]),
         "phase1Previews": find_all(root, ["**/phase1-preview*.png", "**/phase1-flow-preview*.png"]),
+        "phase1VisualGates": find_all(root, ["**/phase1-visual-excellence-gate.md", "**/phase1-visual-excellence-gate.json"]),
         "phase2Manifests": find_all(root, ["**/asset-manifest.json", "**/foundation-asset-manifest*.json"]),
         "phase2PromptPacks": find_all(root, ["**/phase2-asset-prompt-pack.md"]),
         "phase2ContactSheets": find_all(root, ["**/phase2-contact-sheet.png", "**/component-contact-sheet.html"]),
@@ -58,14 +59,48 @@ def collect_artifacts(root: Path) -> dict[str, list[Path]]:
         "phase3CaptureScripts": find_all(root, ["**/capture-screenshots.mjs"]),
         "phase3PatchPlans": find_all(root, ["**/phase3-implementation-patch-plan.md", "**/phase3-implementation-patch-plan.json"]),
         "phase3Screenshots": find_all(root, ["**/screenshots/*.png", "**/phase3-*screenshot*.png", "**/implementation-screenshot*.png"]),
+        "phase3DesignQaReports": find_all(root, ["**/design-qa.md", "**/design-qa.json"]),
         "visualReports": find_all(root, ["**/visual-diff*.md", "**/visual-diff*.json"]),
         "issueLogs": find_all(root, ["**/plugin-run-issues.md", "**/issues.md"]),
         "socialDrafts": find_all(root, ["**/social/*.md", "**/*case-post.md"]),
     }
 
 
+def visual_gate_passed(paths: list[Path]) -> bool:
+    for path in paths:
+        try:
+            if path.suffix == ".json":
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                if payload.get("passed") is True and payload.get("phase2Allowed") is True:
+                    return True
+            else:
+                text = path.read_text(encoding="utf-8").lower()
+                if "gate passed: `yes`" in text and "phase 2 allowed: `yes`" in text:
+                    return True
+        except (OSError, json.JSONDecodeError):
+            continue
+    return False
+
+
+def design_qa_passed(paths: list[Path]) -> bool:
+    for path in paths:
+        try:
+            if path.suffix == ".json":
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                if payload.get("finalResult") == "passed":
+                    return True
+            else:
+                lines = [line.strip().lower() for line in path.read_text(encoding="utf-8").splitlines()]
+                if "final result: passed" in lines:
+                    return True
+        except (OSError, json.JSONDecodeError):
+            continue
+    return False
+
+
 def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
     phase1_ready = bool(artifacts["phase1Briefs"] and artifacts["phase1Previews"])
+    phase1_visual_gate_ready = visual_gate_passed(artifacts["phase1VisualGates"])
     phase2_review_ready = bool(
         artifacts["phase2Manifests"]
         and artifacts["phase2PromptPacks"]
@@ -76,6 +111,7 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
     phase3_planned = bool(artifacts["phase3ScreenshotPlans"] and artifacts["phase3CaptureScripts"])
     phase3_patch_planned = bool(artifacts["phase3PatchPlans"])
     phase3_screenshots = bool(artifacts["phase3Screenshots"])
+    phase3_design_qa_passed = design_qa_passed(artifacts["phase3DesignQaReports"])
 
     if not phase1_ready:
         key = "phase1-needed"
@@ -155,12 +191,14 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
         "nextPrompt": next_prompt,
         "phaseReadiness": {
             "phase1Ready": phase1_ready,
+            "phase1VisualGateReady": phase1_visual_gate_ready,
             "phase2ReviewReady": phase2_review_ready,
             "phase2Approved": phase2_approved,
             "phase3Inspected": phase3_inspected,
             "phase3QaPlanned": phase3_planned,
             "phase3PatchPlanned": phase3_patch_planned,
             "phase3ScreenshotsCaptured": phase3_screenshots,
+            "phase3DesignQaPassed": phase3_design_qa_passed,
         },
     }
 
@@ -172,6 +210,7 @@ def build_runbook(root: Path, project: str, target: str) -> dict[str, Any]:
     groups = [
         ("phase1Briefs", "Phase 1", "UI brief", "spec"),
         ("phase1Previews", "Phase 1", "Preview image", "visual"),
+        ("phase1VisualGates", "Phase 1", "Visual excellence gate", "qa"),
         ("phase2Manifests", "Phase 2", "Asset manifest", "manifest"),
         ("phase2PromptPacks", "Phase 2", "Asset prompt pack", "prompt-pack"),
         ("phase2ContactSheets", "Phase 2", "Contact sheet", "review"),
@@ -182,6 +221,7 @@ def build_runbook(root: Path, project: str, target: str) -> dict[str, Any]:
         ("phase3CaptureScripts", "Phase 3", "Capture script", "script"),
         ("phase3PatchPlans", "Phase 3", "Implementation patch plan", "patch-plan"),
         ("phase3Screenshots", "Phase 3", "Implementation screenshot", "visual"),
+        ("phase3DesignQaReports", "Phase 3", "Design QA gate", "qa"),
         ("visualReports", "QA", "Visual report", "qa"),
         ("issueLogs", "Ops", "Issue log", "log"),
         ("socialDrafts", "Social", "Social draft", "content"),
@@ -223,12 +263,14 @@ def markdown(runbook: dict[str, Any]) -> str:
     readiness = status["phaseReadiness"]
     readiness_rows = [
         ("Phase 1 brief + preview", readiness["phase1Ready"]),
+        ("Phase 1 visual excellence gate", readiness["phase1VisualGateReady"]),
         ("Phase 2 review package", readiness["phase2ReviewReady"]),
         ("Phase 2 approved handoff", readiness["phase2Approved"]),
         ("Phase 3 target inspection", readiness["phase3Inspected"]),
         ("Phase 3 screenshot QA plan", readiness["phase3QaPlanned"]),
         ("Phase 3 implementation patch plan", readiness["phase3PatchPlanned"]),
         ("Phase 3 implementation screenshots", readiness["phase3ScreenshotsCaptured"]),
+        ("Phase 3 design QA passed", readiness["phase3DesignQaPassed"]),
     ]
     readiness_lines = [f"- {name}: `{'yes' if value else 'no'}`" for name, value in readiness_rows]
     return "\n".join(
