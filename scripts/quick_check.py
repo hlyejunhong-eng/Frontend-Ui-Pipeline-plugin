@@ -199,6 +199,8 @@ def main() -> None:
                 "Primary Screen First Rule",
                 "selected visual target",
                 "real raster/ImageGen",
+                "clipped titles",
+                "overflowing labels",
                 "generate_pipeline_runbook.py",
             ):
                 if required not in skill_md:
@@ -288,6 +290,8 @@ def main() -> None:
         "阶段二资产审核包生成器",
         "Phase 2 Asset Review Packet Generator",
         "generate_asset_review_packet.py",
+        "clipped headings",
+        "right/bottom-edge truncation",
         "阶段二最终交接文档生成器",
         "Phase 2 Final Handoff Generator",
         "generate_phase2_handoff.py",

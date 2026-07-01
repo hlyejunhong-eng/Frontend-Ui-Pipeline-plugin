@@ -721,6 +721,8 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/validate_foundation_manifest.py .
 
 阶段二最终输出前，需要让用户明确审核资产是否通过。这个脚本会把 manifest、contact sheet、prompt pack 和 review URL 组合成普通用户能看懂的审核包，并给出四个回复选项：通过、改视觉、改命名/目录、改实现映射。
 
+生成审核包后，必须人工检查 contact sheet 和 approval HTML，确认标题、按钮、icon label、底部说明和长文案没有裁切、溢出、缺字、方块字、隐藏到右/下边缘或变成不可读文本。
+
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_review_packet.py \
   --manifest ./asset-manifest.json \
@@ -734,6 +736,8 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_review_packet.py \
 **English**
 
 Before Phase 2 final output, the user must explicitly approve or revise assets. This script combines the manifest, contact sheet, prompt pack, and review URL into a plain review packet with four decisions: approve assets, revise visual style, revise naming/organization, or revise implementation mapping.
+
+After generating the packet, visually inspect the contact sheet and approval HTML for clipped headings, button text, icon labels, footer notes, overflow, missing glyphs, tofu boxes, right/bottom-edge truncation, or unreadable copy.
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_review_packet.py \

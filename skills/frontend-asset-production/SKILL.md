@@ -68,6 +68,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
 4. Create the review package:
    - Build a contact sheet or preview folder that lets the user inspect every generated asset.
    - Make the contact sheet work through `../../scripts/serve_review.py` or a local file open; do not rely only on browser support for external SVG sprite references under `file://`.
+   - Visually inspect contact sheets and approval HTML for clipped titles, overflowing labels, unreadable text, missing glyphs, hidden icons, and bottom/right-edge truncation. Regenerate the review artifact before asking for approval if text or controls are cut off.
    - Run `../../scripts/check_visual_artifacts.py` on contact sheet images and review HTML when the bundled script is available.
    - Run `../../scripts/compare_visual_artifacts.py` when you have a Phase 1 preview PNG and a comparable Phase 2 contact sheet or asset preview PNG; attach the JSON or Markdown report to the review package.
    - Include side-by-side comparison against the phase 1 preview when possible.
@@ -257,6 +258,7 @@ Final output must include:
 - Evidence that the primary selected screen asset set was produced before the full foundation expansion.
 - An asset review package the user can inspect visually.
 - `phase2-asset-approval-packet.md` and/or `phase2-asset-approval-packet.html` when the bundled review packet generator is available.
+- Visual inspection evidence that contact sheet and approval packet text does not clip, overflow, disappear at page edges, or render as missing glyphs.
 - Passing visual artifact checks for review images or HTML when the bundled checker is available.
 - A visual diff report when a comparable Phase 1 preview and Phase 2 asset preview/contact sheet are available.
 - A manifest or table that maps every asset to a component, state, layer, and import/calling path.
