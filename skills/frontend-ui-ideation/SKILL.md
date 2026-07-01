@@ -22,6 +22,17 @@ When this is the user's first run or the input is vague, state the concrete star
 - If the installed skills are not visible in the current thread, tell the user to open a new Codex thread after plugin installation.
 - If the user wants a quick public demo, mark the run as `demo`; otherwise use `production`.
 
+## Design Brief Lock
+
+Before generating previews, make a short brief lock unless the current thread already contains the same confirmed information:
+
+- What product screen, route, component, or workflow is being redesigned.
+- Which visual source controls the look: screenshot, running app, Figma frame, reference image, brand system, or a deliberately new style.
+- Expected interactivity level: static preview, clickable prototype, or production-ready flow.
+- Target viewport dimensions. Use `390 x 844` for mobile app, `834 x 1194` for tablet, `1440 x 1024` for desktop SaaS/dashboard/admin, and the provided source dimensions when matching an existing screenshot or Figma frame.
+
+If the user gave enough information and asked Codex to decide, record the brief lock in `phase1-ui-brief.md` and proceed. If any of those points are genuinely unknown and cannot be inferred from available code, screenshots, or URLs, ask one focused question before visual generation.
+
 ## Inputs
 
 Accept any combination of:
@@ -46,6 +57,7 @@ If the user provides no runnable app, screenshot, URL, Figma frame, or code targ
 2. Collect and shape ideas:
    - Derive product background, user intent, emotional tone, and visual opportunity from the existing app.
    - Generate exactly three distinct visual directions before Phase 2. Each direction must have its own preview image, not three text descriptions in one document.
+   - Use actual visual references when available: attach or inspect provided screenshots, app captures, Figma frames, source images, brand assets, Storybook captures, design tokens, and component references. Do not infer visual style from filenames alone.
    - If the design direction is open, ask the user to choose one of the three visual directions.
    - If the user says to decide, pick the strongest direction, record the rationale in the brief, and mark it as the selected visual target.
    - Prefer high-craft, custom interface ideas over generic dashboard, card, or landing-page patterns.
@@ -54,6 +66,7 @@ If the user provides no runnable app, screenshot, URL, Figma frame, or code targ
 3. Create preview imagery:
    - Generate or assemble preview images for the selected direction.
    - Preview images must show the actual target screen or flow, not vague mood boards.
+   - Each option must be an independent image at the target viewport dimensions; do not place multiple directions in one collage.
    - Use realistic UI composition, text, control density, stateful components, and motion cues.
    - Save preview files with stable names such as `phase1-preview-desktop.png`, `phase1-preview-mobile.png`, or `phase1-flow-preview.png`.
    - Save the three direction previews with stable names such as `phase1-option-1.png`, `phase1-option-2.png`, and `phase1-option-3.png` before writing the final selected preview.

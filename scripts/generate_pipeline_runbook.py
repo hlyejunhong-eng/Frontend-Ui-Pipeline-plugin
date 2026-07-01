@@ -52,6 +52,7 @@ def collect_artifacts(root: Path) -> dict[str, list[Path]]:
         "phase2Manifests": find_all(root, ["**/asset-manifest.json", "**/foundation-asset-manifest*.json"]),
         "phase2PromptPacks": find_all(root, ["**/phase2-asset-prompt-pack.md"]),
         "phase2ContactSheets": find_all(root, ["**/phase2-contact-sheet.png", "**/component-contact-sheet.html"]),
+        "phase2AssemblyPreviews": find_all(root, ["**/primary-screen-asset-assembly*.png", "**/primary-screen-asset-assembly*.html"]),
         "phase2ReviewPackets": find_all(root, ["**/phase2-asset-approval-packet.md", "**/phase2-asset-approval-packet.html"]),
         "phase2Handoffs": find_all(root, ["**/phase2-asset-handoff.md"]),
         "phase3Inspections": find_all(root, ["**/phase3-target-inspection.md", "**/phase3-target-inspection.json"]),
@@ -106,6 +107,7 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
         and artifacts["phase2PromptPacks"]
         and artifacts["phase2ReviewPackets"]
     )
+    phase2_assembly_preview_ready = bool(artifacts["phase2AssemblyPreviews"])
     phase2_approved = bool(artifacts["phase2Handoffs"])
     phase3_inspected = bool(artifacts["phase3Inspections"])
     phase3_planned = bool(artifacts["phase3ScreenshotPlans"] and artifacts["phase3CaptureScripts"])
@@ -193,6 +195,7 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
             "phase1Ready": phase1_ready,
             "phase1VisualGateReady": phase1_visual_gate_ready,
             "phase2ReviewReady": phase2_review_ready,
+            "phase2AssemblyPreviewReady": phase2_assembly_preview_ready,
             "phase2Approved": phase2_approved,
             "phase3Inspected": phase3_inspected,
             "phase3QaPlanned": phase3_planned,
@@ -214,6 +217,7 @@ def build_runbook(root: Path, project: str, target: str) -> dict[str, Any]:
         ("phase2Manifests", "Phase 2", "Asset manifest", "manifest"),
         ("phase2PromptPacks", "Phase 2", "Asset prompt pack", "prompt-pack"),
         ("phase2ContactSheets", "Phase 2", "Contact sheet", "review"),
+        ("phase2AssemblyPreviews", "Phase 2", "Asset-assembled primary screen preview", "review"),
         ("phase2ReviewPackets", "Phase 2", "Approval packet", "approval"),
         ("phase2Handoffs", "Phase 2", "Final asset handoff", "handoff"),
         ("phase3Inspections", "Phase 3", "Target inspection", "inspection"),
@@ -265,6 +269,7 @@ def markdown(runbook: dict[str, Any]) -> str:
         ("Phase 1 brief + preview", readiness["phase1Ready"]),
         ("Phase 1 visual excellence gate", readiness["phase1VisualGateReady"]),
         ("Phase 2 review package", readiness["phase2ReviewReady"]),
+        ("Phase 2 asset-assembled primary screen preview", readiness["phase2AssemblyPreviewReady"]),
         ("Phase 2 approved handoff", readiness["phase2Approved"]),
         ("Phase 3 target inspection", readiness["phase3Inspected"]),
         ("Phase 3 screenshot QA plan", readiness["phase3QaPlanned"]),

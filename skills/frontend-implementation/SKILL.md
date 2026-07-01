@@ -47,6 +47,8 @@ If no existing frontend repo is provided, create a runnable standalone implement
 
 2. Plan integration:
    - Map each phase 2 asset to the correct public path, import path, CSS module, component prop, or animation primitive.
+   - Catalog every visual asset implied by the approved preview and Phase 2 assembly before editing code, including backgrounds, illustrations, textures, masks, icon treatment, avatars, thumbnails, and motion frames.
+   - Measure the approved preview and Phase 2 assembly: viewport, section bounds, spacing, component sizes, text baselines, and fixed control dimensions.
    - Decide which visual elements are image assets and which should be rendered with CSS, canvas, SVG, or native components.
    - Define responsive breakpoints and exact layout constraints from the phase 1 and phase 2 documents.
    - Import or translate the Phase 2 foundational component kit before building screen-specific UI so future screens can reuse the same style system.

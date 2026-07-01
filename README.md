@@ -295,6 +295,30 @@ Output requirements:
 - `production`: Default mode. Phase 2 must wait for explicit user approval before Phase 3 hot-replaces the real app.
 - `demo`: Useful for social posts, sales demos, or direction validation. It may create a standalone runnable preview first, but it must be labeled non-final; do not modify the real app before user approval.
 
+## 质量门禁 / Quality Gates
+
+**中文**
+
+这个插件的目标不是“写一段审美提示词”，而是把高质量前端设计拆成可验证步骤：
+
+- 阶段一先锁定 design brief：目标页面、视觉来源、交互等级和目标尺寸。
+- 阶段一必须使用真实参考：截图、localhost、Figma、品牌资产、Storybook、tokens 或组件引用；不能只靠文件名猜风格。
+- 阶段一生成三个独立视觉方向，每个方向单独一张图，选中后才能进入阶段二。
+- 阶段二必须生成 asset-assembled primary screen preview，也就是用真实 Phase 2 assets 拼一次主屏；不能把 Phase 1 preview screenshot 复制过来冒充资产证明。
+- 阶段二审核包必须说明 visual diff / assembly diff 的结果；如果差异来自“资产拼装图不是最终前端截图”，要写清楚并把 Phase 3 screenshot QA 作为最终像素门禁。
+- 阶段三必须在真实前端里跑起来、截图、做 visual diff，并生成 `design-qa.md`。
+
+**English**
+
+This plugin is not just a prompt for taste. It turns frontend design quality into verifiable gates:
+
+- Phase 1 locks the design brief: target surface, visual source, interactivity level, and target dimensions.
+- Phase 1 must use real references: screenshots, localhost, Figma, brand assets, Storybook, tokens, or component references; do not infer style from filenames alone.
+- Phase 1 generates three independent visual directions, each as its own image, before selecting one for Phase 2.
+- Phase 2 must create an asset-assembled primary screen preview from real Phase 2 assets; do not copy the Phase 1 preview screenshot as asset proof.
+- Phase 2 review must explain the visual diff / assembly diff result; when the difference exists because the assembly is not the final app screenshot, keep Phase 3 screenshot QA as the final pixel gate.
+- Phase 3 must run the real frontend, capture screenshots, run visual diff, and generate `design-qa.md`.
+
 ## uni-app / HBuilderX 项目 / uni-app And HBuilderX Projects
 
 **中文**
@@ -344,6 +368,7 @@ Use $frontend-implementation with the approved phase 2 assets. Hot-replace the r
 必须输出：
 
 - `phase1-ui-brief.md`
+- 已锁定的 design brief：目标页面、视觉来源、交互等级和目标尺寸
 - 三个独立视觉方向预览图
 - 选中的视觉目标
 - `phase1-visual-excellence-gate.md`
@@ -363,6 +388,7 @@ Use $frontend-implementation with the approved phase 2 assets. Hot-replace the r
 Required outputs:
 
 - `phase1-ui-brief.md`
+- Locked design brief: target surface, visual source, interactivity level, and target dimensions
 - Three independent visual direction previews
 - Selected visual target
 - `phase1-visual-excellence-gate.md`
@@ -384,6 +410,8 @@ Success criteria:
 必须输出：
 
 - 主屏封面级资产集
+- 用真实资产拼出来的主屏预览：`primary-screen-asset-assembly.png` 或等价 HTML/PNG
+- visual diff / assembly diff 报告和已知差异说明
 - 背景、插图、遮罩、图标、sprites 或 motion frames
 - 完整基础组件资产包
 - `asset-manifest.json`
@@ -434,6 +462,8 @@ Success criteria:
 Required outputs:
 
 - Primary selected-screen asset set
+- Asset-assembled primary screen preview such as `primary-screen-asset-assembly.png` or equivalent HTML/PNG
+- Visual diff / assembly diff report and known deviation notes
 - Backgrounds, illustrations, masks, icons, sprites, or motion frames
 - Complete foundation component asset kit
 - `asset-manifest.json`
@@ -516,6 +546,8 @@ Required outputs:
 - `phase1-visual-excellence-gate.md`
 - 已审核通过的资产目录
 - 资产审核包
+- 真实资产拼装主屏预览
+- visual diff / assembly diff 记录
 - `phase2-asset-handoff.md`
 - 完整 foundation component kit
 - common icon set
@@ -534,6 +566,8 @@ A complete run should leave at least:
 - `phase1-visual-excellence-gate.md`
 - Approved asset directory
 - Asset review package
+- Primary screen preview assembled from real generated assets
+- Visual diff / assembly diff evidence
 - `phase2-asset-handoff.md`
 - Complete foundation component kit
 - Common icon set
@@ -729,6 +763,8 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_review_packet.py \
   --phase1-brief ./phase1-ui-brief.md \
   --prompt-pack ./phase2-asset-prompt-pack.md \
   --contact-sheet ./review/phase2-contact-sheet.png \
+  --assembly-preview ./review/primary-screen-asset-assembly.png \
+  --visual-diff-report ./review/visual-diff-primary-screen.md \
   --review-url http://127.0.0.1:8000/component-contact-sheet.html \
   --output-dir ./review
 ```
@@ -745,6 +781,8 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_review_packet.py \
   --phase1-brief ./phase1-ui-brief.md \
   --prompt-pack ./phase2-asset-prompt-pack.md \
   --contact-sheet ./review/phase2-contact-sheet.png \
+  --assembly-preview ./review/primary-screen-asset-assembly.png \
+  --visual-diff-report ./review/visual-diff-primary-screen.md \
   --review-url http://127.0.0.1:8000/component-contact-sheet.html \
   --output-dir ./review
 ```
@@ -762,6 +800,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_phase2_handoff.py \
   --prompt-pack ./phase2-asset-prompt-pack.md \
   --review-packet ./review/phase2-asset-approval-packet.md \
   --contact-sheet ./review/phase2-contact-sheet.png \
+  --assembly-preview ./review/primary-screen-asset-assembly.png \
   --visual-diff-report ./review/visual-diff-report.md \
   --target-runtime "uni-app" \
   --approved-by "user" \
@@ -780,6 +819,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_phase2_handoff.py \
   --prompt-pack ./phase2-asset-prompt-pack.md \
   --review-packet ./review/phase2-asset-approval-packet.md \
   --contact-sheet ./review/phase2-contact-sheet.png \
+  --assembly-preview ./review/primary-screen-asset-assembly.png \
   --visual-diff-report ./review/visual-diff-report.md \
   --target-runtime "uni-app" \
   --approved-by "user" \

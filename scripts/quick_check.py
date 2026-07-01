@@ -176,7 +176,10 @@ def main() -> None:
                 "Required Phase 2 Component Inventory",
                 "First Run Checklist",
                 "Visual Taste Rubric",
+                "Design Brief Lock",
+                "target viewport dimensions",
                 "three visual",
+                "Do not infer visual style from filenames alone",
                 "missing glyphs",
                 "tofu boxes",
                 "generate_visual_excellence_gate.py",
@@ -197,6 +200,9 @@ def main() -> None:
                 "Visual Artifact Checker",
                 "Visual Diff Helper",
                 "Primary Screen First Rule",
+                "Asset-Assembled Primary Preview Rule",
+                "--assembly-preview",
+                "Phase 1 preview screenshot",
                 "selected visual target",
                 "real raster/ImageGen",
                 "clipped titles",
@@ -222,6 +228,8 @@ def main() -> None:
                 "Screenshot QA Plan",
                 "Implementation Patch Plan",
                 "Design QA Gate",
+                "Catalog every visual asset",
+                "Measure the approved preview",
             ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
@@ -262,6 +270,11 @@ def main() -> None:
         "Phase 1",
         "Phase 2",
         "Phase 3",
+        "Quality Gates",
+        "质量门禁",
+        "asset-assembled primary screen preview",
+        "visual diff / assembly diff",
+        "Phase 3 screenshot QA",
         "$frontend-ui-ideation",
         "$frontend-asset-production",
         "$frontend-implementation",
@@ -290,6 +303,8 @@ def main() -> None:
         "阶段二资产审核包生成器",
         "Phase 2 Asset Review Packet Generator",
         "generate_asset_review_packet.py",
+        "primary-screen-asset-assembly.png",
+        "--assembly-preview",
         "clipped headings",
         "right/bottom-edge truncation",
         "阶段二最终交接文档生成器",
@@ -588,6 +603,8 @@ Phase 2 can start after validation passes.
             "<!doctype html><title>Review</title><h1>ok</h1>\n",
             encoding="utf-8",
         )
+        assembly_preview = review_root / "primary-screen-asset-assembly.png"
+        assembly_preview.write_bytes(contact_sheet.read_bytes())
         visual_check = subprocess.run(
             [
                 sys.executable,
@@ -675,6 +692,10 @@ Phase 2 can start after validation passes.
                 str(prompt_pack_path),
                 "--contact-sheet",
                 str(contact_sheet),
+                "--assembly-preview",
+                str(assembly_preview),
+                "--visual-diff-report",
+                str(diff_md),
                 "--review-url",
                 "http://127.0.0.1:8000/component-contact-sheet.html",
                 "--output-dir",
@@ -696,6 +717,9 @@ Phase 2 can start after validation passes.
             "Revise visual style",
             "Revise naming or organization",
             "Revise implementation mapping",
+            "Primary Screen Asset Assembly",
+            "Asset-assembled primary screen preview",
+            "Visual diff report",
         ):
             if required_approval_text not in approval_text:
                 fail(f"asset review packet missing {required_approval_text}")
@@ -729,6 +753,8 @@ Phase 2 can start after validation passes.
         readiness = runbook.get("status", {}).get("phaseReadiness", {})
         if not readiness.get("phase1VisualGateReady"):
             fail("pipeline runbook did not detect the Phase 1 visual excellence gate")
+        if not readiness.get("phase2AssemblyPreviewReady"):
+            fail("pipeline runbook did not detect the Phase 2 asset-assembled primary screen preview")
         if not readiness.get("phase3DesignQaPassed"):
             fail("pipeline runbook did not detect the passing Phase 3 design QA gate")
         if not runbook.get("artifacts") or not runbook.get("approvalGate", {}).get("approvalText"):
@@ -740,6 +766,7 @@ Phase 2 can start after validation passes.
             "Approval Gate",
             "Artifact Index",
             "Visual excellence gate",
+            "Asset-assembled primary screen preview",
             "Design QA gate",
             "Assets approved. Generate phase2-asset-handoff.md",
         ):
@@ -760,6 +787,8 @@ Phase 2 can start after validation passes.
                 str(approval_md),
                 "--contact-sheet",
                 str(contact_sheet),
+                "--assembly-preview",
+                str(assembly_preview),
                 "--visual-diff-report",
                 str(diff_md),
                 "--target-runtime",
@@ -786,6 +815,7 @@ Phase 2 can start after validation passes.
             "## Approval",
             "## Asset Manifest",
             "## Assembly Map",
+            "Asset-assembled primary screen preview",
             "## Component Usage Rules",
             "## Phase 3 Acceptance Checklist",
             "$frontend-implementation",

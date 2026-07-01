@@ -198,6 +198,7 @@ def build_markdown(args: argparse.Namespace, manifest: dict[str, Any], entries: 
         f"- Prompt pack: `{relpath(args.prompt_pack, output_path)}`" if args.prompt_pack else "- Prompt pack: not provided",
         f"- Review packet: `{relpath(args.review_packet, output_path)}`" if args.review_packet else "- Review packet: not provided",
         f"- Contact sheet: `{relpath(args.contact_sheet, output_path)}`" if args.contact_sheet else "- Contact sheet: not provided",
+        f"- Asset-assembled primary screen preview: `{relpath(args.assembly_preview, output_path)}`" if args.assembly_preview else "- Asset-assembled primary screen preview: not provided",
         f"- Visual diff report: `{relpath(args.visual_diff_report, output_path)}`" if args.visual_diff_report else "- Visual diff report: not provided",
     ]
 
@@ -278,6 +279,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--prompt-pack", default="", help="Optional Phase 2 asset prompt pack path.")
     parser.add_argument("--review-packet", default="", help="Optional Phase 2 review packet Markdown or HTML path.")
     parser.add_argument("--contact-sheet", default="", help="Optional contact sheet path.")
+    parser.add_argument("--assembly-preview", default="", help="Optional primary screen preview assembled from generated Phase 2 assets.")
     parser.add_argument("--visual-diff-report", default="", help="Optional visual diff report path.")
     parser.add_argument("--target-runtime", default="", help="Optional frontend runtime such as React, Vue, or uni-app.")
     parser.add_argument("--require-approved-status", action="store_true", help="Require manifest status to be approved.")

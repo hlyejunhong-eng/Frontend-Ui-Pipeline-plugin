@@ -78,6 +78,7 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - If using the bundled manifest generator, keep its coverage counts in the review package so the user can see whether every required state is represented.
    - Run `../../scripts/validate_foundation_manifest.py <manifest-path>` before asking the user to approve assets; fix any missing component state, icon, or screen asset slot first.
    - Use `../../scripts/generate_asset_review_packet.py` to create a non-designer approval packet with coverage, contact sheet, decision options, and exact user reply text for approval or revision.
+   - Include an asset-assembled primary screen preview in the review package. This preview must be rendered from the generated Phase 2 assets and component treatments, not copied from the Phase 1 preview screenshot.
    - Run `../../scripts/generate_pipeline_runbook.py --run-root <run-root>` when the bundled script is available so the user can see that the next required action is asset approval.
 
 5. Mandatory user approval:
@@ -130,6 +131,17 @@ Before expanding the complete foundation kit, make the selected Phase 1 screen v
 - Produce a contact sheet section that compares the primary screen asset set against the selected preview.
 - Only after the primary screen set is visually strong, expand the full foundation kit for buttons, badges, cards, combobox, common icons, navigation, notice bar, search bar, section title, modal, and transitions.
 - If the primary screen does not pass the review, revise it before spending time on the unused foundation states.
+
+## Asset-Assembled Primary Preview Rule
+
+Phase 2 must prove that the generated assets can recreate the selected screen:
+
+- Produce `review/primary-screen-asset-assembly.png` or an equivalent HTML/PNG preview assembled from generated backgrounds, illustration layers, textures, masks, icons, component CSS, and motion treatments.
+- Do not copy `phase1-preview-*.png` into the Phase 2 review folder and present it as asset evidence.
+- If using the bundled review packet generator, pass `--assembly-preview "<phase2-folder>/review/primary-screen-asset-assembly.png"` and `--visual-diff-report "<phase2-folder>/review/visual-diff-primary-screen.md"` when those files exist.
+- Run `../../scripts/compare_visual_artifacts.py` against the Phase 1 preview and this asset assembly when dimensions are comparable.
+- If the diff fails because the assembly is not a final app screenshot, keep the report and explain the deviation in the approval packet. Phase 3 screenshots remain the final pixel gate.
+- Record this preview in `asset-manifest.json` evidence when practical, for example `phase2PrimaryAssemblyPreview`, `phase2PrimaryAssemblyHtml`, and `assemblyUsesGeneratedAssets=true`.
 
 ## Foundation Manifest Generator
 
@@ -195,6 +207,8 @@ python3 ../../scripts/generate_asset_review_packet.py \
   --phase1-brief "<path-to-phase1-ui-brief.md>" \
   --prompt-pack "<phase2-folder>/phase2-asset-prompt-pack.md" \
   --contact-sheet "<phase2-folder>/review/phase2-contact-sheet.png" \
+  --assembly-preview "<phase2-folder>/review/primary-screen-asset-assembly.png" \
+  --visual-diff-report "<phase2-folder>/review/visual-diff-primary-screen.md" \
   --review-url "<review-server-url>" \
   --output-dir "<phase2-folder>/review"
 ```
@@ -261,6 +275,7 @@ Final output must include:
 - Visual inspection evidence that contact sheet and approval packet text does not clip, overflow, disappear at page edges, or render as missing glyphs.
 - Passing visual artifact checks for review images or HTML when the bundled checker is available.
 - A visual diff report when a comparable Phase 1 preview and Phase 2 asset preview/contact sheet are available.
+- A primary screen asset assembly preview built from generated Phase 2 assets, not a copied Phase 1 screenshot.
 - A manifest or table that maps every asset to a component, state, layer, and import/calling path.
 - A complete foundational component kit covering buttons, badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.
 - A generated or refreshed `pipeline-runbook.md` when the bundled script is available.

@@ -87,9 +87,35 @@ def first_entries(manifest: dict, limit: int = 16) -> list[str]:
     return lines
 
 
+def known_review_notes(args: argparse.Namespace, manifest: dict, output_dir: Path) -> list[str]:
+    """Explain what the reviewer should judge before approval."""
+    assembly_preview = relpath(args.assembly_preview, output_dir)
+    visual_diff_report = relpath(args.visual_diff_report, output_dir)
+    notes = [
+        "Judge the style fidelity, asset coverage, naming/organization, and Phase 3 implementation mapping.",
+    ]
+    if assembly_preview:
+        notes.append(
+            f"`{assembly_preview}` is the primary screen assembled from generated Phase 2 assets; do not treat the Phase 1 preview screenshot as proof that assets can be assembled."
+        )
+    else:
+        notes.append(
+            "No asset-assembled primary screen preview was provided. Before approval, generate one from the Phase 2 assets or clearly mark why this run is blocked."
+        )
+    if visual_diff_report:
+        notes.append(
+            f"`{visual_diff_report}` records the visual diff. If it fails because the comparison is an asset assembly rather than a final app screenshot, document that and keep Phase 3 screenshot QA as the final pixel gate."
+        )
+    if manifest.get("evidence", {}).get("assemblyUsesGeneratedAssets") is True:
+        notes.append("The manifest evidence marks `assemblyUsesGeneratedAssets=true`.")
+    return [f"- {note}" for note in notes]
+
+
 def build_markdown(args: argparse.Namespace, manifest: dict, output_dir: Path) -> str:
     project = manifest.get("project", {})
     contact_sheet = relpath(args.contact_sheet, output_dir)
+    assembly_preview = relpath(args.assembly_preview, output_dir)
+    visual_diff_report = relpath(args.visual_diff_report, output_dir)
     prompt_pack = relpath(args.prompt_pack, output_dir)
     phase1_brief = relpath(args.phase1_brief, output_dir)
     manifest_path = relpath(args.manifest, output_dir)
@@ -106,6 +132,8 @@ def build_markdown(args: argparse.Namespace, manifest: dict, output_dir: Path) -
         f"- Asset manifest: `{manifest_path}`",
         f"- Asset prompt pack: `{prompt_pack}`" if prompt_pack else "- Asset prompt pack: not provided",
         f"- Contact sheet: `{contact_sheet}`" if contact_sheet else "- Contact sheet: not provided",
+        f"- Asset-assembled primary screen preview: `{assembly_preview}`" if assembly_preview else "- Asset-assembled primary screen preview: not provided",
+        f"- Visual diff report: `{visual_diff_report}`" if visual_diff_report else "- Visual diff report: not provided",
         f"- Review URL: {args.review_url}" if args.review_url else "- Review URL: not provided",
         "",
         "## Coverage",
@@ -119,6 +147,26 @@ def build_markdown(args: argparse.Namespace, manifest: dict, output_dir: Path) -
         lines.extend([f"![Phase 2 contact sheet]({contact_sheet})", ""])
     else:
         lines.extend(["No contact sheet path was provided.", ""])
+
+    lines.extend(["## Primary Screen Asset Assembly", ""])
+    if assembly_preview:
+        lines.extend(
+            [
+                f"![Primary screen asset assembly]({assembly_preview})",
+                "",
+                "This preview must be built from generated Phase 2 assets, not copied from the Phase 1 source screenshot.",
+                "",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "No asset-assembled primary screen preview was provided.",
+                "",
+            ]
+        )
+
+    lines.extend(["## Known Review Notes", "", *known_review_notes(args, manifest, output_dir), ""])
 
     lines.extend(
         [
@@ -149,7 +197,9 @@ def build_markdown(args: argparse.Namespace, manifest: dict, output_dir: Path) -
 def build_html(markdown: str, args: argparse.Namespace, manifest: dict, output_dir: Path) -> str:
     project = manifest.get("project", {})
     contact_sheet = relpath(args.contact_sheet, output_dir)
+    assembly_preview = relpath(args.assembly_preview, output_dir)
     coverage = coverage_lines(manifest)
+    notes_html = "\n".join(f"<li>{html.escape(line[2:] if line.startswith('- ') else line)}</li>" for line in known_review_notes(args, manifest, output_dir))
     choices_html = "\n".join(
         "<article><h3>{}</h3><p>{}</p><pre>{}</pre></article>".format(
             html.escape(title), html.escape(description), html.escape(message)
@@ -162,6 +212,11 @@ def build_html(markdown: str, args: argparse.Namespace, manifest: dict, output_d
         f'<img src="{html.escape(contact_sheet)}" alt="Phase 2 contact sheet">'
         if contact_sheet
         else "<p>No contact sheet path was provided.</p>"
+    )
+    assembly_html = (
+        f'<img src="{html.escape(assembly_preview)}" alt="Primary screen assembled from Phase 2 assets">'
+        if assembly_preview
+        else "<p>No asset-assembled primary screen preview was provided.</p>"
     )
     return f"""<!doctype html>
 <html lang="en">
@@ -202,6 +257,15 @@ def build_html(markdown: str, args: argparse.Namespace, manifest: dict, output_d
     {image_html}
   </section>
   <section>
+    <h2>Primary Screen Asset Assembly</h2>
+    {assembly_html}
+    <p>This preview must be assembled from generated Phase 2 assets, not copied from the Phase 1 source screenshot.</p>
+  </section>
+  <section>
+    <h2>Known Review Notes</h2>
+    <ul>{notes_html}</ul>
+  </section>
+  <section>
     <h2>Decision Options</h2>
     <div class="grid">{choices_html}</div>
   </section>
@@ -226,6 +290,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--phase1-brief", default="", help="Optional Phase 1 brief path")
     parser.add_argument("--prompt-pack", default="", help="Optional Phase 2 asset prompt pack path")
     parser.add_argument("--contact-sheet", default="", help="Optional contact sheet image path")
+    parser.add_argument("--assembly-preview", default="", help="Optional primary screen preview assembled from generated Phase 2 assets")
+    parser.add_argument("--visual-diff-report", default="", help="Optional visual diff report for Phase 1 preview versus Phase 2 assembly or contact sheet")
     parser.add_argument("--review-url", default="", help="Optional local review server URL")
     return parser.parse_args()
 
