@@ -65,6 +65,7 @@ def repo_status(repo: Path) -> tuple[list[str], str]:
         "generate_pipeline_runbook.py",
         "generate_pipeline_completion_audit.py",
         "generate_case_study_pack.py",
+        "generate_visual_benchmark_report.py",
     ):
         script_path = repo / "scripts" / script
         lines.append(status_line(f"Script {script}", "ok" if script_path.exists() else "missing"))

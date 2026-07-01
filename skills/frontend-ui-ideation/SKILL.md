@@ -76,6 +76,7 @@ If the user provides no runnable app, screenshot, URL, Figma frame, or code targ
    - When the preview contains CJK, RTL, emoji, or other non-Latin copy, inspect the rendered image for missing glyphs, tofu boxes, fallback emoji, or clipped text. Choose a font with the required glyph coverage and regenerate before scoring the visual direction.
    - Run `../../scripts/check_visual_artifacts.py <preview-paths>` when the bundled script is available so missing, empty, or wrong-size preview files are caught before Phase 2.
    - Run `../../scripts/generate_visual_excellence_gate.py` when the bundled script is available to record the three visual options, the selected option, taste scores, and whether Phase 2 is allowed.
+   - Run `../../scripts/generate_visual_benchmark_report.py` when the bundled script is available to prove the selected direction beats the Product Design baseline before Phase 2.
 
 4. Write the phase 1 Markdown specification:
    - Create a handoff folder unless the user provided one. Suggested shape: `frontend-ui-pipeline/phase1-<screen-or-flow>/`.
@@ -112,6 +113,7 @@ The Markdown document must include:
 - Motion spec: page transitions, component entrance, click feedback, hover, drag, loading, idle motion, easing, durations, delays, transform origins, and reduced-motion alternatives.
 - Phase 2 generation guide: layer map, adjustable visual parameters, asset naming rules, export rules, responsive crop rules, and component coverage rules.
 - Visual excellence gate: three visual option names, preview paths, selected option, selected visual target, taste scores, and a clear pass/fail result.
+- Product Design benchmark: selected direction score average, baseline average, advantage criteria, required brief markers, and a clear pass/fail result.
 - Asset expectations: predicted asset list for phase 2, including backgrounds, illustrations, icons, motion frames, sprites, masks, textures, and the full foundational component kit.
 - Acceptance checklist: precise criteria that phase 2 and phase 3 must satisfy.
 - First run notes: what was opened, what was inspected, and what the user should do next if this is a new plugin install.
@@ -156,6 +158,7 @@ Do not finish with prose only. Final output must provide:
 - Evidence of source inspection, such as screenshots, route/component notes, or a clear statement that the source artifact was not available.
 - A Phase 2 generation guide with layer order, adjustable parameters, and the full foundational component inventory.
 - Three independent visual direction previews, one selected visual target, and a passing `phase1-visual-excellence-gate.md`.
+- A passing `phase1-visual-benchmark.md` showing the selected direction beats the Product Design baseline before Phase 2.
 - A passing `validate_phase1_brief.py` result when the bundled script is available.
 - A passing `check_visual_artifacts.py` result for preview images when the bundled script is available.
 - Visual inspection confirming no missing glyphs, tofu boxes, fallback emoji, clipped CJK/RTL copy, or unreadable text remains in the preview images.

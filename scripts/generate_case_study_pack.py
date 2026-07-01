@@ -56,6 +56,7 @@ def collect(root: Path) -> dict[str, list[Path]]:
         "phase1Options": find_all(root, ["**/phase1-option*.png"]),
         "phase1Previews": find_all(root, ["**/phase1-preview*.png", "**/phase1-flow-preview*.png"]),
         "phase1Gates": find_all(root, ["**/phase1-visual-excellence-gate.md", "**/phase1-visual-excellence-gate.json"]),
+        "phase1Benchmarks": find_all(root, ["**/phase1-visual-benchmark.md", "**/phase1-visual-benchmark.json"]),
         "phase2Manifests": find_all(root, ["**/asset-manifest.json", "**/foundation-asset-manifest*.json"]),
         "phase2Review": find_all(root, ["**/phase2-asset-approval-packet.md", "**/phase2-asset-approval-packet.html"]),
         "phase2Assemblies": find_all(root, ["**/primary-screen-asset-assembly*.png", "**/primary-screen-asset-assembly*.html"]),
@@ -97,6 +98,15 @@ def audit_summary(audit: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def benchmark_metrics(path: Path | None) -> dict[str, Any]:
+    payload = load_json(path)
+    return {
+        "visualBenchmarkPassed": bool(payload.get("passed")),
+        "visualBenchmarkAverageMargin": payload.get("averageMargin", 0),
+        "visualBenchmarkAdvantages": payload.get("advantageCriteria", []) if isinstance(payload.get("advantageCriteria"), list) else [],
+    }
+
+
 def artifact(label: str, kind: str, paths: list[Path], root: Path, limit: int = 8) -> list[dict[str, str]]:
     return [
         {"label": label, "kind": kind, "path": rel(path, root)}
@@ -110,6 +120,7 @@ def build_pack(root: Path, project: str, target: str, github_url: str, title: st
     runbook = load_json(first([path for path in artifacts["runbooks"] if path.suffix == ".json"]))
     manifest = load_json(first(artifacts["phase2Manifests"]))
     metrics = manifest_metrics(manifest)
+    benchmark = benchmark_metrics(first([path for path in artifacts["phase1Benchmarks"] if path.suffix == ".json"]))
     summary = audit_summary(audit)
     phase_readiness = {}
     status = runbook.get("status") if isinstance(runbook.get("status"), dict) else {}
@@ -128,6 +139,7 @@ def build_pack(root: Path, project: str, target: str, github_url: str, title: st
     evidence.extend(artifact("Phase 1 brief", "spec", artifacts["phase1Briefs"], root))
     evidence.extend(artifact("Phase 1 visual direction", "visual", artifacts["phase1Options"] or artifacts["phase1Previews"], root, limit=6))
     evidence.extend(artifact("Phase 1 visual gate", "qa", artifacts["phase1Gates"], root))
+    evidence.extend(artifact("Phase 1 Product Design benchmark", "qa", artifacts["phase1Benchmarks"], root))
     evidence.extend(artifact("Phase 2 manifest", "manifest", artifacts["phase2Manifests"], root))
     evidence.extend(artifact("Phase 2 review packet", "approval", artifacts["phase2Review"], root))
     evidence.extend(artifact("Asset-assembled primary screen", "assembly", artifacts["phase2Assemblies"], root))
@@ -150,6 +162,7 @@ def build_pack(root: Path, project: str, target: str, github_url: str, title: st
         "summary": summary,
         "metrics": {
             **metrics,
+            **benchmark,
             "phase1VisualDirections": phase1_direction_count,
             "socialVisuals": len(artifacts["socialVisuals"]),
             "phase3DemoFiles": len(artifacts["phase3Demos"]),
@@ -199,6 +212,8 @@ def case_study_md(pack: dict[str, Any]) -> str:
             "## What This Proves",
             "",
             f"- Phase 1 visual directions: `{metrics['phase1VisualDirections']}`",
+            f"- Product Design benchmark: `{'passed' if metrics['visualBenchmarkPassed'] else 'not proven'}`",
+            f"- Benchmark average margin: `{metrics['visualBenchmarkAverageMargin']}`",
             f"- Phase 2 asset manifest entries: `{metrics['totalEntries']}`",
             f"- Screen asset slots: `{metrics['screenSlots']}`",
             f"- Foundation states: `{metrics['foundationStates']}`",
@@ -242,6 +257,7 @@ def social_post_cn(pack: dict[str, Any]) -> str:
             f"- Phase 1：`{metrics['phase1VisualDirections']}` 个高端视觉方向",
             f"- Phase 2：`{metrics['totalEntries']}` 条资产 manifest 记录",
             f"- Phase 2：`{metrics['commonIcons']}` 个常用 icons",
+            f"- Product Design benchmark：`{'已通过' if metrics['visualBenchmarkPassed'] else '未证明'}`，领先项：`{', '.join(metrics['visualBenchmarkAdvantages']) or '无'}`",
             f"- Phase 2：完整 foundation kit，覆盖按钮、角标、卡片、combobox、导航、通告、搜索、标题、弹窗和过渡动画",
             "- Phase 2：真实资产拼装主屏，不拿 Phase 1 截图冒充资产完成",
             f"- Phase 3：`{metrics['phase3DemoFiles']}` 个 demo/证据文件",
@@ -270,6 +286,7 @@ def readme_snippet_md(pack: dict[str, Any]) -> str:
             f"- Target: `{pack['target'] or 'not specified'}`",
             f"- Status: `{pack['summary']['overallStatus']}`",
             f"- Phase 1 directions: `{metrics['phase1VisualDirections']}`",
+            f"- Product Design benchmark: `{'passed' if metrics['visualBenchmarkPassed'] else 'not proven'}`",
             f"- Asset records: `{metrics['totalEntries']}`",
             f"- Common icons: `{metrics['commonIcons']}`",
             f"- Social visuals: `{metrics['socialVisuals']}`",

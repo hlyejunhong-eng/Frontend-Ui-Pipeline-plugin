@@ -50,6 +50,7 @@ def collect_artifacts(root: Path) -> dict[str, list[Path]]:
         "pipelineStarts": find_all(root, ["**/pipeline-start.md", "**/pipeline-start.json"]),
         "phase1Previews": find_all(root, ["**/phase1-preview*.png", "**/phase1-flow-preview*.png"]),
         "phase1VisualGates": find_all(root, ["**/phase1-visual-excellence-gate.md", "**/phase1-visual-excellence-gate.json"]),
+        "phase1VisualBenchmarks": find_all(root, ["**/phase1-visual-benchmark.md", "**/phase1-visual-benchmark.json"]),
         "phase2Manifests": find_all(root, ["**/asset-manifest.json", "**/foundation-asset-manifest*.json"]),
         "phase2PromptPacks": find_all(root, ["**/phase2-asset-prompt-pack.md"]),
         "phase2ContactSheets": find_all(root, ["**/phase2-contact-sheet.png", "**/component-contact-sheet.html"]),
@@ -87,6 +88,22 @@ def visual_gate_passed(paths: list[Path]) -> bool:
     return False
 
 
+def visual_benchmark_passed(paths: list[Path]) -> bool:
+    for path in paths:
+        try:
+            if path.suffix == ".json":
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                if payload.get("passed") is True and payload.get("phase2Allowed") is True:
+                    return True
+            else:
+                text = path.read_text(encoding="utf-8").lower()
+                if "benchmark passed: `yes`" in text and "phase 2 allowed: `yes`" in text:
+                    return True
+        except (OSError, json.JSONDecodeError):
+            continue
+    return False
+
+
 def design_qa_passed(paths: list[Path]) -> bool:
     for path in paths:
         try:
@@ -106,6 +123,7 @@ def design_qa_passed(paths: list[Path]) -> bool:
 def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
     phase1_ready = bool(artifacts["phase1Briefs"] and artifacts["phase1Previews"])
     phase1_visual_gate_ready = visual_gate_passed(artifacts["phase1VisualGates"])
+    phase1_visual_benchmark_ready = visual_benchmark_passed(artifacts["phase1VisualBenchmarks"])
     phase2_review_ready = bool(
         artifacts["phase2Manifests"]
         and artifacts["phase2PromptPacks"]
@@ -127,6 +145,24 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
         next_prompt = (
             "Use $frontend-ui-ideation to redesign this existing app screen into a premium UI brief "
             "and preview. Use production mode unless I ask for demo mode."
+        )
+    elif not phase1_visual_gate_ready:
+        key = "phase1-visual-gate-needed"
+        title_cn = "阶段一预览已就绪，下一步生成视觉卓越门"
+        title_en = "Phase 1 preview ready; generate the visual excellence gate"
+        next_skill = "$frontend-ui-ideation"
+        next_prompt = (
+            "Continue $frontend-ui-ideation. Generate phase1-visual-excellence-gate.md/json from the three Phase 1 "
+            "visual options, selected preview, and taste scores before benchmarking or starting Phase 2."
+        )
+    elif not phase1_visual_benchmark_ready:
+        key = "phase1-benchmark-needed"
+        title_cn = "阶段一已就绪，下一步生成视觉竞争基准"
+        title_en = "Phase 1 ready; generate the visual benchmark"
+        next_skill = "$frontend-ui-ideation"
+        next_prompt = (
+            "Continue $frontend-ui-ideation. Generate phase1-visual-benchmark.md/json from the Phase 1 brief, "
+            "selected preview, and phase1-visual-excellence-gate.json before starting Phase 2."
         )
     elif not phase2_review_ready:
         key = "phase2-needed"
@@ -198,6 +234,7 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
         "phaseReadiness": {
             "phase1Ready": phase1_ready,
             "phase1VisualGateReady": phase1_visual_gate_ready,
+            "phase1VisualBenchmarkReady": phase1_visual_benchmark_ready,
             "phase2ReviewReady": phase2_review_ready,
             "phase2AssemblyPreviewReady": phase2_assembly_preview_ready,
             "phase2Approved": phase2_approved,
@@ -219,6 +256,7 @@ def build_runbook(root: Path, project: str, target: str) -> dict[str, Any]:
         ("phase1Briefs", "Phase 1", "UI brief", "spec"),
         ("phase1Previews", "Phase 1", "Preview image", "visual"),
         ("phase1VisualGates", "Phase 1", "Visual excellence gate", "qa"),
+        ("phase1VisualBenchmarks", "Phase 1", "Product Design benchmark", "qa"),
         ("phase2Manifests", "Phase 2", "Asset manifest", "manifest"),
         ("phase2PromptPacks", "Phase 2", "Asset prompt pack", "prompt-pack"),
         ("phase2ContactSheets", "Phase 2", "Contact sheet", "review"),
@@ -276,6 +314,7 @@ def markdown(runbook: dict[str, Any]) -> str:
     readiness_rows = [
         ("Phase 1 brief + preview", readiness["phase1Ready"]),
         ("Phase 1 visual excellence gate", readiness["phase1VisualGateReady"]),
+        ("Phase 1 Product Design benchmark", readiness["phase1VisualBenchmarkReady"]),
         ("Phase 2 review package", readiness["phase2ReviewReady"]),
         ("Phase 2 asset-assembled primary screen preview", readiness["phase2AssemblyPreviewReady"]),
         ("Phase 2 approved handoff", readiness["phase2Approved"]),

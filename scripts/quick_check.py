@@ -183,6 +183,7 @@ def main() -> None:
                 "missing glyphs",
                 "tofu boxes",
                 "generate_visual_excellence_gate.py",
+                "generate_visual_benchmark_report.py",
                 "check_visual_artifacts.py",
                 "generate_pipeline_runbook.py",
                 "generate_pipeline_completion_audit.py",
@@ -303,6 +304,9 @@ def main() -> None:
         "阶段一视觉卓越门",
         "Phase 1 Visual Excellence Gate",
         "generate_visual_excellence_gate.py",
+        "Product Design 基准门",
+        "Product Design Benchmark",
+        "generate_visual_benchmark_report.py",
         "missing glyphs",
         "tofu boxes",
         "阶段二本地审核服务器",
@@ -371,6 +375,8 @@ def main() -> None:
     check_file(case_study_generator)
     visual_excellence_gate = ROOT / "scripts" / "generate_visual_excellence_gate.py"
     check_file(visual_excellence_gate)
+    visual_benchmark_gate = ROOT / "scripts" / "generate_visual_benchmark_report.py"
+    check_file(visual_benchmark_gate)
     phase1_validator = ROOT / "scripts" / "validate_phase1_brief.py"
     check_file(phase1_validator)
     manifest_generator = ROOT / "scripts" / "generate_foundation_manifest.py"
@@ -411,6 +417,9 @@ Route and source evidence were inspected.
 ## Preview Files
 - `phase1-preview-desktop.png`
 - `phase1-preview-mobile.png`
+
+## Selected Direction
+Selected direction: Executive Command.
 
 ## Layout Spec
 Grid, spacing, viewport, alignment, and responsive layout.
@@ -607,6 +616,7 @@ Phase 2 can start after validation passes.
             "Script start_pipeline.py",
             "Script generate_pipeline_completion_audit.py",
             "Script generate_case_study_pack.py",
+            "Script generate_visual_benchmark_report.py",
             "Marketplace entry",
             "Installed cache",
             "Next Start Prompt",
@@ -676,6 +686,33 @@ Phase 2 can start after validation passes.
         visual_gate = json.loads(visual_gate_json.read_text(encoding="utf-8"))
         if visual_gate.get("optionCount") != 3 or visual_gate.get("selectedOption") != "option-a" or not visual_gate.get("phase2Allowed"):
             fail("visual excellence gate JSON did not prove Phase 2 readiness")
+        visual_benchmark_check = subprocess.run(
+            [
+                sys.executable,
+                str(visual_benchmark_gate),
+                "--root",
+                str(temp_dir),
+                "--phase1-brief",
+                str(phase1_brief),
+                "--visual-gate",
+                str(visual_gate_json),
+                "--output-dir",
+                str(visual_gate_dir),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        visual_benchmark_md = visual_gate_dir / "phase1-visual-benchmark.md"
+        visual_benchmark_json = visual_gate_dir / "phase1-visual-benchmark.json"
+        if "Benchmark passed: yes" not in visual_benchmark_check.stdout or not visual_benchmark_md.exists() or not visual_benchmark_json.exists():
+            fail("visual benchmark did not pass with the selected option")
+        visual_benchmark = json.loads(visual_benchmark_json.read_text(encoding="utf-8"))
+        if visual_benchmark.get("schemaVersion") != "frontend-ui-pipeline.visual-benchmark.v1":
+            fail("visual benchmark JSON schema version is wrong")
+        if visual_benchmark.get("averageMargin") < 0.5 or len(visual_benchmark.get("advantageCriteria", [])) < 4:
+            fail("visual benchmark did not prove enough Product Design baseline advantage")
         review_html = review_root / "component-contact-sheet.html"
         review_html.write_text(
             "<!doctype html><title>Review</title><h1>ok</h1>\n",
@@ -878,6 +915,8 @@ Phase 2 can start after validation passes.
         readiness = runbook.get("status", {}).get("phaseReadiness", {})
         if not readiness.get("phase1VisualGateReady"):
             fail("pipeline runbook did not detect the Phase 1 visual excellence gate")
+        if not readiness.get("phase1VisualBenchmarkReady"):
+            fail("pipeline runbook did not detect the Phase 1 Product Design benchmark")
         if not readiness.get("phase2AssemblyPreviewReady"):
             fail("pipeline runbook did not detect the Phase 2 asset-assembled primary screen preview")
         if not readiness.get("phase3DesignQaPassed"):
@@ -892,6 +931,7 @@ Phase 2 can start after validation passes.
             "Approval Gate",
             "Artifact Index",
             "Visual excellence gate",
+            "Product Design benchmark",
             "Asset-assembled primary screen preview",
             "Design QA gate",
             "Assets approved. Generate phase2-asset-handoff.md",
@@ -1196,6 +1236,7 @@ Phase 2 can start after validation passes.
         for required_audit_text in (
             "Pipeline Completion Audit",
             "phase2-foundation-kit",
+            "phase1-product-design-benchmark",
             "phase3-demo-mode",
             "Phase 2 Manifest",
             "Phase 3 Patch Plan",
@@ -1234,18 +1275,22 @@ Phase 2 can start after validation passes.
             fail("case study pack did not preserve common icon evidence")
         if case_payload.get("metrics", {}).get("foundationStates") != 63:
             fail("case study pack did not summarize foundation component states")
+        if not case_payload.get("metrics", {}).get("visualBenchmarkPassed"):
+            fail("case study pack did not preserve visual benchmark evidence")
         case_text = case_md.read_text(encoding="utf-8")
         social_post_text = social_post_md.read_text(encoding="utf-8")
         for required_case_text in (
             "Case Hook",
             "Evidence Index",
             "Completion audit",
+            "Product Design benchmark",
             "Asset-assembled primary screen",
         ):
             if required_case_text not in case_text:
                 fail(f"case study pack missing {required_case_text}")
         for required_social_text in (
             "Frontend UI Pipeline",
+            "Product Design benchmark",
             "Completion audit",
             "GitHub",
         ):

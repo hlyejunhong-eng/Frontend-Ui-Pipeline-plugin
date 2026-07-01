@@ -90,6 +90,7 @@ def collect(root: Path) -> dict[str, list[Path]]:
         "phase1Briefs": find_all(root, ["**/phase1-ui-brief.md"]),
         "phase1Previews": find_all(root, ["**/phase1-preview*.png", "**/phase1-option*.png"]),
         "phase1Gates": find_all(root, ["**/phase1-visual-excellence-gate.md", "**/phase1-visual-excellence-gate.json"]),
+        "phase1Benchmarks": find_all(root, ["**/phase1-visual-benchmark.md", "**/phase1-visual-benchmark.json"]),
         "phase2Manifests": find_all(root, ["**/asset-manifest.json", "**/foundation-asset-manifest*.json"]),
         "phase2PromptPacks": find_all(root, ["**/phase2-asset-prompt-pack.md"]),
         "phase2ReviewPackets": find_all(root, ["**/phase2-asset-approval-packet.md", "**/phase2-asset-approval-packet.html"]),
@@ -113,6 +114,17 @@ def visual_gate_passed(paths: list[Path]) -> bool:
             return True
         text = read_text(path).lower()
         if "phase 2 allowed: `yes`" in text or "phase2allowed" in text and "true" in text:
+            return True
+    return False
+
+
+def visual_benchmark_passed(paths: list[Path]) -> bool:
+    for path in paths:
+        payload = load_json(path) if path.suffix == ".json" else {}
+        if payload.get("passed") is True and payload.get("phase2Allowed") is True:
+            return True
+        text = read_text(path).lower()
+        if "benchmark passed: `yes`" in text and "phase 2 allowed: `yes`" in text:
             return True
     return False
 
@@ -200,6 +212,7 @@ def plugin_evidence(repo_root: Path | None) -> tuple[str, list[str], list[str]]:
         repo_root / "scripts" / "generate_pipeline_runbook.py",
         repo_root / "scripts" / "generate_pipeline_completion_audit.py",
         repo_root / "scripts" / "generate_case_study_pack.py",
+        repo_root / "scripts" / "generate_visual_benchmark_report.py",
         repo_root / "skills" / "frontend-ui-ideation" / "SKILL.md",
         repo_root / "skills" / "frontend-asset-production" / "SKILL.md",
         repo_root / "skills" / "frontend-implementation" / "SKILL.md",
@@ -212,6 +225,7 @@ def plugin_evidence(repo_root: Path | None) -> tuple[str, list[str], list[str]]:
         "Start Wizard",
         "Full Pipeline Prompt",
         "Case Study Pack Generator",
+        "Product Design Benchmark",
         "Demo Mode",
         "Phase Output Standards",
     ]
@@ -248,6 +262,14 @@ def build_audit(root: Path, repo_root: Path | None, project: str, target: str) -
             [path for path in [brief, *artifacts["phase1Previews"][:4], *artifacts["phase1Gates"][:2]] if path],
             root,
             missing=[] if brief else ["phase1-ui-brief.md"],
+        ),
+        item(
+            "phase1-product-design-benchmark",
+            "Phase 1 proves the selected direction beats the Product Design baseline before Phase 2 starts.",
+            status(bool(artifacts["phase1Benchmarks"] and visual_benchmark_passed(artifacts["phase1Benchmarks"]))),
+            artifacts["phase1Benchmarks"][:2],
+            root,
+            missing=[] if artifacts["phase1Benchmarks"] else ["phase1-visual-benchmark.md/json"],
         ),
         item(
             "phase1-phase2-guide",
