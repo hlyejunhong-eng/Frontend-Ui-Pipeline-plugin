@@ -56,6 +56,7 @@ def collect_artifacts(root: Path) -> dict[str, list[Path]]:
         "phase2ContactSheets": find_all(root, ["**/phase2-contact-sheet.png", "**/component-contact-sheet.html"]),
         "phase2AssemblyPreviews": find_all(root, ["**/primary-screen-asset-assembly*.png", "**/primary-screen-asset-assembly*.html"]),
         "phase2ReviewPackets": find_all(root, ["**/phase2-asset-approval-packet.md", "**/phase2-asset-approval-packet.html"]),
+        "phase2ReviewDecisions": find_all(root, ["**/phase2-asset-review-decision.md", "**/phase2-asset-review-decision.json"]),
         "phase2Handoffs": find_all(root, ["**/phase2-asset-handoff.md"]),
         "phase3Inspections": find_all(root, ["**/phase3-target-inspection.md", "**/phase3-target-inspection.json"]),
         "phase3ScreenshotPlans": find_all(root, ["**/phase3-screenshot-qa-plan.md", "**/phase3-screenshot-qa-plan.json"]),
@@ -104,6 +105,26 @@ def visual_benchmark_passed(paths: list[Path]) -> bool:
     return False
 
 
+def review_decision_approved(paths: list[Path]) -> bool:
+    for path in paths:
+        try:
+            if path.suffix == ".json":
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                if (
+                    payload.get("schemaVersion") == "frontend-ui-pipeline.asset-review-decision.v1"
+                    and payload.get("approved") is True
+                    and payload.get("handoffAllowed") is True
+                ):
+                    return True
+            else:
+                text = path.read_text(encoding="utf-8").lower()
+                if "approved: `yes`" in text and "handoff allowed: `yes`" in text:
+                    return True
+        except (OSError, json.JSONDecodeError):
+            continue
+    return False
+
+
 def design_qa_passed(paths: list[Path]) -> bool:
     for path in paths:
         try:
@@ -130,7 +151,8 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
         and artifacts["phase2ReviewPackets"]
     )
     phase2_assembly_preview_ready = bool(artifacts["phase2AssemblyPreviews"])
-    phase2_approved = bool(artifacts["phase2Handoffs"])
+    phase2_review_decision_approved = review_decision_approved(artifacts["phase2ReviewDecisions"])
+    phase2_handoff_ready = bool(artifacts["phase2Handoffs"])
     phase3_inspected = bool(artifacts["phase3Inspections"])
     phase3_planned = bool(artifacts["phase3ScreenshotPlans"] and artifacts["phase3CaptureScripts"])
     phase3_patch_planned = bool(artifacts["phase3PatchPlans"])
@@ -173,12 +195,21 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
             "Use $frontend-asset-production with the phase1-ui-brief.md and preview images in this "
             "run folder. Generate the complete foundation asset kit, review packet, and stop for my asset approval."
         )
-    elif not phase2_approved:
+    elif not phase2_review_decision_approved and not phase2_handoff_ready:
         key = "asset-approval-required"
         title_cn = "阶段二资产等待用户审核"
         title_en = "Phase 2 asset approval required"
         next_skill = "$frontend-asset-production"
         next_prompt = APPROVAL_TEXT
+    elif phase2_review_decision_approved and not phase2_handoff_ready:
+        key = "phase2-handoff-needed"
+        title_cn = "阶段二资产已审核通过，下一步生成最终交接文档"
+        title_en = "Phase 2 assets approved; generate final asset handoff"
+        next_skill = "$frontend-asset-production"
+        next_prompt = (
+            "Continue $frontend-asset-production. Generate phase2-asset-handoff.md from the approved "
+            "phase2-asset-review-decision.json before Phase 3."
+        )
     elif not phase3_inspected:
         key = "phase3-inspection-needed"
         title_cn = "资产已通过，下一步检查目标前端"
@@ -237,7 +268,8 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
             "phase1VisualBenchmarkReady": phase1_visual_benchmark_ready,
             "phase2ReviewReady": phase2_review_ready,
             "phase2AssemblyPreviewReady": phase2_assembly_preview_ready,
-            "phase2Approved": phase2_approved,
+            "phase2ReviewDecisionApproved": phase2_review_decision_approved,
+            "phase2Approved": phase2_handoff_ready,
             "phase3Inspected": phase3_inspected,
             "phase3QaPlanned": phase3_planned,
             "phase3PatchPlanned": phase3_patch_planned,
@@ -262,6 +294,7 @@ def build_runbook(root: Path, project: str, target: str) -> dict[str, Any]:
         ("phase2ContactSheets", "Phase 2", "Contact sheet", "review"),
         ("phase2AssemblyPreviews", "Phase 2", "Asset-assembled primary screen preview", "review"),
         ("phase2ReviewPackets", "Phase 2", "Approval packet", "approval"),
+        ("phase2ReviewDecisions", "Phase 2", "Asset review decision", "approval-decision"),
         ("phase2Handoffs", "Phase 2", "Final asset handoff", "handoff"),
         ("phase3Inspections", "Phase 3", "Target inspection", "inspection"),
         ("phase3ScreenshotPlans", "Phase 3", "Screenshot QA plan", "qa-plan"),
@@ -291,6 +324,7 @@ def build_runbook(root: Path, project: str, target: str) -> dict[str, Any]:
             "requiredBeforePhase3Production": True,
             "passed": status["phaseReadiness"]["phase2Approved"],
             "approvalText": APPROVAL_TEXT,
+            "assetReviewDecisionApproved": status["phaseReadiness"]["phase2ReviewDecisionApproved"],
         },
         "recommendedCommands": {
             "phase2ApprovalPacket": "Open phase2-asset-approval-packet.html or .md, then reply with the approval text if it passes.",
@@ -317,6 +351,7 @@ def markdown(runbook: dict[str, Any]) -> str:
         ("Phase 1 Product Design benchmark", readiness["phase1VisualBenchmarkReady"]),
         ("Phase 2 review package", readiness["phase2ReviewReady"]),
         ("Phase 2 asset-assembled primary screen preview", readiness["phase2AssemblyPreviewReady"]),
+        ("Phase 2 asset review decision", readiness["phase2ReviewDecisionApproved"]),
         ("Phase 2 approved handoff", readiness["phase2Approved"]),
         ("Phase 3 target inspection", readiness["phase3Inspected"]),
         ("Phase 3 screenshot QA plan", readiness["phase3QaPlanned"]),

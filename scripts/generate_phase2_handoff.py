@@ -24,6 +24,7 @@ APPROVAL_MARKERS = (
     "确认",
     "可以",
 )
+ASSET_REVIEW_DECISION_SCHEMA = "frontend-ui-pipeline.asset-review-decision.v1"
 
 
 def fail(message: str) -> None:
@@ -58,6 +59,21 @@ def relpath(raw_path: str, output_path: Path) -> str:
 def approval_is_explicit(text: str) -> bool:
     lowered = text.strip().lower()
     return any(marker in lowered for marker in APPROVAL_MARKERS)
+
+
+def approval_from_decision(path: str) -> str:
+    if not path:
+        return ""
+    payload = load_json(Path(path).expanduser().resolve())
+    if payload.get("schemaVersion") != ASSET_REVIEW_DECISION_SCHEMA:
+        fail(f"approval-decision must use schema {ASSET_REVIEW_DECISION_SCHEMA}.")
+    if payload.get("approved") is not True or payload.get("handoffAllowed") is not True:
+        decision = payload.get("decision", "unknown")
+        fail(f"Phase 2 asset review decision is not approved for handoff: {decision}")
+    text = str(payload.get("approvalText") or payload.get("message") or "").strip()
+    if not text:
+        fail("approval-decision is approved but does not contain approvalText or message.")
+    return text
 
 
 def normalize_entries(manifest: dict[str, Any]) -> list[dict[str, Any]]:
@@ -272,7 +288,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate final phase2-asset-handoff.md after explicit approval.")
     parser.add_argument("--manifest", required=True, help="Path to Phase 2 asset manifest JSON.")
     parser.add_argument("--output", required=True, help="Output Markdown path, usually phase2-asset-handoff.md.")
-    parser.add_argument("--approval-text", required=True, help="Exact user approval text.")
+    parser.add_argument("--approval-text", default="", help="Exact user approval text. Optional when --approval-decision is approved.")
+    parser.add_argument("--approval-decision", default="", help="Optional phase2-asset-review-decision.json path.")
     parser.add_argument("--approved-by", default="user", help="Approver name or role.")
     parser.add_argument("--approved-at", default="", help="Approval timestamp. Defaults to current UTC time.")
     parser.add_argument("--phase1-brief", default="", help="Optional Phase 1 brief path.")
@@ -288,7 +305,10 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    if not approval_is_explicit(args.approval_text):
+    decision_text = approval_from_decision(args.approval_decision)
+    normalized_approval = (args.approval_text or decision_text).strip()
+    args.approval_text = normalized_approval
+    if not approval_is_explicit(normalized_approval):
         fail("approval-text must contain an explicit approval/pass decision before final handoff can be generated.")
 
     manifest_path = Path(args.manifest).expanduser().resolve()

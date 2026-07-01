@@ -65,6 +65,7 @@ def repo_status(repo: Path) -> tuple[list[str], str]:
         "generate_pipeline_runbook.py",
         "generate_pipeline_completion_audit.py",
         "generate_case_study_pack.py",
+        "record_asset_review_decision.py",
         "generate_visual_benchmark_report.py",
     ):
         script_path = repo / "scripts" / script

@@ -59,6 +59,7 @@ def collect(root: Path) -> dict[str, list[Path]]:
         "phase1Benchmarks": find_all(root, ["**/phase1-visual-benchmark.md", "**/phase1-visual-benchmark.json"]),
         "phase2Manifests": find_all(root, ["**/asset-manifest.json", "**/foundation-asset-manifest*.json"]),
         "phase2Review": find_all(root, ["**/phase2-asset-approval-packet.md", "**/phase2-asset-approval-packet.html"]),
+        "phase2ReviewDecisions": find_all(root, ["**/phase2-asset-review-decision.md", "**/phase2-asset-review-decision.json"]),
         "phase2Assemblies": find_all(root, ["**/primary-screen-asset-assembly*.png", "**/primary-screen-asset-assembly*.html"]),
         "phase2ContactSheets": find_all(root, ["**/phase2-contact-sheet.png", "**/component-contact-sheet.html"]),
         "phase2Handoffs": find_all(root, ["**/phase2-asset-handoff.md"]),
@@ -107,6 +108,19 @@ def benchmark_metrics(path: Path | None) -> dict[str, Any]:
     }
 
 
+def review_decision_metrics(path: Path | None) -> dict[str, Any]:
+    payload = load_json(path)
+    if payload.get("schemaVersion") != "frontend-ui-pipeline.asset-review-decision.v1":
+        return {
+            "phase2ReviewDecision": "not-recorded",
+            "phase2ReviewHandoffAllowed": False,
+        }
+    return {
+        "phase2ReviewDecision": payload.get("decision", "unknown"),
+        "phase2ReviewHandoffAllowed": bool(payload.get("handoffAllowed")),
+    }
+
+
 def artifact(label: str, kind: str, paths: list[Path], root: Path, limit: int = 8) -> list[dict[str, str]]:
     return [
         {"label": label, "kind": kind, "path": rel(path, root)}
@@ -121,6 +135,7 @@ def build_pack(root: Path, project: str, target: str, github_url: str, title: st
     manifest = load_json(first(artifacts["phase2Manifests"]))
     metrics = manifest_metrics(manifest)
     benchmark = benchmark_metrics(first([path for path in artifacts["phase1Benchmarks"] if path.suffix == ".json"]))
+    review_decision = review_decision_metrics(first([path for path in artifacts["phase2ReviewDecisions"] if path.suffix == ".json"]))
     summary = audit_summary(audit)
     phase_readiness = {}
     status = runbook.get("status") if isinstance(runbook.get("status"), dict) else {}
@@ -142,6 +157,7 @@ def build_pack(root: Path, project: str, target: str, github_url: str, title: st
     evidence.extend(artifact("Phase 1 Product Design benchmark", "qa", artifacts["phase1Benchmarks"], root))
     evidence.extend(artifact("Phase 2 manifest", "manifest", artifacts["phase2Manifests"], root))
     evidence.extend(artifact("Phase 2 review packet", "approval", artifacts["phase2Review"], root))
+    evidence.extend(artifact("Phase 2 asset review decision", "approval-decision", artifacts["phase2ReviewDecisions"], root))
     evidence.extend(artifact("Asset-assembled primary screen", "assembly", artifacts["phase2Assemblies"], root))
     evidence.extend(artifact("Contact sheet", "review", artifacts["phase2ContactSheets"], root))
     evidence.extend(artifact("Phase 2 handoff", "handoff", artifacts["phase2Handoffs"], root))
@@ -163,6 +179,7 @@ def build_pack(root: Path, project: str, target: str, github_url: str, title: st
         "metrics": {
             **metrics,
             **benchmark,
+            **review_decision,
             "phase1VisualDirections": phase1_direction_count,
             "socialVisuals": len(artifacts["socialVisuals"]),
             "phase3DemoFiles": len(artifacts["phase3Demos"]),
@@ -215,6 +232,8 @@ def case_study_md(pack: dict[str, Any]) -> str:
             f"- Product Design benchmark: `{'passed' if metrics['visualBenchmarkPassed'] else 'not proven'}`",
             f"- Benchmark average margin: `{metrics['visualBenchmarkAverageMargin']}`",
             f"- Phase 2 asset manifest entries: `{metrics['totalEntries']}`",
+            f"- Phase 2 asset review decision: `{metrics['phase2ReviewDecision']}`",
+            f"- Phase 2 handoff allowed by review: `{metrics['phase2ReviewHandoffAllowed']}`",
             f"- Screen asset slots: `{metrics['screenSlots']}`",
             f"- Foundation states: `{metrics['foundationStates']}`",
             f"- Common icons: `{metrics['commonIcons']}`",
@@ -257,6 +276,7 @@ def social_post_cn(pack: dict[str, Any]) -> str:
             f"- Phase 1：`{metrics['phase1VisualDirections']}` 个高端视觉方向",
             f"- Phase 2：`{metrics['totalEntries']}` 条资产 manifest 记录",
             f"- Phase 2：`{metrics['commonIcons']}` 个常用 icons",
+            f"- Phase 2：资产审核决策 `{metrics['phase2ReviewDecision']}`，handoff allowed `{metrics['phase2ReviewHandoffAllowed']}`",
             f"- Product Design benchmark：`{'已通过' if metrics['visualBenchmarkPassed'] else '未证明'}`，领先项：`{', '.join(metrics['visualBenchmarkAdvantages']) or '无'}`",
             f"- Phase 2：完整 foundation kit，覆盖按钮、角标、卡片、combobox、导航、通告、搜索、标题、弹窗和过渡动画",
             "- Phase 2：真实资产拼装主屏，不拿 Phase 1 截图冒充资产完成",
@@ -288,6 +308,7 @@ def readme_snippet_md(pack: dict[str, Any]) -> str:
             f"- Phase 1 directions: `{metrics['phase1VisualDirections']}`",
             f"- Product Design benchmark: `{'passed' if metrics['visualBenchmarkPassed'] else 'not proven'}`",
             f"- Asset records: `{metrics['totalEntries']}`",
+            f"- Asset review decision: `{metrics['phase2ReviewDecision']}`",
             f"- Common icons: `{metrics['commonIcons']}`",
             f"- Social visuals: `{metrics['socialVisuals']}`",
             f"- Evidence pack: `case-study-pack/case-study.md`",

@@ -744,7 +744,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、启动向导、流水线运行索引生成器、流水线完成度审计生成器、案例包生成器、阶段一视觉卓越门、Product Design 基准门、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、阶段三 design QA 门、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、启动向导、流水线运行索引生成器、流水线完成度审计生成器、案例包生成器、阶段一视觉卓越门、Product Design 基准门、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二资产审核决定记录器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、阶段三 design QA 门、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 如果你是普通使用者，不需要跑完整 CI，可以优先运行安装诊断：
 
@@ -754,7 +754,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/diagnose_install.py
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, start wizard, pipeline runbook generator, pipeline completion audit generator, case study pack generator, Phase 1 visual excellence gate, Product Design benchmark gate, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, Phase 3 design QA gate, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, start wizard, pipeline runbook generator, pipeline completion audit generator, case study pack generator, Phase 1 visual excellence gate, Product Design benchmark gate, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 asset review decision recorder, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, Phase 3 design QA gate, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 If you are a regular user and do not need the full CI check, run the install doctor first:
 
@@ -960,11 +960,73 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_review_packet.py \
   --output-dir ./review
 ```
 
+## 阶段二资产审核决定记录器 / Phase 2 Asset Review Decision Recorder
+
+**中文**
+
+生成审核包后，先把当前审核状态记录成 `phase2-asset-review-decision.md/json`。用户还没明确通过时，用 `review-pending`；用户要求返修时，用对应的 `revise-*`；只有用户明确说通过时，才用 `approve-assets`。
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/record_asset_review_decision.py \
+  --decision review-pending \
+  --message "Waiting for user asset approval." \
+  --manifest ./asset-manifest.json \
+  --review-packet ./review/phase2-asset-approval-packet.md \
+  --contact-sheet ./review/phase2-contact-sheet.png \
+  --assembly-preview ./review/primary-screen-asset-assembly.png \
+  --visual-diff-report ./review/visual-diff-primary-screen.md \
+  --output-dir ./review
+```
+
+用户明确通过后，记录批准决策：
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/record_asset_review_decision.py \
+  --decision approve-assets \
+  --message "Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation." \
+  --manifest ./asset-manifest.json \
+  --review-packet ./review/phase2-asset-approval-packet.md \
+  --contact-sheet ./review/phase2-contact-sheet.png \
+  --assembly-preview ./review/primary-screen-asset-assembly.png \
+  --visual-diff-report ./review/visual-diff-primary-screen.md \
+  --output-dir ./review
+```
+
+**English**
+
+After generating the review packet, record the current review state as `phase2-asset-review-decision.md/json`. Use `review-pending` before explicit approval, the matching `revise-*` value when the user asks for changes, and `approve-assets` only after the user explicitly approves the assets.
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/record_asset_review_decision.py \
+  --decision review-pending \
+  --message "Waiting for user asset approval." \
+  --manifest ./asset-manifest.json \
+  --review-packet ./review/phase2-asset-approval-packet.md \
+  --contact-sheet ./review/phase2-contact-sheet.png \
+  --assembly-preview ./review/primary-screen-asset-assembly.png \
+  --visual-diff-report ./review/visual-diff-primary-screen.md \
+  --output-dir ./review
+```
+
+After explicit user approval, record the approval decision:
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/record_asset_review_decision.py \
+  --decision approve-assets \
+  --message "Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation." \
+  --manifest ./asset-manifest.json \
+  --review-packet ./review/phase2-asset-approval-packet.md \
+  --contact-sheet ./review/phase2-contact-sheet.png \
+  --assembly-preview ./review/primary-screen-asset-assembly.png \
+  --visual-diff-report ./review/visual-diff-primary-screen.md \
+  --output-dir ./review
+```
+
 ## 阶段二最终交接文档生成器 / Phase 2 Final Handoff Generator
 
 **中文**
 
-用户明确说资产通过后，用这个脚本生成标准 `phase2-asset-handoff.md`。它会把审批文字、manifest、review packet、contact sheet、visual diff、组件调用规则、动效规则和 Phase 3 验收清单合并成一份可直接交给 `$frontend-implementation` 的文档。没有明确通过文字时，脚本会失败，防止跳过审核门禁。
+用户明确说资产通过，并且已经记录 `phase2-asset-review-decision.json` 后，用这个脚本生成标准 `phase2-asset-handoff.md`。它会把审批证据、manifest、review packet、contact sheet、visual diff、组件调用规则、动效规则和 Phase 3 验收清单合并成一份可直接交给 `$frontend-implementation` 的文档。审核决定是 pending 或返修时，脚本会失败，防止跳过审核门禁。
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_phase2_handoff.py \
@@ -977,13 +1039,13 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_phase2_handoff.py \
   --visual-diff-report ./review/visual-diff-report.md \
   --target-runtime "uni-app" \
   --approved-by "user" \
-  --approval-text "Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation." \
+  --approval-decision ./review/phase2-asset-review-decision.json \
   --output ./phase2-asset-handoff.md
 ```
 
 **English**
 
-After the user explicitly approves the assets, use this script to generate the standard `phase2-asset-handoff.md`. It combines approval text, manifest entries, review packet, contact sheet, visual diff report, component usage rules, motion rules, and the Phase 3 acceptance checklist into one document for `$frontend-implementation`. The script fails when approval text is missing or not explicit, so the review gate cannot be skipped accidentally.
+After the user explicitly approves the assets and `phase2-asset-review-decision.json` has been recorded, use this script to generate the standard `phase2-asset-handoff.md`. It combines approval evidence, manifest entries, review packet, contact sheet, visual diff report, component usage rules, motion rules, and the Phase 3 acceptance checklist into one document for `$frontend-implementation`. The script fails when the review decision is pending or revision-only, so the review gate cannot be skipped accidentally.
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_phase2_handoff.py \
@@ -996,7 +1058,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_phase2_handoff.py \
   --visual-diff-report ./review/visual-diff-report.md \
   --target-runtime "uni-app" \
   --approved-by "user" \
-  --approval-text "Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation." \
+  --approval-decision ./review/phase2-asset-review-decision.json \
   --output ./phase2-asset-handoff.md
 ```
 

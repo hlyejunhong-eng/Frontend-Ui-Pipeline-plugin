@@ -198,6 +198,9 @@ def main() -> None:
                 "SVG Sprite Review Rule",
                 "Asset Prompt Pack Generator",
                 "Asset Review Packet Generator",
+                "Asset Review Decision Recorder",
+                "record_asset_review_decision.py",
+                "phase2-asset-review-decision",
                 "Phase 2 Handoff Generator",
                 "Visual Artifact Checker",
                 "Visual Diff Helper",
@@ -324,6 +327,10 @@ def main() -> None:
         "阶段二资产审核包生成器",
         "Phase 2 Asset Review Packet Generator",
         "generate_asset_review_packet.py",
+        "阶段二资产审核决定记录器",
+        "Phase 2 Asset Review Decision Recorder",
+        "record_asset_review_decision.py",
+        "phase2-asset-review-decision.json",
         "primary-screen-asset-assembly.png",
         "--assembly-preview",
         "clipped headings",
@@ -385,6 +392,8 @@ def main() -> None:
     check_file(prompt_pack_generator)
     review_packet_generator = ROOT / "scripts" / "generate_asset_review_packet.py"
     check_file(review_packet_generator)
+    review_decision_recorder = ROOT / "scripts" / "record_asset_review_decision.py"
+    check_file(review_decision_recorder)
     handoff_generator = ROOT / "scripts" / "generate_phase2_handoff.py"
     check_file(handoff_generator)
     target_inspector = ROOT / "scripts" / "inspect_frontend_target.py"
@@ -616,6 +625,7 @@ Phase 2 can start after validation passes.
             "Script start_pipeline.py",
             "Script generate_pipeline_completion_audit.py",
             "Script generate_case_study_pack.py",
+            "Script record_asset_review_decision.py",
             "Script generate_visual_benchmark_report.py",
             "Marketplace entry",
             "Installed cache",
@@ -885,6 +895,82 @@ Phase 2 can start after validation passes.
         ):
             if required_approval_text not in approval_text:
                 fail(f"asset review packet missing {required_approval_text}")
+        pending_decision_check = subprocess.run(
+            [
+                sys.executable,
+                str(review_decision_recorder),
+                "--decision",
+                "review-pending",
+                "--message",
+                "Waiting for user approval.",
+                "--manifest",
+                str(output_path),
+                "--review-packet",
+                str(approval_md),
+                "--contact-sheet",
+                str(contact_sheet),
+                "--assembly-preview",
+                str(assembly_preview),
+                "--visual-diff-report",
+                str(diff_md),
+                "--output-dir",
+                str(review_root),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        decision_md = review_root / "phase2-asset-review-decision.md"
+        decision_json = review_root / "phase2-asset-review-decision.json"
+        if "Handoff allowed: no" not in pending_decision_check.stdout or not decision_md.exists() or not decision_json.exists():
+            fail("asset review decision recorder did not write pending decision")
+        pending_decision = json.loads(decision_json.read_text(encoding="utf-8"))
+        if pending_decision.get("schemaVersion") != "frontend-ui-pipeline.asset-review-decision.v1" or pending_decision.get("handoffAllowed"):
+            fail("pending asset review decision must block handoff")
+        if "Review pending" not in decision_md.read_text(encoding="utf-8"):
+            fail("asset review decision markdown missing pending label")
+        revision_root = Path(temp_dir) / "review-revision"
+        revision_decision_check = subprocess.run(
+            [
+                sys.executable,
+                str(review_decision_recorder),
+                "--decision",
+                "revise-visual-style",
+                "--message",
+                "Increase contrast and rebuild the hero illustration.",
+                "--manifest",
+                str(output_path),
+                "--review-packet",
+                str(approval_md),
+                "--output-dir",
+                str(revision_root),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        revision_decision = json.loads((revision_root / "phase2-asset-review-decision.json").read_text(encoding="utf-8"))
+        if "Handoff allowed: no" not in revision_decision_check.stdout or not revision_decision.get("revisionRequired"):
+            fail("revision asset review decision must require revision and block handoff")
+        rejected_pending_handoff = subprocess.run(
+            [
+                sys.executable,
+                str(handoff_generator),
+                "--manifest",
+                str(output_path),
+                "--approval-decision",
+                str(decision_json),
+                "--output",
+                str(Path(temp_dir) / "should-not-exist-pending.md"),
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if rejected_pending_handoff.returncode == 0:
+            fail("phase 2 handoff generator must reject pending asset review decisions")
         runbook_md = Path(temp_dir) / "pipeline-runbook.md"
         runbook_json = Path(temp_dir) / "pipeline-runbook.json"
         runbook_check = subprocess.run(
@@ -919,6 +1005,8 @@ Phase 2 can start after validation passes.
             fail("pipeline runbook did not detect the Phase 1 Product Design benchmark")
         if not readiness.get("phase2AssemblyPreviewReady"):
             fail("pipeline runbook did not detect the Phase 2 asset-assembled primary screen preview")
+        if readiness.get("phase2ReviewDecisionApproved"):
+            fail("pipeline runbook must not approve Phase 2 when the review decision is pending")
         if not readiness.get("phase3DesignQaPassed"):
             fail("pipeline runbook did not detect the passing Phase 3 design QA gate")
         if not runbook.get("artifacts") or not runbook.get("approvalGate", {}).get("approvalText"):
@@ -933,11 +1021,41 @@ Phase 2 can start after validation passes.
             "Visual excellence gate",
             "Product Design benchmark",
             "Asset-assembled primary screen preview",
+            "Asset review decision",
             "Design QA gate",
             "Assets approved. Generate phase2-asset-handoff.md",
         ):
             if required_runbook_text not in runbook_text:
                 fail(f"pipeline runbook missing {required_runbook_text}")
+        approved_decision_check = subprocess.run(
+            [
+                sys.executable,
+                str(review_decision_recorder),
+                "--decision",
+                "approve-assets",
+                "--message",
+                "Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation.",
+                "--manifest",
+                str(output_path),
+                "--review-packet",
+                str(approval_md),
+                "--contact-sheet",
+                str(contact_sheet),
+                "--assembly-preview",
+                str(assembly_preview),
+                "--visual-diff-report",
+                str(diff_md),
+                "--output-dir",
+                str(review_root),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        approved_decision = json.loads(decision_json.read_text(encoding="utf-8"))
+        if "Handoff allowed: yes" not in approved_decision_check.stdout or not approved_decision.get("handoffAllowed"):
+            fail("approved asset review decision must allow handoff")
         handoff_path = Path(temp_dir) / "phase2-asset-handoff.md"
         handoff_check = subprocess.run(
             [
@@ -963,8 +1081,8 @@ Phase 2 can start after validation passes.
                 "quick-check",
                 "--approved-at",
                 "2026-01-01T00:00:00Z",
-                "--approval-text",
-                "Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation.",
+                "--approval-decision",
+                str(decision_json),
                 "--output",
                 str(handoff_path),
             ],
@@ -1236,6 +1354,7 @@ Phase 2 can start after validation passes.
         for required_audit_text in (
             "Pipeline Completion Audit",
             "phase2-foundation-kit",
+            "phase2-review-decision",
             "phase1-product-design-benchmark",
             "phase3-demo-mode",
             "Phase 2 Manifest",
@@ -1284,6 +1403,7 @@ Phase 2 can start after validation passes.
             "Evidence Index",
             "Completion audit",
             "Product Design benchmark",
+            "Phase 2 asset review decision",
             "Asset-assembled primary screen",
         ):
             if required_case_text not in case_text:
@@ -1319,6 +1439,8 @@ Phase 2 can start after validation passes.
         runbook_after_patch = json.loads(runbook_after_patch_json.read_text(encoding="utf-8"))
         if not runbook_after_patch.get("status", {}).get("phaseReadiness", {}).get("phase3PatchPlanned"):
             fail("pipeline runbook did not detect the implementation patch plan")
+        if not runbook_after_patch.get("status", {}).get("phaseReadiness", {}).get("phase2ReviewDecisionApproved"):
+            fail("pipeline runbook did not detect the approved Phase 2 review decision")
         runbook_after_patch_text = runbook_after_patch_md.read_text(encoding="utf-8")
         if "Implementation patch plan" not in runbook_after_patch_text:
             fail("pipeline runbook did not index the implementation patch plan")

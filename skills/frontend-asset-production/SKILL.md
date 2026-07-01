@@ -78,17 +78,20 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - If using the bundled manifest generator, keep its coverage counts in the review package so the user can see whether every required state is represented.
    - Run `../../scripts/validate_foundation_manifest.py <manifest-path>` before asking the user to approve assets; fix any missing component state, icon, or screen asset slot first.
    - Use `../../scripts/generate_asset_review_packet.py` to create a non-designer approval packet with coverage, contact sheet, decision options, and exact user reply text for approval or revision.
+   - After the user replies, use `../../scripts/record_asset_review_decision.py` to record `approve-assets`, `review-pending`, or the selected revision decision as `phase2-asset-review-decision.md/json`.
    - Include an asset-assembled primary screen preview in the review package. This preview must be rendered from the generated Phase 2 assets and component treatments, not copied from the Phase 1 preview screenshot.
    - Run `../../scripts/generate_pipeline_runbook.py --run-root <run-root>` when the bundled script is available so the user can see that the next required action is asset approval.
    - Run `../../scripts/generate_pipeline_completion_audit.py --run-root <run-root>` when the bundled script is available so the approval blocker and foundation-kit coverage are explicit evidence.
 
 5. Mandatory user approval:
    - Stop and ask the user to review the asset package.
-   - Do not write the final phase 2 handoff until the user explicitly says the assets pass or approves a specific revision.
-   - If the user requests changes, revise assets and repeat the review gate.
+   - Record the decision with `../../scripts/record_asset_review_decision.py`; `review-pending` and all `revise-*` decisions must keep Phase 3 blocked.
+   - Do not write the final phase 2 handoff until the user explicitly says the assets pass and the decision file says `handoffAllowed=true`.
+   - If the user requests changes, revise assets, regenerate the review packet, and repeat the review gate.
 
 6. Finalize the phase 2 handoff:
    - Use `../../scripts/generate_phase2_handoff.py` when the bundled script is available so approval text, manifest entries, assembly rules, component usage, motion rules, and Phase 3 acceptance checks are captured consistently.
+   - Prefer passing `--approval-decision "<phase2-folder>/review/phase2-asset-review-decision.json"` so the final handoff is tied to recorded approval evidence.
    - Write `phase2-asset-handoff.md` beside the asset folder or in the user-provided output directory.
    - Supplement the phase 1 brief rather than replacing it.
    - Regenerate `pipeline-runbook.md` after the final handoff so the next prompt points to `$frontend-implementation`.
@@ -217,6 +220,24 @@ python3 ../../scripts/generate_asset_review_packet.py \
 
 The packet must give the user four plain decisions: approve assets, revise visual style, revise naming/organization, or revise implementation mapping. Treat only an explicit approval as permission to write final `phase2-asset-handoff.md`.
 
+## Asset Review Decision Recorder
+
+After the user reviews the packet, record the decision before final handoff:
+
+```bash
+python3 ../../scripts/record_asset_review_decision.py \
+  --decision review-pending \
+  --message "Waiting for user asset approval." \
+  --manifest "<phase2-folder>/asset-manifest.json" \
+  --review-packet "<phase2-folder>/review/phase2-asset-approval-packet.md" \
+  --contact-sheet "<phase2-folder>/review/phase2-contact-sheet.png" \
+  --assembly-preview "<phase2-folder>/review/primary-screen-asset-assembly.png" \
+  --visual-diff-report "<phase2-folder>/review/visual-diff-primary-screen.md" \
+  --output-dir "<phase2-folder>/review"
+```
+
+Use `--decision approve-assets --message "Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation."` only after the user explicitly approves the assets. Any `revise-*` decision means revise assets, regenerate the review packet, and ask again.
+
 ## Phase 2 Handoff Generator
 
 After the user explicitly approves the asset review package, use the bundled handoff generator to create the final `phase2-asset-handoff.md`:
@@ -231,11 +252,11 @@ python3 ../../scripts/generate_phase2_handoff.py \
   --visual-diff-report "<phase2-folder>/review/visual-diff-report.md" \
   --target-runtime "<target-runtime>" \
   --approved-by "<user-or-role>" \
-  --approval-text "<exact-user-approval-message>" \
+  --approval-decision "<phase2-folder>/review/phase2-asset-review-decision.json" \
   --output "<phase2-folder>/phase2-asset-handoff.md"
 ```
 
-The script must fail when approval text is missing or does not contain an explicit approval/pass decision. Do not bypass that guard in production mode.
+The script must fail when approval evidence is missing, pending, revision-only, or does not contain an explicit approval/pass decision. Do not bypass that guard in production mode.
 
 ## Visual Artifact Checker
 
@@ -270,6 +291,7 @@ Final output must include:
 
 - Approved real asset files.
 - `phase2-asset-handoff.md`, preferably generated with `generate_phase2_handoff.py` after explicit approval.
+- `phase2-asset-review-decision.md` and `phase2-asset-review-decision.json` when the bundled decision recorder is available.
 - `phase2-asset-prompt-pack.md` or an equivalent asset-generation prompt record when generated assets used raster, Figma/vector, or CSS/SVG prompt production.
 - Evidence that the primary selected screen asset set was produced before the full foundation expansion.
 - An asset review package the user can inspect visually.

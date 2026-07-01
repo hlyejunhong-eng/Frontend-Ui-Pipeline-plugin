@@ -94,6 +94,7 @@ def collect(root: Path) -> dict[str, list[Path]]:
         "phase2Manifests": find_all(root, ["**/asset-manifest.json", "**/foundation-asset-manifest*.json"]),
         "phase2PromptPacks": find_all(root, ["**/phase2-asset-prompt-pack.md"]),
         "phase2ReviewPackets": find_all(root, ["**/phase2-asset-approval-packet.md", "**/phase2-asset-approval-packet.html"]),
+        "phase2ReviewDecisions": find_all(root, ["**/phase2-asset-review-decision.md", "**/phase2-asset-review-decision.json"]),
         "phase2Assemblies": find_all(root, ["**/primary-screen-asset-assembly*.png", "**/primary-screen-asset-assembly*.html"]),
         "phase2Handoffs": find_all(root, ["**/phase2-asset-handoff.md"]),
         "phase3Inspections": find_all(root, ["**/phase3-target-inspection.md", "**/phase3-target-inspection.json"]),
@@ -135,6 +136,21 @@ def design_qa_passed(paths: list[Path]) -> bool:
         if payload.get("finalResult") == "passed":
             return True
         if "final result: passed" in read_text(path).lower():
+            return True
+    return False
+
+
+def approved_review_decision(paths: list[Path]) -> bool:
+    for path in paths:
+        payload = load_json(path) if path.suffix == ".json" else {}
+        if (
+            payload.get("schemaVersion") == "frontend-ui-pipeline.asset-review-decision.v1"
+            and payload.get("approved") is True
+            and payload.get("handoffAllowed") is True
+        ):
+            return True
+        text = read_text(path).lower()
+        if "approved: `yes`" in text and "handoff allowed: `yes`" in text:
             return True
     return False
 
@@ -212,6 +228,7 @@ def plugin_evidence(repo_root: Path | None) -> tuple[str, list[str], list[str]]:
         repo_root / "scripts" / "generate_pipeline_runbook.py",
         repo_root / "scripts" / "generate_pipeline_completion_audit.py",
         repo_root / "scripts" / "generate_case_study_pack.py",
+        repo_root / "scripts" / "record_asset_review_decision.py",
         repo_root / "scripts" / "generate_visual_benchmark_report.py",
         repo_root / "skills" / "frontend-ui-ideation" / "SKILL.md",
         repo_root / "skills" / "frontend-asset-production" / "SKILL.md",
@@ -226,6 +243,7 @@ def plugin_evidence(repo_root: Path | None) -> tuple[str, list[str], list[str]]:
         "Full Pipeline Prompt",
         "Case Study Pack Generator",
         "Product Design Benchmark",
+        "Asset Review Decision",
         "Demo Mode",
         "Phase Output Standards",
     ]
@@ -241,6 +259,7 @@ def build_audit(root: Path, repo_root: Path | None, project: str, target: str) -
     manifest_info = manifest_summary(manifest)
     patch_plan = first([path for path in artifacts["phase3PatchPlans"] if path.suffix == ".json"]) or first(artifacts["phase3PatchPlans"])
     patch_info = patch_plan_summary(patch_plan)
+    phase2_review_decision_approved = approved_review_decision(artifacts["phase2ReviewDecisions"])
     phase2_approved = bool(artifacts["phase2Handoffs"])
     phase3_screenshots = bool(artifacts["phase3Screenshots"])
     phase3_design_passed = design_qa_passed(artifacts["phase3DesignQa"])
@@ -305,10 +324,23 @@ def build_audit(root: Path, repo_root: Path | None, project: str, target: str) -
             ],
         ),
         item(
+            "phase2-review-decision",
+            "Phase 2 records the user's approval, pending review, or revision decision before final handoff.",
+            status(
+                phase2_review_decision_approved,
+                missing=[] if artifacts["phase2ReviewDecisions"] else ["phase2-asset-review-decision.md/json"],
+                blocked=bool(artifacts["phase2ReviewDecisions"]) and not phase2_review_decision_approved,
+            ),
+            artifacts["phase2ReviewDecisions"] or artifacts["phase2ReviewPackets"][:1],
+            root,
+            notes=["Approved review decision is required before phase2-asset-handoff.md is generated."],
+            missing=[] if artifacts["phase2ReviewDecisions"] else ["phase2-asset-review-decision.md/json"],
+        ),
+        item(
             "phase2-approval-gate",
             "Production Phase 3 is blocked until the user explicitly approves Phase 2 assets.",
             status(phase2_approved, blocked=not phase2_approved),
-            artifacts["phase2Handoffs"] or artifacts["phase2ReviewPackets"][:1],
+            artifacts["phase2Handoffs"] or artifacts["phase2ReviewDecisions"] or artifacts["phase2ReviewPackets"][:1],
             root,
             notes=["Approval text: Assets approved. Generate phase2-asset-handoff.md and continue to frontend implementation."],
             missing=[] if phase2_approved else ["phase2-asset-handoff.md"],
