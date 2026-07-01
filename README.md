@@ -698,6 +698,44 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_pipeline_completion_audi
   --target "/dashboard"
 ```
 
+## 案例包生成器 / Case Study Pack Generator
+
+**中文**
+
+跑完 runbook 和 completion audit 后，可以一键生成可发布的案例包。它会读取真实产物，输出案例 README、中文自媒体文案、GitHub README 摘要和证据 JSON；如果当前还卡在阶段二资产审核，它会把这个阻塞写清楚，不会把 demo 冒充生产已上线。
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_case_study_pack.py \
+  --run-root ./frontend-ui-pipeline-run \
+  --project "my-app" \
+  --target "/dashboard"
+```
+
+默认输出到：
+
+- `case-study-pack/case-study.md`
+- `case-study-pack/social-post.zh-CN.md`
+- `case-study-pack/github-readme-snippet.md`
+- `case-study-pack/evidence-index.json`
+
+**English**
+
+After generating the runbook and completion audit, create a publishable case-study pack. It reads real artifacts and writes a case README, Chinese social post, GitHub README snippet, and evidence JSON. If the run is still blocked by Phase 2 asset approval, the generated copy says so instead of pretending the production implementation is complete.
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_case_study_pack.py \
+  --run-root ./frontend-ui-pipeline-run \
+  --project "my-app" \
+  --target "/dashboard"
+```
+
+Default outputs:
+
+- `case-study-pack/case-study.md`
+- `case-study-pack/social-post.zh-CN.md`
+- `case-study-pack/github-readme-snippet.md`
+- `case-study-pack/evidence-index.json`
+
 ## 本地校验 / Local Check
 
 ```bash
@@ -706,7 +744,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、启动向导、流水线运行索引生成器、流水线完成度审计生成器、阶段一视觉卓越门、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、阶段三 design QA 门、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、启动向导、流水线运行索引生成器、流水线完成度审计生成器、案例包生成器、阶段一视觉卓越门、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、阶段三 design QA 门、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 如果你是普通使用者，不需要跑完整 CI，可以优先运行安装诊断：
 
@@ -716,7 +754,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/diagnose_install.py
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, start wizard, pipeline runbook generator, pipeline completion audit generator, Phase 1 visual excellence gate, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, Phase 3 design QA gate, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, start wizard, pipeline runbook generator, pipeline completion audit generator, case study pack generator, Phase 1 visual excellence gate, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, Phase 3 design QA gate, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 If you are a regular user and do not need the full CI check, run the install doctor first:
 

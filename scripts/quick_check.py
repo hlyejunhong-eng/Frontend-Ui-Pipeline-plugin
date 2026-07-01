@@ -296,6 +296,10 @@ def main() -> None:
         "流水线完成度审计",
         "Pipeline Completion Audit Generator",
         "generate_pipeline_completion_audit.py",
+        "案例包生成器",
+        "Case Study Pack Generator",
+        "generate_case_study_pack.py",
+        "case-study-pack",
         "阶段一视觉卓越门",
         "Phase 1 Visual Excellence Gate",
         "generate_visual_excellence_gate.py",
@@ -363,6 +367,8 @@ def main() -> None:
     check_file(runbook_generator)
     completion_audit_generator = ROOT / "scripts" / "generate_pipeline_completion_audit.py"
     check_file(completion_audit_generator)
+    case_study_generator = ROOT / "scripts" / "generate_case_study_pack.py"
+    check_file(case_study_generator)
     visual_excellence_gate = ROOT / "scripts" / "generate_visual_excellence_gate.py"
     check_file(visual_excellence_gate)
     phase1_validator = ROOT / "scripts" / "validate_phase1_brief.py"
@@ -600,6 +606,7 @@ Phase 2 can start after validation passes.
             "Plugin manifest",
             "Script start_pipeline.py",
             "Script generate_pipeline_completion_audit.py",
+            "Script generate_case_study_pack.py",
             "Marketplace entry",
             "Installed cache",
             "Next Start Prompt",
@@ -1149,6 +1156,9 @@ Phase 2 can start after validation passes.
         social_dir = Path(temp_dir) / "social"
         social_dir.mkdir()
         (social_dir / "case-post.md").write_text("# Case Post\n", encoding="utf-8")
+        social_visuals_dir = social_dir / "visuals"
+        social_visuals_dir.mkdir()
+        (social_visuals_dir / "01-cover.png").write_bytes(contact_sheet.read_bytes())
         audit_md = Path(temp_dir) / "pipeline-completion-audit.md"
         audit_json = Path(temp_dir) / "pipeline-completion-audit.json"
         audit_check = subprocess.run(
@@ -1192,6 +1202,55 @@ Phase 2 can start after validation passes.
         ):
             if required_audit_text not in audit_text:
                 fail(f"completion audit missing {required_audit_text}")
+        case_pack_dir = Path(temp_dir) / "case-study-pack"
+        case_pack_check = subprocess.run(
+            [
+                sys.executable,
+                str(case_study_generator),
+                "--run-root",
+                str(temp_dir),
+                "--project",
+                "quick-check",
+                "--target",
+                "/dashboard",
+                "--output-dir",
+                str(case_pack_dir),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        case_md = case_pack_dir / "case-study.md"
+        social_post_md = case_pack_dir / "social-post.zh-CN.md"
+        snippet_md = case_pack_dir / "github-readme-snippet.md"
+        evidence_json = case_pack_dir / "evidence-index.json"
+        if "Status:" not in case_pack_check.stdout or not case_md.exists() or not social_post_md.exists() or not snippet_md.exists() or not evidence_json.exists():
+            fail("case study pack generator did not write expected outputs")
+        case_payload = json.loads(evidence_json.read_text(encoding="utf-8"))
+        if case_payload.get("schemaVersion") != "frontend-ui-pipeline.case-study-pack.v1":
+            fail("case study pack JSON schema version is wrong")
+        if case_payload.get("metrics", {}).get("commonIcons") != len(COMMON_ICONS):
+            fail("case study pack did not preserve common icon evidence")
+        if case_payload.get("metrics", {}).get("foundationStates") != 63:
+            fail("case study pack did not summarize foundation component states")
+        case_text = case_md.read_text(encoding="utf-8")
+        social_post_text = social_post_md.read_text(encoding="utf-8")
+        for required_case_text in (
+            "Case Hook",
+            "Evidence Index",
+            "Completion audit",
+            "Asset-assembled primary screen",
+        ):
+            if required_case_text not in case_text:
+                fail(f"case study pack missing {required_case_text}")
+        for required_social_text in (
+            "Frontend UI Pipeline",
+            "Completion audit",
+            "GitHub",
+        ):
+            if required_social_text not in social_post_text:
+                fail(f"case study social post missing {required_social_text}")
         subprocess.run(
             [
                 sys.executable,
@@ -1222,6 +1281,8 @@ Phase 2 can start after validation passes.
             fail("pipeline runbook did not index the standalone Phase 3 demo")
         if "Pipeline completion audit" not in runbook_after_patch_text:
             fail("pipeline runbook did not index the completion audit")
+        if "Case study pack" not in runbook_after_patch_text:
+            fail("pipeline runbook did not index the case study pack")
         server_check = subprocess.run(
             [
                 sys.executable,

@@ -67,6 +67,7 @@ def collect_artifacts(root: Path) -> dict[str, list[Path]]:
         "visualReports": find_all(root, ["**/visual-diff*.md", "**/visual-diff*.json"]),
         "issueLogs": find_all(root, ["**/plugin-run-issues.md", "**/issues.md"]),
         "socialDrafts": find_all(root, ["**/social/*.md", "**/*case-post.md"]),
+        "caseStudyPacks": find_all(root, ["**/case-study-pack/*.md", "**/case-study-pack/*.json"]),
     }
 
 
@@ -235,6 +236,7 @@ def build_runbook(root: Path, project: str, target: str) -> dict[str, Any]:
         ("visualReports", "QA", "Visual report", "qa"),
         ("issueLogs", "Ops", "Issue log", "log"),
         ("socialDrafts", "Social", "Social draft", "content"),
+        ("caseStudyPacks", "Social", "Case study pack", "case-pack"),
     ]
     for key, phase, label, kind in groups:
         for path in artifacts[key]:

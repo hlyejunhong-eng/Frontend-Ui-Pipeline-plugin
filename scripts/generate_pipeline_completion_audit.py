@@ -101,7 +101,7 @@ def collect(root: Path) -> dict[str, list[Path]]:
         "phase3Demos": find_all(root, ["**/phase3-demo*/index.html", "**/phase3-demo*/README.md", "**/phase3-demo*/phase3-demo-evidence.md"]),
         "phase3Screenshots": find_all(root, ["**/screenshots/*.png", "**/phase3-*screenshot*.png", "**/implementation-screenshot*.png"]),
         "phase3DesignQa": find_all(root, ["**/design-qa.md", "**/design-qa.json"]),
-        "social": find_all(root, ["**/social/*.md", "**/social/visuals/*.png", "**/*case-post.md"]),
+        "social": find_all(root, ["**/social/*.md", "**/social/visuals/*.png", "**/*case-post.md", "**/case-study-pack/*.md", "**/case-study-pack/*.json"]),
         "runbooks": find_all(root, ["**/pipeline-runbook.md", "**/pipeline-runbook.json"]),
     }
 
@@ -196,6 +196,10 @@ def plugin_evidence(repo_root: Path | None) -> tuple[str, list[str], list[str]]:
         repo_root / "scripts" / "install_local_marketplace.py",
         repo_root / "scripts" / "diagnose_install.py",
         repo_root / "scripts" / "quick_check.py",
+        repo_root / "scripts" / "start_pipeline.py",
+        repo_root / "scripts" / "generate_pipeline_runbook.py",
+        repo_root / "scripts" / "generate_pipeline_completion_audit.py",
+        repo_root / "scripts" / "generate_case_study_pack.py",
         repo_root / "skills" / "frontend-ui-ideation" / "SKILL.md",
         repo_root / "skills" / "frontend-asset-production" / "SKILL.md",
         repo_root / "skills" / "frontend-implementation" / "SKILL.md",
@@ -205,7 +209,9 @@ def plugin_evidence(repo_root: Path | None) -> tuple[str, list[str], list[str]]:
     readme_markers = [
         "codex plugin add frontend-ui-pipeline@personal",
         "Install Doctor",
+        "Start Wizard",
         "Full Pipeline Prompt",
+        "Case Study Pack Generator",
         "Demo Mode",
         "Phase Output Standards",
     ]
