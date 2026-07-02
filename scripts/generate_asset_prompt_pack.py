@@ -19,6 +19,7 @@ STRATEGY_NOTES = {
 
 SECTION_HINTS = [
     "Selected Direction",
+    "Layer Preservation Contract",
     "Background Spec",
     "Component Spec",
     "Motion Spec",
@@ -99,6 +100,13 @@ def entry_line(entry: dict) -> str:
     state = entry.get("state", "")
     asset_path = entry.get("assetPath", "")
     layer = entry.get("layer", "")
+    layer_role = entry.get("layerRole", "")
+    scenery_plane = entry.get("sceneryPlane", "")
+    depth_band = entry.get("depthBand", "")
+    plane_purpose = entry.get("planePurpose", "")
+    z_index = entry.get("zIndex", "")
+    group = entry.get("compositingGroup", "")
+    occlusion = entry.get("occlusionPolicy", "")
     selector = entry.get("selector", "")
     symbol = entry.get("symbol", "")
     suffix = []
@@ -108,6 +116,20 @@ def entry_line(entry: dict) -> str:
         suffix.append(f"symbol `{symbol}`")
     if layer:
         suffix.append(f"layer `{layer}`")
+    if layer_role:
+        suffix.append(f"role `{layer_role}`")
+    if scenery_plane:
+        suffix.append(f"scenery `{scenery_plane}`")
+    if depth_band:
+        suffix.append(f"depth `{depth_band}`")
+    if plane_purpose:
+        suffix.append(f"purpose `{plane_purpose}`")
+    if z_index != "":
+        suffix.append(f"z `{z_index}`")
+    if group:
+        suffix.append(f"group `{group}`")
+    if occlusion:
+        suffix.append(f"occlusion `{occlusion}`")
     suffix_text = "; ".join(suffix)
     return f"- `{entry_id}` -> `{asset_path}`; state `{state}`" + (f"; {suffix_text}" if suffix_text else "")
 
@@ -124,6 +146,7 @@ def build_prompt_pack(args: argparse.Namespace, brief: str, manifest: dict) -> s
     target_route = project.get("targetRoute", "")
     assets_root = manifest.get("assetsRoot", "assets")
     status = manifest.get("status", "planned")
+    layer_contract = manifest.get("layerContract", {}) if isinstance(manifest.get("layerContract"), dict) else {}
     foundation_count = coverage.get("foundationComponents", {})
     if isinstance(foundation_count, dict):
         foundation_total = sum(foundation_count.values())
@@ -157,7 +180,31 @@ def build_prompt_pack(args: argparse.Namespace, brief: str, manifest: dict) -> s
         "",
         "- Avoid generic SaaS cards, stock-photo atmosphere, unreadable small text, decorative blobs, mismatched icon styles, and assets that cannot be exported separately.",
         "- Avoid baking live copy into background art unless the manifest entry is explicitly a text image.",
+        "- Avoid flattening foreground frames, rim lights, bevels, glints, masks, particles, or card-edge decoration into the base background when content surfaces sit between them.",
+        "- Avoid merging assets across different z-index, compositing group, or occlusion policy values.",
         "- Avoid changing the approved color, typography, radius, stroke, shadow, and motion language from Phase 1.",
+        "",
+        "## Layer Preservation Contract",
+        "",
+        "Treat the approved preview like a staged illustration, not a single flat image. Preserve the atmosphere by splitting only along visual planes that can be recomposed without changing depth.",
+        "",
+        "## Scenery Plane Allocation",
+        "",
+        "Before generating any illustration-level component, assign the page scenery into back, mid, content, interaction, and front planes. Generate components from that allocation, not from arbitrary cropping.",
+        "",
+        "- Back scenery: far-field background, environmental light, large gradients, horizon/grid/depth context.",
+        "- Mid scenery: product motif, character/object/scene illustration, depth anchors, visual focal shapes.",
+        "- Content plane: panels, cards, glass/material surfaces, masks, clipped texture.",
+        "- Interaction plane: text, controls, icons, input affordances, stateful UI.",
+        "- Front scenery: foreground frame, edge ornaments, glints, particles, motion sweeps, top-plane atmosphere.",
+        "",
+        "- Base background and ambient depth stay on the lowest planes.",
+        "- Primary illustration/motifs remain behind or around content surfaces unless the Phase 1 layer map says otherwise.",
+        "- Content surfaces are their own layer above background/illustration and below labels, controls, and foreground decoration.",
+        "- Foreground frames, edge ornaments, rim lights, alert glows, particles, and motion overlays remain transparent top-plane assets when they visually sit above content.",
+        "- Only merge assets when their `compositingGroup`, z-index band, and occlusion policy match.",
+        "",
+        *[f"- {rule}" for rule in layer_contract.get("rules", []) if isinstance(rule, str)],
         "",
         "## Layered Asset Prompts",
         "",
@@ -167,7 +214,7 @@ def build_prompt_pack(args: argparse.Namespace, brief: str, manifest: dict) -> s
         "",
     ]
 
-    for category in ("background", "illustration", "texture", "effect", "mask"):
+    for category in ("background", "illustration", "surface", "texture", "effect", "mask", "overlay"):
         items = grouped.get(category, [])
         if not items:
             continue
@@ -176,8 +223,12 @@ def build_prompt_pack(args: argparse.Namespace, brief: str, manifest: dict) -> s
             lines.extend(
                 [
                     entry_line(entry),
-                    f"  Prompt: create `{entry.get('state', '')}` for `{screen}` in the approved `{style_name}` direction. Preserve layer role `{entry.get('layer', category)}`, transparent edges when composited, and export to the exact manifest path.",
-                    "  Refinement knobs: opacity, blur, grain, saturation, crop anchor, highlight intensity, and mask softness.",
+                    f"  Prompt: create `{entry.get('state', '')}` for `{screen}` in the approved `{style_name}` direction. Preserve layer role `{entry.get('layerRole', entry.get('layer', category))}`, z-index `{entry.get('zIndex', '')}`, compositing group `{entry.get('compositingGroup', '')}`, transparent edges when composited, and export to the exact manifest path.",
+                    f"  Scenery plane: {entry.get('sceneryPlane', 'unspecified')} / {entry.get('depthBand', 'unspecified')}. Purpose: {entry.get('planePurpose', 'follow the scenery allocation')}",
+                    f"  Componentization: {entry.get('componentizationRule', 'generate according to the owning visual plane')}",
+                    f"  Occlusion: {entry.get('occlusionPolicy', 'follow the Phase 1 layer map')}",
+                    f"  Must remain separate from: {', '.join(str(item) for item in entry.get('mustRemainSeparateFrom', [])) if isinstance(entry.get('mustRemainSeparateFrom'), list) else entry.get('mustRemainSeparateFrom', '')}",
+                    "  Refinement knobs: opacity, blur, grain, saturation, crop anchor, highlight intensity, mask softness, z-index, blend mode, and foreground overlap tolerance.",
                     "",
                 ]
             )
@@ -239,6 +290,9 @@ def build_prompt_pack(args: argparse.Namespace, brief: str, manifest: dict) -> s
             f"- Total manifest entries: `{coverage.get('totalEntries', len(entries))}`",
             "- Every asset renders visibly in the contact sheet.",
             "- Every generated file path matches the manifest or the manifest is updated before validation.",
+            "- Every manifest entry keeps layerRole, zIndex, compositingGroup, occlusionPolicy, mayMergeWith, mustRemainSeparateFrom, and alphaRequired.",
+            "- Every manifest entry keeps sceneryPlane, depthBand, planePurpose, and componentizationRule.",
+            "- Top-plane decoration that crosses over content remains a separate transparent asset and is visible in the asset-assembled primary screen preview.",
             "- The user must approve the review package before final Phase 2 handoff or Phase 3 implementation.",
             "",
             "## Commands",

@@ -162,6 +162,7 @@ def compare(args: argparse.Namespace) -> dict[str, object]:
                 differing_pixels += 1
 
     diff_pct = differing_pixels / compared_pixels * 100
+    similarity_pct = max(0.0, 100.0 - diff_pct)
     mean_delta = total_delta / compared_pixels
     passed = (
         diff_pct <= args.max_diff_pct
@@ -179,6 +180,7 @@ def compare(args: argparse.Namespace) -> dict[str, object]:
         "comparedPixels": compared_pixels,
         "differingPixels": differing_pixels,
         "diffPct": round(diff_pct, 6),
+        "similarityPct": round(similarity_pct, 6),
         "meanDelta": round(mean_delta, 6),
         "maxDelta": max_delta,
         "thresholds": {
@@ -210,6 +212,7 @@ def write_markdown(report: dict[str, object], output_path: Path) -> None:
                 f"- Compared area: `{compared_size['width']}x{compared_size['height']}`",
                 f"- Differing pixels: `{report['differingPixels']}` of `{report['comparedPixels']}`",
                 f"- Difference: `{report['diffPct']}%`",
+                f"- Similarity: `{report['similarityPct']}%`",
                 f"- Mean channel delta: `{report['meanDelta']}`",
                 f"- Max channel delta: `{report['maxDelta']}`",
                 f"- Pixel tolerance: `{thresholds['pixelTolerance']}`",
@@ -252,6 +255,7 @@ def main() -> None:
     status = "[OK]" if report["passed"] else "[FAIL]"
     print(
         f"{status} visual diff {report['diffPct']}% "
+        f"similarity={report['similarityPct']}% "
         f"mean_delta={report['meanDelta']} max_delta={report['maxDelta']} "
         f"size_match={report['sizeMatch']}"
     )

@@ -217,7 +217,8 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
         next_skill = "$frontend-implementation"
         next_prompt = (
             "Use $frontend-implementation with the approved phase2-asset-handoff.md. Inspect the target "
-            "frontend first, then hot-replace the requested route with the approved assets."
+            "frontend first, then hot-replace the requested route with the approved assets. Reuse Phase 2 "
+            "components only; do not create new visible component families or states."
         )
     elif not phase3_planned:
         key = "phase3-qa-plan-needed"
@@ -235,7 +236,7 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
         next_skill = "$frontend-implementation"
         next_prompt = (
             "Continue $frontend-implementation. Generate the Phase 3 implementation patch plan before editing "
-            "the real app, then follow it only if it is not blocked."
+            "the real app, confirm the Phase 2 Component Reuse Ledger, then follow it only if it is not blocked."
         )
     elif not phase3_screenshots:
         key = "phase3-screenshot-capture-needed"
@@ -244,7 +245,8 @@ def status_from(artifacts: dict[str, list[Path]]) -> dict[str, Any]:
         next_skill = "$frontend-implementation"
         next_prompt = (
             "Continue $frontend-implementation. Run the target app, execute the generated capture-screenshots.mjs "
-            "script or capture equivalent external-runtime screenshots, then run visual checks and diffs."
+            "script or capture equivalent external-runtime screenshots, then run visual checks and diffs. Any added "
+            "text-binding helper boxes must remain hidden or transparent except for live text."
         )
     else:
         key = "implementation-evidence-ready"

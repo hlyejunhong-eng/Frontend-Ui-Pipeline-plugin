@@ -94,6 +94,13 @@ If the user provides no runnable app, screenshot, URL, Figma frame, or code targ
 6. Create the Phase 2 generation guide:
    - Include a dedicated "Phase 2 Generation Guide" section in `phase1-ui-brief.md`.
    - Specify illustration and UI layer order, such as base background, illustration planes, component surfaces, buttons, text, effects, masks, particles, and motion overlays.
+   - Include a dedicated "Layer Preservation Contract" subsection that translates the illustration into recomposable frontend planes, not a flattened screenshot.
+   - Include a dedicated "Scenery Plane Allocation" subsection for every Phase 1 page image before Phase 2. Split the page into back scenery, mid scenery, content plane, interaction plane, and front scenery.
+   - For each scenery plane, explain what visual job it performs, what it may cover, what may cover it, which illustration-level components belong there, and which UI components must align to it.
+   - Define a z-index ledger for at least: base background, background depth overlay, midground illustration, content surface, text/controls, foreground decoration, motion overlay, and modal overlay.
+   - For each visual plane, specify `layerRole`, z-index, bounds, anchor, opacity/blend mode, whether alpha transparency is required, which planes it may merge with, and which planes it must remain separate from.
+   - Mark top-plane border ornaments, rim lights, edge frames, glints, particles, masks, and decorative strokes as separate transparent overlays whenever they visually sit above content surfaces.
+   - Write occlusion rules in plain words: what sits behind content, what sits inside content, what sits above content, and what must never be baked into the base background.
    - Specify adjustable parameters for later refinement: opacity, blur, grain, shadow strength, highlight intensity, saturation, line weight, icon stroke, radius, spacing, motion duration, easing, and responsive crop rules.
    - Specify a complete component asset inventory for Phase 2, including assets that are not used by the current screen but define the style system.
    - Specify style tokens that Phase 2 and Phase 3 must preserve: color, typography, radius, elevation, border, icon style, illustration style, and motion language.
@@ -106,12 +113,16 @@ The Markdown document must include:
 - Source audit: current screen/flow structure, components, copy, states, and interaction model.
 - Selected direction: visual narrative, art direction, tone, and why it fits.
 - Layout spec: viewport sizes, grid, spacing scale, z-index/layering, alignment, safe areas, responsive behavior, and overflow rules.
+- Layer preservation contract: z-index ledger, compositing groups, occlusion policy, may-merge rules, must-remain-separate rules, alpha requirements, and implementation hints for every major visual plane.
+- Scenery plane allocation: per-page back scenery, mid scenery, content plane, interaction plane, front scenery, visual purpose, occlusion rules, and illustration-level component mapping.
 - Background spec: shapes, imagery, texture, depth, gradients, lighting, blur, masks, and exact placement rules.
 - Component spec: every component with dimensions, radii, borders, shadows, fill, typography, icon treatment, states, disabled/loading/error behavior, and data dependencies.
 - Copy spec: all headings, labels, button text, helper text, tooltips, empty-state text, and error text.
 - Button and control spec: hit area, icon usage, hover/press/focus/disabled states, cursor, and keyboard behavior.
 - Motion spec: page transitions, component entrance, click feedback, hover, drag, loading, idle motion, easing, durations, delays, transform origins, and reduced-motion alternatives.
 - Phase 2 generation guide: layer map, adjustable visual parameters, asset naming rules, export rules, responsive crop rules, and component coverage rules.
+- Split ledger: a table that lists every background, illustration, content surface, foreground decoration, mask, texture, and motion overlay with `layerRole`, `zIndex`, `compositingGroup`, `occlusionPolicy`, `mayMergeWith`, `mustRemainSeparateFrom`, and `alphaRequired`.
+- Scenery allocation table: a table that lists every Phase 1 page image, each plane's `sceneryPlane`, `depthBand`, `planePurpose`, `componentizationRule`, and the illustration-level components Phase 2 must generate from it.
 - Visual excellence gate: three visual option names, preview paths, selected option, selected visual target, taste scores, and a clear pass/fail result.
 - Product Design benchmark: selected direction score average, baseline average, advantage criteria, required brief markers, and a clear pass/fail result.
 - Asset expectations: predicted asset list for phase 2, including backgrounds, illustrations, icons, motion frames, sprites, masks, textures, and the full foundational component kit.
@@ -157,6 +168,8 @@ Do not finish with prose only. Final output must provide:
 - At least one preview image that represents the redesigned target UI.
 - Evidence of source inspection, such as screenshots, route/component notes, or a clear statement that the source artifact was not available.
 - A Phase 2 generation guide with layer order, adjustable parameters, and the full foundational component inventory.
+- A Layer Preservation Contract proving foreground decoration and atmosphere can be split without destroying the selected illustration depth.
+- A Scenery Plane Allocation proving Phase 2 knows which visuals are back scenery, mid scenery, content, interaction, and front scenery before generating illustration-level components.
 - Three independent visual direction previews, one selected visual target, and a passing `phase1-visual-excellence-gate.md`.
 - A passing `phase1-visual-benchmark.md` showing the selected direction beats the Product Design baseline before Phase 2.
 - A passing `validate_phase1_brief.py` result when the bundled script is available.

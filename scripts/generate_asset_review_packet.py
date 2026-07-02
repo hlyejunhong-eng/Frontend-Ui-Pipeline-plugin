@@ -28,8 +28,8 @@ APPROVAL_CHOICES = [
     ),
     (
         "Revise implementation mapping",
-        "The assets are acceptable, but layer order, CSS selectors, import paths, or motion triggers need changes.",
-        "Revise implementation mapping: <describe placement, selector, import, or motion changes>.",
+        "The assets are acceptable, but layer order, z-index, occlusion, CSS selectors, import paths, or motion triggers need changes.",
+        "Revise implementation mapping: <describe placement, z-index, occlusion, selector, import, or motion changes>.",
     ),
 ]
 
@@ -82,8 +82,39 @@ def first_entries(manifest: dict, limit: int = 16) -> list[str]:
             continue
         lines.append(
             f"- `{entry.get('id', '')}` -> `{entry.get('assetPath', '')}` "
-            f"({entry.get('category', '')}/{entry.get('state', '')})"
+            f"({entry.get('category', '')}/{entry.get('state', '')}; scenery `{entry.get('sceneryPlane', '')}/{entry.get('depthBand', '')}`; role `{entry.get('layerRole', entry.get('layer', ''))}`; z `{entry.get('zIndex', '')}`)"
         )
+    return lines
+
+
+def layer_review_lines(manifest: dict) -> list[str]:
+    entries = [entry for entry in manifest.get("entries", []) if isinstance(entry, dict)]
+    screen_entries = [
+        entry
+        for entry in entries
+        if str(entry.get("id", "")).startswith("screen/")
+        or entry.get("category") in {"background", "illustration", "surface", "mask", "texture", "overlay", "effect"}
+    ]
+    lines = [
+        "- Check whether background, illustration, content surfaces, foreground decoration, and motion overlays are still separate where the preview needs depth.",
+        "- Check whether back scenery, mid scenery, content plane, interaction plane, and front scenery match the Phase 1 page image before approving assets.",
+        "- Check that border ornaments, rim lights, glows, masks, and particles that should sit above cards are not flattened into the bottom background.",
+        "- Check that the primary screen asset assembly visibly preserves the original illustration atmosphere and depth order.",
+    ]
+    if screen_entries:
+        lines.extend(["", "| Asset | Scenery | Role | Z | Occlusion | Must Stay Separate From |", "| --- | --- | --- | --- | --- | --- |"])
+        for entry in sorted(screen_entries, key=lambda item: (item.get("zIndex", 9999), str(item.get("id", "")))):
+            separate_from = ", ".join(str(item) for item in entry.get("mustRemainSeparateFrom", [])[:5]) if isinstance(entry.get("mustRemainSeparateFrom"), list) else str(entry.get("mustRemainSeparateFrom", ""))
+            lines.append(
+                "| `{}` | `{}` | `{}` | `{}` | {} | `{}` |".format(
+                    entry.get("assetPath", entry.get("id", "")),
+                    f"{entry.get('sceneryPlane', '')}/{entry.get('depthBand', '')}".strip("/"),
+                    entry.get("layerRole", entry.get("layer", "")),
+                    entry.get("zIndex", ""),
+                    str(entry.get("occlusionPolicy", "")).replace("\n", " "),
+                    separate_from,
+                )
+            )
     return lines
 
 
@@ -92,7 +123,7 @@ def known_review_notes(args: argparse.Namespace, manifest: dict, output_dir: Pat
     assembly_preview = relpath(args.assembly_preview, output_dir)
     visual_diff_report = relpath(args.visual_diff_report, output_dir)
     notes = [
-        "Judge the style fidelity, asset coverage, naming/organization, and Phase 3 implementation mapping.",
+        "Judge the style fidelity, asset coverage, naming/organization, layer preservation, and Phase 3 implementation mapping.",
     ]
     if assembly_preview:
         notes.append(
@@ -108,6 +139,8 @@ def known_review_notes(args: argparse.Namespace, manifest: dict, output_dir: Pat
         )
     if manifest.get("evidence", {}).get("assemblyUsesGeneratedAssets") is True:
         notes.append("The manifest evidence marks `assemblyUsesGeneratedAssets=true`.")
+    if manifest.get("layerContract"):
+        notes.append("The manifest includes a layer preservation contract; reject the package if any top-plane decoration is flattened into bottom-plane background art.")
     return [f"- {note}" for note in notes]
 
 
@@ -168,6 +201,8 @@ def build_markdown(args: argparse.Namespace, manifest: dict, output_dir: Path) -
 
     lines.extend(["## Known Review Notes", "", *known_review_notes(args, manifest, output_dir), ""])
 
+    lines.extend(["## Layer and Occlusion Review", "", *layer_review_lines(manifest), ""])
+
     lines.extend(
         [
             "## Decision Options",
@@ -200,6 +235,24 @@ def build_html(markdown: str, args: argparse.Namespace, manifest: dict, output_d
     assembly_preview = relpath(args.assembly_preview, output_dir)
     coverage = coverage_lines(manifest)
     notes_html = "\n".join(f"<li>{html.escape(line[2:] if line.startswith('- ') else line)}</li>" for line in known_review_notes(args, manifest, output_dir))
+    layer_review = layer_review_lines(manifest)
+    layer_review_html_items = []
+    layer_review_table_lines = []
+    for line in layer_review:
+        if line.startswith("- "):
+            layer_review_html_items.append(f"<li>{html.escape(line[2:])}</li>")
+        elif line.startswith("|"):
+            layer_review_table_lines.append(line)
+    layer_review_html = "<ul>{}</ul>".format("".join(layer_review_html_items))
+    if layer_review_table_lines:
+        rows = []
+        for index, line in enumerate(layer_review_table_lines):
+            cells = [cell.strip(" `") for cell in line.strip("|").split("|")]
+            if set(cells) == {"---"}:
+                continue
+            tag = "th" if index == 0 else "td"
+            rows.append("<tr>{}</tr>".format("".join(f"<{tag}>{html.escape(cell)}</{tag}>" for cell in cells)))
+        layer_review_html += "<table>{}</table>".format("".join(rows))
     choices_html = "\n".join(
         "<article><h3>{}</h3><p>{}</p><pre>{}</pre></article>".format(
             html.escape(title), html.escape(description), html.escape(message)
@@ -238,6 +291,9 @@ def build_html(markdown: str, args: argparse.Namespace, manifest: dict, output_d
     article {{ border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:16px; }}
     pre {{ white-space:pre-wrap; word-break:break-word; color:var(--accent); background:#071015; border-radius:6px; padding:12px; overflow:auto; }}
     code {{ color:var(--accent); }}
+    table {{ width:100%; border-collapse:collapse; margin-top:12px; overflow-wrap:anywhere; }}
+    th, td {{ border:1px solid var(--line); padding:8px; text-align:left; vertical-align:top; color:var(--muted); }}
+    th {{ color:var(--text); background:#0f1820; }}
     .status {{ color:var(--accent); font-weight:700; }}
   </style>
 </head>
@@ -264,6 +320,10 @@ def build_html(markdown: str, args: argparse.Namespace, manifest: dict, output_d
   <section>
     <h2>Known Review Notes</h2>
     <ul>{notes_html}</ul>
+  </section>
+  <section>
+    <h2>Layer And Occlusion Review</h2>
+    {layer_review_html}
   </section>
   <section>
     <h2>Decision Options</h2>

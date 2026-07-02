@@ -15,6 +15,7 @@ DEFAULT_VIEWPORTS = [
     ("mobile", 390, 844),
     ("desktop", 1365, 916),
 ]
+DEFAULT_MAX_DIFF_PCT = 1.0
 
 
 def fail(message: str) -> None:
@@ -153,6 +154,8 @@ def build_plan(args: argparse.Namespace, inspection: dict[str, Any], output_dir:
                     preview_path,
                     case["output"],
                     "--allow-size-mismatch",
+                    "--max-diff-pct",
+                    str(args.max_diff_pct),
                     "--output-md",
                     str(output_dir / f"visual-diff-{preview_name}-to-{case['name']}.md"),
                     "--output-json",
@@ -175,11 +178,14 @@ def build_plan(args: argparse.Namespace, inspection: dict[str, Any], output_dir:
         "playwrightScript": str(script_path),
         "visualCheckCommand": visual_check_command,
         "visualDiffCommands": diff_commands,
+        "maxDiffPct": args.max_diff_pct,
+        "minSimilarityPct": max(0.0, 100.0 - float(args.max_diff_pct)),
         "approvedPreviews": previews,
         "notes": [
             "Run the target app first, then execute the generated Playwright script when a browser URL is available.",
             "Use check_visual_artifacts.py after screenshots are captured.",
-            "Use compare_visual_artifacts.py when approved preview PNGs are available.",
+            "Use compare_visual_artifacts.py when approved Phase 1 preview PNGs are available.",
+            "Treat the Phase 1 page image as the visual source of truth and iterate until every implementation screenshot is at least 99% similar.",
         ],
     }
 
@@ -235,6 +241,13 @@ def markdown(plan: dict[str, Any], output_dir: Path) -> str:
             "\n".join(diff_lines),
             "```",
             "",
+            "## 99% Similarity Gate",
+            "",
+            f"- Maximum diff: `{plan.get('maxDiffPct')}%`",
+            f"- Required similarity: `{plan.get('minSimilarityPct')}%`",
+            "- Compare every Phase 3 implementation screenshot against its matching Phase 1 page image.",
+            "- If any page misses the gate, adjust layout, asset placement, z-index, opacity, crop, typography, spacing, and motion resting state, then recapture and compare again.",
+            "",
             "If the target app cannot expose a browser URL, use the external runtime noted above and capture equivalent screenshots manually, then run the visual checks on those files.",
             "",
         ]
@@ -250,6 +263,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--target-name", default="", help="Name used for screenshot files.")
     parser.add_argument("--approved-preview", action="append", default=[], help="Approved preview PNG for visual diff commands. Can repeat.")
     parser.add_argument("--viewport", action="append", default=[], help="Viewport like mobile:390x844. Can repeat.")
+    parser.add_argument("--max-diff-pct", type=float, default=DEFAULT_MAX_DIFF_PCT, help="Maximum visual diff percent for Phase 1 to Phase 3 screenshot matching. Default: 1.0.")
     parser.add_argument("--wait-ms", type=int, default=1200)
     parser.add_argument("--full-page", action="store_true")
     return parser.parse_args()

@@ -85,6 +85,18 @@ def normalize_entries(manifest: dict[str, Any]) -> list[dict[str, Any]]:
                 "state": state_label or "default",
                 "assetPath": asset.get("path", ""),
                 "layer": asset.get("layer", ""),
+                "sceneryPlane": asset.get("sceneryPlane", ""),
+                "depthBand": asset.get("depthBand", ""),
+                "planePurpose": asset.get("planePurpose", ""),
+                "componentizationRule": asset.get("componentizationRule", ""),
+                "layerRole": asset.get("layerRole", asset.get("layer", "")),
+                "zIndex": asset.get("zIndex", ""),
+                "compositingGroup": asset.get("compositingGroup", ""),
+                "occlusionPolicy": asset.get("occlusionPolicy", ""),
+                "mayMergeWith": asset.get("mayMergeWith", []),
+                "mustRemainSeparateFrom": asset.get("mustRemainSeparateFrom", []),
+                "alphaRequired": asset.get("alphaRequired", ""),
+                "implementationHint": asset.get("implementationHint", ""),
                 "purpose": asset.get("purpose", ""),
                 "importRule": asset.get("importRule", ""),
                 "dimensions": asset.get("dimensions", ""),
@@ -181,8 +193,26 @@ def build_copy_operations(entries: list[dict[str, Any]], manifest_path: Path, in
                 "component": entry.get("component", ""),
                 "state": entry.get("state", ""),
                 "importRule": entry.get("importRule", ""),
+                "sceneryPlane": entry.get("sceneryPlane", ""),
+                "depthBand": entry.get("depthBand", ""),
+                "planePurpose": entry.get("planePurpose", ""),
+                "componentizationRule": entry.get("componentizationRule", ""),
+                "layerRole": entry.get("layerRole", entry.get("layer", "")),
+                "zIndex": entry.get("zIndex", ""),
+                "compositingGroup": entry.get("compositingGroup", ""),
+                "occlusionPolicy": entry.get("occlusionPolicy", ""),
+                "implementationHint": entry.get("implementationHint", ""),
+                "alphaRequired": entry.get("alphaRequired", ""),
                 "components": [],
                 "states": [],
+                "layerRoles": [],
+                "sceneryPlanes": [],
+                "depthBands": [],
+                "planePurposes": [],
+                "zIndexes": [],
+                "compositingGroups": [],
+                "occlusionPolicies": [],
+                "mustRemainSeparateFrom": [],
                 "entryCount": 0,
             }
             by_copy_key[key] = operation
@@ -194,8 +224,63 @@ def build_copy_operations(entries: list[dict[str, Any]], manifest_path: Path, in
             operation["components"].append(component)
         if state and state not in operation["states"]:
             operation["states"].append(state)
+        layer_role = str(entry.get("layerRole", entry.get("layer", "")) or "")
+        if layer_role and layer_role not in operation["layerRoles"]:
+            operation["layerRoles"].append(layer_role)
+        scenery_plane = str(entry.get("sceneryPlane", "") or "")
+        if scenery_plane and scenery_plane not in operation["sceneryPlanes"]:
+            operation["sceneryPlanes"].append(scenery_plane)
+        depth_band = str(entry.get("depthBand", "") or "")
+        if depth_band and depth_band not in operation["depthBands"]:
+            operation["depthBands"].append(depth_band)
+        plane_purpose = str(entry.get("planePurpose", "") or "")
+        if plane_purpose and plane_purpose not in operation["planePurposes"]:
+            operation["planePurposes"].append(plane_purpose)
+        z_index = entry.get("zIndex", "")
+        if z_index != "" and z_index not in operation["zIndexes"]:
+            operation["zIndexes"].append(z_index)
+        group = str(entry.get("compositingGroup", "") or "")
+        if group and group not in operation["compositingGroups"]:
+            operation["compositingGroups"].append(group)
+        policy = str(entry.get("occlusionPolicy", "") or "")
+        if policy and policy not in operation["occlusionPolicies"]:
+            operation["occlusionPolicies"].append(policy)
+        separate_from = entry.get("mustRemainSeparateFrom", [])
+        if isinstance(separate_from, list):
+            for item in separate_from:
+                label = str(item)
+                if label and label not in operation["mustRemainSeparateFrom"]:
+                    operation["mustRemainSeparateFrom"].append(label)
         operation["entryCount"] += 1
     return operations
+
+
+def component_reuse_ledger(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    ledger: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        category = str(entry.get("category", "") or entry.get("type", "")).lower()
+        asset_path = str(entry.get("assetPath", "")).lower()
+        if category == "html" or asset_path.endswith(".html") or "review" in asset_path:
+            continue
+        component = str(entry.get("component", "") or entry.get("category", "") or "asset")
+        if component not in ledger:
+            ledger[component] = {
+                "component": component,
+                "states": [],
+                "categories": [],
+                "assetPaths": [],
+                "allowedVisibleUse": "Reuse the approved Phase 2 component/state only; do not invent a new visual variant in Phase 3.",
+            }
+        state = str(entry.get("state", "default") or "default")
+        category_label = str(entry.get("category", "") or entry.get("type", "") or "asset")
+        asset_label = str(entry.get("assetPath", "") or "")
+        if state and state not in ledger[component]["states"]:
+            ledger[component]["states"].append(state)
+        if category_label and category_label not in ledger[component]["categories"]:
+            ledger[component]["categories"].append(category_label)
+        if asset_label and asset_label not in ledger[component]["assetPaths"]:
+            ledger[component]["assetPaths"].append(asset_label)
+    return [ledger[key] for key in sorted(ledger)]
 
 
 def build_file_operations(inspection: dict[str, Any], copy_operations: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -300,6 +385,26 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
         "frameworks": inspection.get("frameworks", []),
         "targetFile": target.get("absoluteFile", ""),
         "copyOperations": copy_operations,
+        "phase2ComponentLedger": component_reuse_ledger(entries),
+        "componentReuseContract": {
+            "visibleComponentInventoryClosed": True,
+            "allowedAdditions": [
+                "invisible text-binding boxes",
+                "transparent text fields",
+                "hidden backing text frames",
+            ],
+            "forbiddenAdditions": [
+                "new visible component families",
+                "new visible component states",
+                "new visible borders",
+                "new visible fills",
+                "new visible shadows",
+                "new visible ornaments",
+                "new icon treatments",
+                "new motion states",
+            ],
+            "missingVisibleComponentRule": "Return to Phase 2 asset production instead of inventing the visible component in Phase 3.",
+        },
         "missingSourceAssets": missing_sources,
         "fileOperations": build_file_operations(inspection, copy_operations),
         "apiPreservation": api_preservation(inspection),
@@ -308,7 +413,10 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
         "implementationOrder": [
             "Confirm Phase 2 approval and target route match.",
             "Copy approved static assets to the planned destination paths.",
+            "Map back scenery, mid scenery, content plane, interaction plane, and front scenery into explicit implementation layers.",
             "Create or merge shared foundation style files.",
+            "Build UI only from the Phase 2 component ledger; add only invisible/transparent text-binding helpers when live text must attach to approved component/background slots.",
+            "Create explicit stacking contexts from the layer preservation hints before composing UI surfaces.",
             "Modify the target route/component while preserving API contracts.",
             "Wire real APIs when callable; otherwise add same-shape fixtures at the call boundary.",
             "Run available build/test/runtime checks or external runtime instructions.",
@@ -318,13 +426,18 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def markdown(plan: dict[str, Any]) -> str:
-    copy_rows = ["| Kind | Source | Destination | Exists |", "| --- | --- | --- | --- |"]
+    copy_rows = ["| Kind | Role/Z | Source | Destination | Exists |", "| --- | --- | --- | --- | --- |"]
     for item in plan["copyOperations"]:
+        role_z = ", ".join(item.get("layerRoles", [])[:3])
+        z_values = ", ".join(str(value) for value in item.get("zIndexes", [])[:3])
+        scenery = ", ".join(item.get("sceneryPlanes", [])[:3])
+        depth = ", ".join(item.get("depthBands", [])[:3])
+        role_z = f"{scenery}:{depth} / {role_z} / {z_values}".strip(" /:")
         copy_rows.append(
-            f"| `{item['kind']}` | `{item['source']}` | `{item['destination']}` | `{'yes' if item['sourceExists'] else 'no'}` |"
+            f"| `{item['kind']}` | `{role_z}` | `{item['source']}` | `{item['destination']}` | `{'yes' if item['sourceExists'] else 'no'}` |"
         )
     if len(copy_rows) == 2:
-        copy_rows.append("| - | No copy operations | - | - |")
+        copy_rows.append("| - | - | No copy operations | - | - |")
 
     file_rows = ["| Action | Path | Reason |", "| --- | --- | --- |"]
     for item in plan["fileOperations"]:
@@ -340,7 +453,45 @@ def markdown(plan: dict[str, Any]) -> str:
         api_lines = ["- No API usage detected by the target inspector."]
     blocker_lines = [f"- {item}" for item in plan["blockers"]] or ["- None."]
     missing_lines = [f"- `{item['source']}` -> `{item['destination']}`" for item in plan["missingSourceAssets"]] or ["- None."]
+    ledger_rows = ["| Approved Component | Approved States | Categories |", "| --- | --- | --- |"]
+    for item in plan.get("phase2ComponentLedger", []):
+        ledger_rows.append(
+            "| `{}` | `{}` | `{}` |".format(
+                item.get("component", ""),
+                ", ".join(item.get("states", [])),
+                ", ".join(item.get("categories", [])),
+            )
+        )
+    if len(ledger_rows) == 2:
+        ledger_rows.append("| - | No approved visible components found | Return to Phase 2 |")
+    reuse_contract = plan.get("componentReuseContract", {})
+    allowed_helper_lines = [f"- {item}" for item in reuse_contract.get("allowedAdditions", [])] or ["- None."]
+    forbidden_component_lines = [f"- {item}" for item in reuse_contract.get("forbiddenAdditions", [])] or ["- None."]
     runtime_lines = [f"- {item}" for item in plan["runtimeNotes"]] or ["- None."]
+    layer_hint_lines = []
+    for item in plan["copyOperations"]:
+        roles = ", ".join(item.get("layerRoles", [])) or str(item.get("layerRole", ""))
+        z_values = ", ".join(str(value) for value in item.get("zIndexes", []))
+        groups = ", ".join(item.get("compositingGroups", []))
+        policies = " / ".join(item.get("occlusionPolicies", [])[:2])
+        separate = ", ".join(item.get("mustRemainSeparateFrom", [])[:6])
+        if roles or z_values or groups or policies or separate:
+            layer_hint_lines.append(
+                f"- `{item['destination']}`: role `{roles}`, z `{z_values}`, group `{groups}`, occlusion {policies or '`not specified`'}, separate from `{separate}`."
+            )
+    if not layer_hint_lines:
+        layer_hint_lines = ["- No layer preservation hints were found in the manifest; return to Phase 2 before visual implementation."]
+    scenery_hint_lines = []
+    for item in plan["copyOperations"]:
+        planes = ", ".join(item.get("sceneryPlanes", []))
+        bands = ", ".join(item.get("depthBands", []))
+        purposes = " / ".join(item.get("planePurposes", [])[:2])
+        if planes or bands or purposes:
+            scenery_hint_lines.append(
+                f"- `{item['destination']}`: scenery `{planes}`, depth `{bands}`, purpose {purposes or '`not specified`'}."
+            )
+    if not scenery_hint_lines:
+        scenery_hint_lines = ["- No scenery plane hints were found in the manifest; return to Phase 2 before visual implementation."]
     verification_lines = [f"- `{item}`" if item.startswith(("npm ", "pnpm ", "yarn ", "Use ")) else f"- {item}" for item in plan["verificationSteps"]]
     order_lines = [f"{index}. {item}" for index, item in enumerate(plan["implementationOrder"], 1)]
 
@@ -369,9 +520,30 @@ def markdown(plan: dict[str, Any]) -> str:
             "",
             *missing_lines,
             "",
+            "## Phase 2 Component Reuse Ledger",
+            "",
+            *ledger_rows,
+            "",
+            "## Phase 3 Component Reuse Contract",
+            "",
+            f"- Visible component inventory closed: `{'yes' if reuse_contract.get('visibleComponentInventoryClosed') else 'no'}`",
+            f"- Missing visible component rule: {reuse_contract.get('missingVisibleComponentRule', 'Return to Phase 2.')}",
+            "- Allowed Phase 3 additions:",
+            *allowed_helper_lines,
+            "- Forbidden Phase 3 additions:",
+            *forbidden_component_lines,
+            "",
             "## File Operations",
             "",
             *file_rows,
+            "",
+            "## Layer Preservation Hints",
+            "",
+            *layer_hint_lines,
+            "",
+            "## Scenery Plane Hints",
+            "",
+            *scenery_hint_lines,
             "",
             "## API Preservation",
             "",

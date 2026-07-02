@@ -94,6 +94,18 @@ def normalize_entries(manifest: dict[str, Any]) -> list[dict[str, Any]]:
                 "state": state_label or "default",
                 "assetPath": asset.get("path", ""),
                 "layer": asset.get("layer", ""),
+                "sceneryPlane": asset.get("sceneryPlane", ""),
+                "depthBand": asset.get("depthBand", ""),
+                "planePurpose": asset.get("planePurpose", ""),
+                "componentizationRule": asset.get("componentizationRule", ""),
+                "layerRole": asset.get("layerRole", asset.get("layer", "")),
+                "zIndex": asset.get("zIndex", ""),
+                "compositingGroup": asset.get("compositingGroup", ""),
+                "occlusionPolicy": asset.get("occlusionPolicy", ""),
+                "mayMergeWith": asset.get("mayMergeWith", []),
+                "mustRemainSeparateFrom": asset.get("mustRemainSeparateFrom", []),
+                "alphaRequired": asset.get("alphaRequired", ""),
+                "implementationHint": asset.get("implementationHint", ""),
                 "purpose": asset.get("purpose", ""),
                 "importRule": asset.get("importRule", ""),
                 "dimensions": asset.get("dimensions", ""),
@@ -135,24 +147,35 @@ def coverage_lines(manifest: dict[str, Any], entries: list[dict[str, Any]]) -> l
 
 def asset_table(entries: list[dict[str, Any]], output_path: Path) -> list[str]:
     lines = [
-        "| Asset | Type | Component/State | Layer | Import Rule |",
-        "| --- | --- | --- | --- | --- |",
+        "| Asset | Type | Component/State | Scenery | Layer Role | Z | Separate From | Import Rule |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for entry in entries:
         asset_path = relpath(str(entry.get("assetPath", "")), output_path)
         component = str(entry.get("component", ""))
         state = str(entry.get("state", ""))
         component_state = f"{component}/{state}".strip("/")
+        separate_from = ", ".join(str(item) for item in entry.get("mustRemainSeparateFrom", [])[:4]) if isinstance(entry.get("mustRemainSeparateFrom"), list) else str(entry.get("mustRemainSeparateFrom", ""))
         lines.append(
-            "| `{}` | `{}` | `{}` | `{}` | {} |".format(
+            "| `{}` | `{}` | `{}` | `{}` | `{}` | `{}` | `{}` | {} |".format(
                 asset_path,
                 entry.get("category", ""),
                 component_state,
-                entry.get("layer", ""),
+                f"{entry.get('sceneryPlane', '')}/{entry.get('depthBand', '')}".strip("/"),
+                entry.get("layerRole", entry.get("layer", "")),
+                entry.get("zIndex", ""),
+                separate_from,
                 str(entry.get("importRule", "")).replace("\n", " "),
             )
         )
     return lines
+
+
+def sortable_z(entry: dict[str, Any]) -> tuple[float, str]:
+    value = entry.get("zIndex")
+    if isinstance(value, (int, float)):
+        return float(value), str(entry.get("id", entry.get("assetPath", "")))
+    return 9999.0, str(entry.get("id", entry.get("assetPath", "")))
 
 
 def assembly_lines(manifest: dict[str, Any], entries: list[dict[str, Any]]) -> list[str]:
@@ -160,15 +183,73 @@ def assembly_lines(manifest: dict[str, Any], entries: list[dict[str, Any]]) -> l
     if isinstance(assembly, list) and assembly:
         return [f"{index}. {item}" for index, item in enumerate(assembly, 1)]
 
-    layer_order = ["background", "illustration", "mask", "texture", "effect", "controls", "icons", "motion"]
     lines = []
-    for layer in layer_order:
-        matching = [entry for entry in entries if str(entry.get("layer", "")).startswith(layer) or entry.get("category") == layer]
-        if matching:
-            labels = ", ".join(str(entry.get("assetPath", entry.get("id", ""))) for entry in matching[:6])
-            lines.append(f"{len(lines) + 1}. `{layer}`: {labels}")
+    for entry in sorted(entries, key=sortable_z):
+        if str(entry.get("category", "")) == "component" and str(entry.get("assetPath", "")).endswith(".css"):
+            continue
+        label = str(entry.get("assetPath", entry.get("id", "")))
+        role = str(entry.get("layerRole", entry.get("layer", "")))
+        z_index = entry.get("zIndex", "")
+        policy = str(entry.get("occlusionPolicy", ""))
+        lines.append(f"{len(lines) + 1}. `z={z_index}` `{role}`: {label}. {policy}")
     if not lines:
         lines.append("1. Use the manifest order as the assembly order, then refine by Phase 1 layer map.")
+    return lines
+
+
+def layer_contract_lines(manifest: dict[str, Any], entries: list[dict[str, Any]]) -> list[str]:
+    contract = manifest.get("layerContract") if isinstance(manifest.get("layerContract"), dict) else {}
+    rules = contract.get("rules") if isinstance(contract.get("rules"), list) else []
+    lines = [
+        "- Build separate stacking contexts for background, illustration, content surfaces, controls, foreground decoration, and motion overlays.",
+        "- Do not flatten assets across different `compositingGroup`, `zIndex`, or `occlusionPolicy` values.",
+        "- Foreground frames, rim lights, bevels, glints, masks, and particles that visually sit above content must remain transparent overlay assets.",
+    ]
+    lines.extend(f"- {rule}" for rule in rules)
+    screen_entries = [
+        entry
+        for entry in entries
+        if str(entry.get("id", "")).startswith("screen/") or entry.get("category") in {"background", "illustration", "surface", "mask", "texture", "overlay", "effect"}
+    ]
+    if screen_entries:
+        lines.extend(["", "| Layer Role | Z | Group | Occlusion | Must Remain Separate From |", "| --- | --- | --- | --- | --- |"])
+        for entry in sorted(screen_entries, key=sortable_z):
+            separate_from = ", ".join(str(item) for item in entry.get("mustRemainSeparateFrom", [])[:6]) if isinstance(entry.get("mustRemainSeparateFrom"), list) else str(entry.get("mustRemainSeparateFrom", ""))
+            lines.append(
+                "| `{}` | `{}` | `{}` | {} | `{}` |".format(
+                    entry.get("layerRole", entry.get("layer", "")),
+                    entry.get("zIndex", ""),
+                    entry.get("compositingGroup", ""),
+                    str(entry.get("occlusionPolicy", "")).replace("\n", " "),
+                    separate_from,
+                )
+            )
+    return lines
+
+
+def scenery_plane_lines(manifest: dict[str, Any], entries: list[dict[str, Any]]) -> list[str]:
+    screen_entries = [
+        entry
+        for entry in entries
+        if str(entry.get("id", "")).startswith("screen/")
+        or entry.get("category") in {"background", "illustration", "surface", "mask", "texture", "overlay", "effect"}
+    ]
+    lines = [
+        "- Assign and generate scenery before illustration-level component production: back scenery, mid scenery, content plane, interaction plane, then front scenery.",
+        "- Preserve the Phase 1 atmosphere by keeping each scenery plane's purpose, crop anchor, occlusion behavior, and componentization rule intact.",
+    ]
+    if screen_entries:
+        lines.extend(["", "| Scenery Plane | Depth Band | Asset | Purpose | Componentization |", "| --- | --- | --- | --- | --- |"])
+        for entry in sorted(screen_entries, key=sortable_z):
+            lines.append(
+                "| `{}` | `{}` | `{}` | {} | {} |".format(
+                    entry.get("sceneryPlane", ""),
+                    entry.get("depthBand", ""),
+                    entry.get("assetPath", entry.get("id", "")),
+                    str(entry.get("planePurpose", "")).replace("\n", " "),
+                    str(entry.get("componentizationRule", "")).replace("\n", " "),
+                )
+            )
     return lines
 
 
@@ -182,6 +263,34 @@ def component_usage(entries: list[dict[str, Any]]) -> list[str]:
     for component, states in sorted(components.items()):
         state_list = ", ".join(sorted(states))
         lines.append(f"- `{component}`: states `{state_list}`.")
+    return lines
+
+
+def phase3_component_reuse_contract(entries: list[dict[str, Any]]) -> list[str]:
+    visible_components: dict[str, set[str]] = {}
+    for entry in entries:
+        category = str(entry.get("category", "") or entry.get("type", "")).lower()
+        asset_path = str(entry.get("assetPath", "")).lower()
+        if category == "html" or asset_path.endswith(".html") or "review" in asset_path:
+            continue
+        component = str(entry.get("component", "") or entry.get("category", "") or "asset")
+        state = str(entry.get("state", "default") or "default")
+        visible_components.setdefault(component, set()).add(state)
+
+    lines = [
+        "- Phase 3 must treat this approved Phase 2 manifest as a closed visible component inventory.",
+        "- Do not generate new visible component families, visual states, borders, fills, shadows, ornaments, icon treatments, illustration layers, or motion states during implementation.",
+        "- If live copy must bind to an approved background or component slot, Phase 3 may add invisible text-binding boxes, transparent text fields, or hidden backing text frames solely for layout/data/focus binding.",
+        "- Text-binding helpers must not introduce visible border, background, radius, shadow, decoration, or component silhouette unless that visual treatment already appears in the approved Phase 2 manifest.",
+        "- If a required visible component is missing, return to `$frontend-asset-production` for revision instead of inventing it in Phase 3.",
+        "",
+        "| Approved Component | Approved States |",
+        "| --- | --- |",
+    ]
+    for component, states in sorted(visible_components.items()):
+        lines.append(f"| `{component}` | `{', '.join(sorted(states))}` |")
+    if not visible_components:
+        lines.append("| - | No visible component entries were found; Phase 3 must return to Phase 2 before implementation. |")
     return lines
 
 
@@ -250,9 +359,21 @@ def build_markdown(args: argparse.Namespace, manifest: dict[str, Any], entries: 
         "",
         *assembly_lines(manifest, entries),
         "",
+        "## Layer Preservation Contract",
+        "",
+        *layer_contract_lines(manifest, entries),
+        "",
+        "## Scenery Plane Allocation",
+        "",
+        *scenery_plane_lines(manifest, entries),
+        "",
         "## Component Usage Rules",
         "",
         *component_usage(entries),
+        "",
+        "## Phase 3 Component Reuse Contract",
+        "",
+        *phase3_component_reuse_contract(entries),
         "",
         "## Motion Rules",
         "",
@@ -261,7 +382,11 @@ def build_markdown(args: argparse.Namespace, manifest: dict[str, Any], entries: 
         "## Implementation Notes",
         "",
         "- Copy or import assets according to the `Asset Manifest` table; do not rename files in Phase 3 unless the manifest is updated at the same time.",
-        "- Preserve the Phase 2 foundation kit even if the target screen currently uses only part of it.",
+        "- Preserve the Layer Preservation Contract with separate DOM/CSS stacking contexts; do not collapse foreground decorations into background images.",
+        "- Preserve the Scenery Plane Allocation; map back scenery, mid scenery, content plane, interaction plane, and front scenery into separate implementation layers before pixel tuning.",
+        "- Implement `foreground-frame` and other top-plane decoration as transparent overlays above content surfaces when present.",
+        "- Preserve and reuse the Phase 2 foundation kit even if the target screen currently uses only part of it; do not add new visible component families or states in Phase 3.",
+        "- Use invisible text-binding boxes, transparent text fields, or hidden backing text frames only to bind live text to approved background/component positions.",
         "- Use CSS/native UI for scalable controls when the manifest import rule says the visual is code-driven.",
         "- Use image assets for backgrounds, illustrations, masks, textures, and sprite/icon files named in the manifest.",
         "- Keep mocks isolated if real callable APIs are unavailable; preserve existing API client contracts when they exist.",
@@ -270,6 +395,10 @@ def build_markdown(args: argparse.Namespace, manifest: dict[str, Any], entries: 
         "## Phase 3 Acceptance Checklist",
         "",
         "- Approved assets copied or imported into the target app.",
+        "- Layer Preservation Contract implemented: background, content surfaces, controls, foreground decoration, and motion overlays retain their z-index order.",
+        "- Scenery Plane Allocation implemented: back, mid, content, interaction, and front scenery retain their Phase 1 visual role.",
+        "- Phase 3 Component Reuse Contract followed: every visible component maps to the approved Phase 2 manifest; added text-binding helpers are hidden/transparent except for live text.",
+        "- Every implemented page screenshot reaches at least 99% similarity against its Phase 1 page image after pixel adjustment.",
         "- Foundation CSS/icons/motion available to future screens.",
         "- Real APIs connected when callable, otherwise mocks match the preview data shape.",
         "- Desktop and mobile screenshots captured.",

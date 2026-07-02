@@ -37,8 +37,12 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
 1. Read and normalize the design contract:
    - Extract every required screen, layer, component, state, and motion requirement from the phase 1 brief.
    - Confirm that Phase 1 has a selected visual target and a passing visual excellence gate. If missing, return to `$frontend-ui-ideation` before generating assets.
+   - Extract the Phase 1 Layer Preservation Contract before making any asset. If the brief only says "background" or "decorative frame" without z-index, occlusion, and merge rules, add a Phase 1 supplement before producing assets.
+   - Extract or create the Scenery Plane Allocation before making any illustration-level component. This analysis must decide how visual scenery is distributed across back scenery, mid scenery, content plane, interaction plane, and front scenery.
+   - Write `phase2-scenery-plane-allocation.md` or an equivalent manifest section before generating assets. It must list each Phase 1 page image, every scenery plane, plane purpose, occlusion relationship, crop anchor, componentization rule, and which assets/components will be generated from that plane.
+   - Do not generate background, illustration, foreground decoration, or illustrated component assets until the scenery allocation explains why each plane exists and how it preserves the Phase 1 atmosphere.
    - Identify which visuals should be real image assets and which should remain CSS, native UI, or code-driven animation.
-   - Create an asset plan before generating files.
+   - Create an asset plan before generating files. The plan must include a layer preservation table with `layerRole`, `zIndex`, `compositingGroup`, `occlusionPolicy`, `mayMergeWith`, `mustRemainSeparateFrom`, and `alphaRequired`.
    - Confirm that the Phase 1 brief includes a Phase 2 generation guide. If missing, add a short supplement before producing assets.
    - When a full foundation kit is required, use `../../scripts/generate_foundation_manifest.py` to create a per-state manifest scaffold, then update it with the real generated asset paths.
    - Use `../../scripts/generate_asset_prompt_pack.py` after the manifest exists to create a practical production prompt pack for raster, Figma/vector, and CSS/SVG asset generation. Use the pack to drive asset production rather than relying on vague art direction prose.
@@ -47,6 +51,10 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Choose and document the asset strategy before generation: AI raster illustration, vector/Figma-style production, or CSS/SVG procedural assets.
    - Produce the primary screen hero asset set first: selected-preview background, primary illustration or motif, texture/depth layer, key icon treatment, component surface treatment, and the first motion/feedback cue. Do not spread effort across the whole foundation kit until the selected screen can look excellent.
    - Generate or build pixel-matched backgrounds, illustrations, masks, textures, icons, sprites, component overlays, and motion frames as needed.
+   - Generate assets in scenery order: back scenery first, mid scenery second, content/material planes third, interaction components fourth, and front scenery/overlays last. Reassemble the selected page after each major plane so visual atmosphere is not lost.
+   - Split assets by visual plane, not by convenience. Keep base background, depth overlays, illustration motifs, content surfaces, foreground frames, edge ornaments, masks, textures, and motion overlays as separate assets whenever their z-index or occlusion relationship differs.
+   - Do not merge a top-plane border, rim light, glint, particle, mask, or decorative frame into a bottom-plane background if a content card, control, or text layer should sit between them.
+   - Use transparent overlays for visual atmosphere that crosses over content edges. If a layer can cover content, document its safe overlap zone and pointer-events/focus behavior.
    - Prefer real raster/ImageGen or editable bitmap assets for backgrounds, illustrations, textures, rich lighting, and custom motifs. Use CSS/SVG procedural assets only for crisp UI primitives, masks, scalable icons, keyframes, or fallback when image generation is unavailable.
    - Use transparent PNG/WebP for layered raster assets, SVG for crisp vector icons or masks, and JSON/CSS/keyframe descriptions for procedural motion when appropriate.
    - Export density variants when the frontend target needs them, such as `@1x`, `@2x`, and `@3x`.
@@ -74,10 +82,14 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
    - Include side-by-side comparison against the phase 1 preview when possible.
    - List known deviations, tradeoffs, and any assets that need user judgment.
    - Include a machine-readable `asset-manifest.json` when practical so Phase 3 can import assets without re-parsing prose.
+   - The manifest must preserve the Layer Preservation Contract. Every entry should include `layerRole`, `zIndex`, `compositingGroup`, `occlusionPolicy`, `mayMergeWith`, `mustRemainSeparateFrom`, and `alphaRequired`.
+   - The manifest must preserve the Scenery Plane Allocation. Every entry should include `sceneryPlane`, `depthBand`, `planePurpose`, and `componentizationRule`.
    - Prefer one manifest entry per asset and per important component state when practical, rather than only one entry per component family.
    - If using the bundled manifest generator, keep its coverage counts in the review package so the user can see whether every required state is represented.
    - Run `../../scripts/validate_foundation_manifest.py <manifest-path>` before asking the user to approve assets; fix any missing component state, icon, or screen asset slot first.
+   - Treat `validate_foundation_manifest.py` layer contract failures as blocking. Use `--no-layer-contract` only for legacy audits, not for new production Phase 2 output.
    - Use `../../scripts/generate_asset_review_packet.py` to create a non-designer approval packet with coverage, contact sheet, decision options, and exact user reply text for approval or revision.
+   - Ensure the approval packet includes a "Layer and Occlusion Review" section so the user can reject assets when foreground decoration, masks, rim lights, or border ornaments were flattened into the background or hidden behind content surfaces.
    - After the user replies, use `../../scripts/record_asset_review_decision.py` to record `approve-assets`, `review-pending`, or the selected revision decision as `phase2-asset-review-decision.md/json`.
    - Include an asset-assembled primary screen preview in the review package. This preview must be rendered from the generated Phase 2 assets and component treatments, not copied from the Phase 1 preview screenshot.
    - Run `../../scripts/generate_pipeline_runbook.py --run-root <run-root>` when the bundled script is available so the user can see that the next required action is asset approval.
@@ -103,6 +115,8 @@ The final Markdown document must include:
 
 - Source references: phase 1 brief path, preview image paths, and approved review package path.
 - Asset manifest: file path, type, dimensions, scale, transparency, color mode, purpose, owning screen/component, and state.
+- Layer Preservation Contract: z-index ledger, compositing groups, occlusion policy, allowed merge rules, forbidden merge rules, alpha requirements, and implementation hints.
+- Scenery Plane Allocation: per-page back scenery, mid scenery, content plane, interaction plane, front scenery, plane purpose, occlusion relationship, crop anchor, and componentization rule.
 - Assembly map: exact layer order, placement coordinates, sizing rules, object-fit rules, masks, blend modes, and responsive behavior.
 - Component usage rules: which assets each component imports, fallback behavior, and when to use CSS or native UI instead of images.
 - Motion asset rules: frame order, frame rate, duration, looping, easing, trigger, start/end states, and reduced-motion fallback.
@@ -132,7 +146,10 @@ Represent this kit as real frontend-consumable assets: SVG icon sprites or files
 Before expanding the complete foundation kit, make the selected Phase 1 screen visually convincing:
 
 - Lock the selected Phase 1 preview as the visual source of truth.
+- Lock the Phase 1 Layer Preservation Contract as the depth source of truth.
+- Lock the Scenery Plane Allocation before generating any illustration-level component.
 - Generate or assemble the main background, illustration/motif, surface material, key icon style, and one representative motion/feedback cue.
+- Generate the foreground decoration/edge-frame layer separately from the base background whenever it overlaps content surfaces.
 - Produce a contact sheet section that compares the primary screen asset set against the selected preview.
 - Only after the primary screen set is visually strong, expand the full foundation kit for buttons, badges, cards, combobox, common icons, navigation, notice bar, search bar, section title, modal, and transitions.
 - If the primary screen does not pass the review, revise it before spending time on the unused foundation states.
@@ -142,6 +159,8 @@ Before expanding the complete foundation kit, make the selected Phase 1 screen v
 Phase 2 must prove that the generated assets can recreate the selected screen:
 
 - Produce `review/primary-screen-asset-assembly.png` or an equivalent HTML/PNG preview assembled from generated backgrounds, illustration layers, textures, masks, icons, component CSS, and motion treatments.
+- The assembly preview must use separate stacking contexts for background, illustration, content surfaces, controls, foreground decoration, and motion overlays. It fails review if foreground decoration is hidden behind content because it was flattened into the background.
+- The assembly preview must show the back/mid/front scenery distribution from `phase2-scenery-plane-allocation.md`; it fails review if the selected Phase 1 page loses atmosphere because a midground motif, foreground ornament, or background depth plane was assigned to the wrong scenery plane.
 - Do not copy `phase1-preview-*.png` into the Phase 2 review folder and present it as asset evidence.
 - If using the bundled review packet generator, pass `--assembly-preview "<phase2-folder>/review/primary-screen-asset-assembly.png"` and `--visual-diff-report "<phase2-folder>/review/visual-diff-primary-screen.md"` when those files exist.
 - Run `../../scripts/compare_visual_artifacts.py` against the Phase 1 preview and this asset assembly when dimensions are comparable.
@@ -294,13 +313,17 @@ Final output must include:
 - `phase2-asset-review-decision.md` and `phase2-asset-review-decision.json` when the bundled decision recorder is available.
 - `phase2-asset-prompt-pack.md` or an equivalent asset-generation prompt record when generated assets used raster, Figma/vector, or CSS/SVG prompt production.
 - Evidence that the primary selected screen asset set was produced before the full foundation expansion.
+- `phase2-scenery-plane-allocation.md` or equivalent manifest evidence showing front/mid/back scenery allocation was completed before asset generation.
 - An asset review package the user can inspect visually.
 - `phase2-asset-approval-packet.md` and/or `phase2-asset-approval-packet.html` when the bundled review packet generator is available.
+- A Layer and Occlusion Review that confirms foreground decoration and atmosphere were not destroyed by flattening or wrong z-index placement.
 - Visual inspection evidence that contact sheet and approval packet text does not clip, overflow, disappear at page edges, or render as missing glyphs.
 - Passing visual artifact checks for review images or HTML when the bundled checker is available.
 - A visual diff report when a comparable Phase 1 preview and Phase 2 asset preview/contact sheet are available.
 - A primary screen asset assembly preview built from generated Phase 2 assets, not a copied Phase 1 screenshot.
 - A manifest or table that maps every asset to a component, state, layer, and import/calling path.
+- A manifest or table that maps every asset to a component, state, `layerRole`, `zIndex`, `compositingGroup`, `occlusionPolicy`, `mayMergeWith`, `mustRemainSeparateFrom`, and import/calling path.
+- A manifest or table that maps every asset to `sceneryPlane`, `depthBand`, `planePurpose`, and `componentizationRule`.
 - A complete foundational component kit covering buttons, badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.
 - A generated or refreshed `pipeline-runbook.md` when the bundled script is available.
 - A clear statement that the user approved the final asset package.

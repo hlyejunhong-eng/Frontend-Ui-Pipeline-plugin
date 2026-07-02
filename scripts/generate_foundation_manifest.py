@@ -122,9 +122,198 @@ SCREEN_ASSET_SLOTS = [
     ("background", "base-background", "backgrounds/{screen}/base-background.svg"),
     ("background", "depth-overlay", "backgrounds/{screen}/depth-overlay.svg"),
     ("illustration", "primary-illustration", "illustrations/{screen}/primary-illustration@2x.png"),
+    ("surface", "content-surface", "surfaces/{screen}/content-surface.svg"),
     ("mask", "special-mask", "masks/{screen}/special-mask.svg"),
     ("texture", "surface-texture", "textures/{screen}/surface-texture@2x.png"),
+    ("overlay", "foreground-frame", "overlays/{screen}/foreground-frame.svg"),
     ("effect", "motion-overlay", "effects/{screen}/motion-overlay.svg"),
+]
+
+SCENERY_PLANE_ALLOCATION = {
+    "base-background": {
+        "sceneryPlane": "back",
+        "depthBand": "back-00",
+        "planePurpose": "establish the lowest illustration atmosphere, canvas color, and far-field scene.",
+        "componentizationRule": "Generate as full-bleed scenery, not as a UI component.",
+    },
+    "depth-overlay": {
+        "sceneryPlane": "back",
+        "depthBand": "back-10",
+        "planePurpose": "add far-field depth, grid, light falloff, and environmental atmosphere.",
+        "componentizationRule": "Generate as a transparent depth plane that may sit above the base background only.",
+    },
+    "primary-illustration": {
+        "sceneryPlane": "mid",
+        "depthBand": "mid-00",
+        "planePurpose": "carry the main illustration motif and product-specific visual identity.",
+        "componentizationRule": "Generate as an illustration-level component with transparent edges and stable crop anchors.",
+    },
+    "content-surface": {
+        "sceneryPlane": "content",
+        "depthBand": "content-00",
+        "planePurpose": "hold UI panels, cards, and material surfaces that can cover midground illustration.",
+        "componentizationRule": "Generate as reusable surface treatment or CSS/native component plane, not baked into background scenery.",
+    },
+    "special-mask": {
+        "sceneryPlane": "content",
+        "depthBand": "content-10",
+        "planePurpose": "clip or reveal only its owning content or illustration plane.",
+        "componentizationRule": "Generate as a mask attached to a named owner plane; never as a global flattened image.",
+    },
+    "surface-texture": {
+        "sceneryPlane": "content",
+        "depthBand": "content-20",
+        "planePurpose": "add material feel inside UI surfaces without degrading text readability.",
+        "componentizationRule": "Generate as clipped texture or pseudo-element treatment.",
+    },
+    "foreground-frame": {
+        "sceneryPlane": "front",
+        "depthBand": "front-00",
+        "planePurpose": "preserve top-plane atmosphere, border ornaments, rim lights, glints, and edge frames.",
+        "componentizationRule": "Generate as transparent foreground decoration above content surfaces.",
+    },
+    "motion-overlay": {
+        "sceneryPlane": "front",
+        "depthBand": "front-10",
+        "planePurpose": "represent transient top-plane motion, sweeps, particles, and feedback effects.",
+        "componentizationRule": "Generate as motion overlay or frame sequence, never flattened into static background.",
+    },
+}
+
+SCREEN_LAYER_CONTRACT = {
+    "base-background": {
+        "layerRole": "background-base",
+        "zIndex": -100,
+        "compositingGroup": "background-system",
+        "occlusionPolicy": "full-bleed lowest plane; never covers content or foreground decoration",
+        "mayMergeWith": ["depth-overlay"],
+        "mustRemainSeparateFrom": ["content-surface", "foreground-frame", "motion-overlay"],
+        "alphaRequired": False,
+        "implementationHint": "absolute inset 0; z-index:-100",
+    },
+    "depth-overlay": {
+        "layerRole": "background-depth",
+        "zIndex": -90,
+        "compositingGroup": "background-system",
+        "occlusionPolicy": "above base background, below illustration and all content surfaces",
+        "mayMergeWith": ["base-background"],
+        "mustRemainSeparateFrom": ["content-surface", "foreground-frame"],
+        "alphaRequired": True,
+        "implementationHint": "absolute inset 0; z-index:-90; pointer-events:none",
+    },
+    "primary-illustration": {
+        "layerRole": "illustration-midground",
+        "zIndex": -70,
+        "compositingGroup": "illustration-system",
+        "occlusionPolicy": "behind content surfaces unless the Phase 1 layer map marks a transparent overlap zone",
+        "mayMergeWith": [],
+        "mustRemainSeparateFrom": ["content-surface", "foreground-frame", "interactive-controls"],
+        "alphaRequired": True,
+        "implementationHint": "absolute motif plane; z-index:-70; pointer-events:none",
+    },
+    "content-surface": {
+        "layerRole": "content-surface",
+        "zIndex": -20,
+        "compositingGroup": "content-system",
+        "occlusionPolicy": "above background and illustration; below text, controls, and foreground frame",
+        "mayMergeWith": [],
+        "mustRemainSeparateFrom": ["base-background", "depth-overlay", "primary-illustration", "foreground-frame"],
+        "alphaRequired": True,
+        "implementationHint": "surface container background/border plane; z-index:-20",
+    },
+    "special-mask": {
+        "layerRole": "mask-or-clip",
+        "zIndex": -10,
+        "compositingGroup": "content-system",
+        "occlusionPolicy": "clips or reveals its owning surface/illustration only; never flattens unrelated planes",
+        "mayMergeWith": [],
+        "mustRemainSeparateFrom": ["base-background", "foreground-frame", "interactive-controls"],
+        "alphaRequired": True,
+        "implementationHint": "CSS mask or clip-path on owning layer; preserve source asset",
+    },
+    "surface-texture": {
+        "layerRole": "material-texture",
+        "zIndex": -5,
+        "compositingGroup": "content-system",
+        "occlusionPolicy": "clipped inside surfaces or applied as blend overlay that never reduces text legibility",
+        "mayMergeWith": [],
+        "mustRemainSeparateFrom": ["base-background", "foreground-frame", "text-content"],
+        "alphaRequired": True,
+        "implementationHint": "surface pseudo-element; z-index:-5; mix-blend-mode only if readable",
+    },
+    "foreground-frame": {
+        "layerRole": "foreground-decoration",
+        "zIndex": 50,
+        "compositingGroup": "foreground-decoration-system",
+        "occlusionPolicy": "above content surfaces and background; may overlap card edges without covering readable text",
+        "mayMergeWith": [],
+        "mustRemainSeparateFrom": ["base-background", "depth-overlay", "primary-illustration", "content-surface"],
+        "alphaRequired": True,
+        "implementationHint": "absolute inset or anchored overlay; z-index:50; pointer-events:none",
+    },
+    "motion-overlay": {
+        "layerRole": "motion-overlay",
+        "zIndex": 70,
+        "compositingGroup": "motion-system",
+        "occlusionPolicy": "top transient visual effects; never bakes into static background",
+        "mayMergeWith": [],
+        "mustRemainSeparateFrom": ["base-background", "content-surface", "foreground-frame"],
+        "alphaRequired": True,
+        "implementationHint": "absolute animated overlay; z-index:70; reduced-motion fallback",
+    },
+}
+
+FOUNDATION_LAYER_CONTRACT = {
+    "component": {
+        "sceneryPlane": "interaction",
+        "depthBand": "interaction-00",
+        "planePurpose": "carry readable controls and stateful UI above content surfaces.",
+        "componentizationRule": "Generate as reusable frontend component treatment.",
+        "layerRole": "interactive-controls",
+        "zIndex": 10,
+        "compositingGroup": "ui-controls",
+        "occlusionPolicy": "above content surfaces, below foreground decoration and modal overlays",
+        "mayMergeWith": [],
+        "mustRemainSeparateFrom": ["base-background", "depth-overlay", "foreground-frame"],
+        "alphaRequired": False,
+        "implementationHint": "normal UI stacking context; preserve focus and press states",
+    },
+    "icon": {
+        "sceneryPlane": "interaction",
+        "depthBand": "interaction-10",
+        "planePurpose": "support labels and controls with consistent icon language.",
+        "componentizationRule": "Generate as SVG sprite or icon component in the control layer.",
+        "layerRole": "ui-icons",
+        "zIndex": 12,
+        "compositingGroup": "ui-controls",
+        "occlusionPolicy": "same plane as labels and controls; never bake into background art",
+        "mayMergeWith": [],
+        "mustRemainSeparateFrom": ["base-background", "depth-overlay"],
+        "alphaRequired": True,
+        "implementationHint": "inline SVG or icon component in the control layer",
+    },
+    "motion": {
+        "sceneryPlane": "front",
+        "depthBand": "front-20",
+        "planePurpose": "add triggered interaction feedback above controls.",
+        "componentizationRule": "Generate as CSS keyframes, JSON descriptor, or transparent motion frames.",
+        "layerRole": "interaction-motion",
+        "zIndex": 30,
+        "compositingGroup": "motion-system",
+        "occlusionPolicy": "triggered feedback above controls; never permanently obscures content",
+        "mayMergeWith": [],
+        "mustRemainSeparateFrom": ["base-background", "foreground-frame"],
+        "alphaRequired": True,
+        "implementationHint": "CSS keyframes/JSON descriptor with reduced-motion fallback",
+    },
+}
+
+LAYER_CONTRACT_RULES = [
+    "Before generating illustration-level components, analyze the page as back scenery, mid scenery, content plane, interaction plane, and front scenery.",
+    "Only merge assets that share the same compositingGroup, zIndex band, and occlusionPolicy.",
+    "Never bake foreground frames, rim lights, bevels, glints, masks, or particles into a base background when content surfaces sit between them.",
+    "Content surfaces must stay above background and illustration planes but below text, controls, and declared foreground decoration.",
+    "Any asset that overlaps both background and content must be transparent and exported as its own overlay unless the Phase 1 brief explicitly allows flattening.",
 ]
 
 
@@ -151,6 +340,12 @@ def selector_for(component: str, state: str) -> str:
     return f".{prefix}-{state}"
 
 
+def with_layer_contract(entry: dict, contract: dict) -> dict:
+    enriched = dict(entry)
+    enriched.update(contract)
+    return enriched
+
+
 def build_manifest(args: argparse.Namespace) -> dict:
     screen = slugify(args.screen)
     assets_root = args.assets_root.strip("/").rstrip("/")
@@ -160,52 +355,66 @@ def build_manifest(args: argparse.Namespace) -> dict:
     entries = []
     for slot_type, slot_name, path_template in SCREEN_ASSET_SLOTS:
         path = path_template.format(screen=screen)
+        contract = SCREEN_LAYER_CONTRACT[slot_name]
+        scenery = SCENERY_PLANE_ALLOCATION[slot_name]
         entries.append(
-            {
+            with_layer_contract(
+                {
                 "id": f"screen/{screen}/{slot_type}/{slot_name}",
                 "category": slot_type,
                 "component": screen,
                 "state": slot_name,
                 "assetPath": f"{assets_root}/{path}",
-                "layer": slot_type,
+                "layer": contract["layerRole"],
                 "status": args.status,
                 "purpose": f"{slot_name} asset for {args.screen}",
                 "importRule": "Replace this scaffold path with the generated asset path if the art tool exports a different file.",
-            }
+                },
+                {**scenery, **contract},
+            )
         )
 
     for component, states in FOUNDATION_COMPONENTS.items():
         for state in states:
             category = "motion" if component == "transition" else "component"
+            contract_key = "motion" if category == "motion" else "component"
+            contract = FOUNDATION_LAYER_CONTRACT[contract_key]
             entries.append(
-                {
+                with_layer_contract(
+                    {
                     "id": f"foundation/{component}/{state}",
                     "category": category,
                     "component": component,
                     "state": state,
                     "assetPath": f"{assets_root}/{css_path}",
                     "selector": selector_for(component, state),
-                    "layer": "motion" if category == "motion" else "controls",
+                    "layer": contract["layerRole"],
                     "status": args.status,
                     "purpose": f"{component} {state} foundation state",
                     "importRule": "Import the foundation CSS once, then apply the selector in the target frontend.",
-                }
+                    },
+                    contract,
+                )
             )
 
     for icon in COMMON_ICONS:
+        contract = FOUNDATION_LAYER_CONTRACT["icon"]
         entries.append(
-            {
+            with_layer_contract(
+                {
                 "id": f"foundation/icon/{icon}",
                 "category": "icon",
                 "component": "common-icon",
                 "state": icon,
                 "assetPath": f"{assets_root}/{icon_sprite}",
                 "symbol": icon,
-                "layer": "icons",
+                "layer": contract["layerRole"],
                 "status": args.status,
                 "purpose": f"{icon} icon in the shared foundation set",
                 "importRule": "Use the SVG symbol from the shared sprite, or replace with an equivalent per-icon SVG file if the target runtime requires it.",
-            }
+                },
+                contract,
+            )
         )
 
     coverage = {
@@ -231,6 +440,20 @@ def build_manifest(args: argparse.Namespace) -> dict:
         "assetsRoot": assets_root,
         "status": args.status,
         "coverage": coverage,
+        "layerContract": {
+            "schemaVersion": "frontend-ui-pipeline.layer-contract.v1",
+            "contentPlaneZIndex": 0,
+            "rules": LAYER_CONTRACT_RULES,
+            "sceneryPlaneAllocation": {
+                state: SCENERY_PLANE_ALLOCATION[state]
+                for _category, state, _path in SCREEN_ASSET_SLOTS
+            },
+            "screenSlots": {
+                state: SCREEN_LAYER_CONTRACT[state]
+                for _category, state, _path in SCREEN_ASSET_SLOTS
+            },
+            "foundationLayers": FOUNDATION_LAYER_CONTRACT,
+        },
         "entries": entries,
         "approvalRequiredBeforeImplementation": args.mode == "production",
     }

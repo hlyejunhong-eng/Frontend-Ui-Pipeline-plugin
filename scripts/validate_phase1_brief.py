@@ -27,6 +27,20 @@ REQUIRED_SECTIONS = {
 
 REQUIRED_GUIDE_BLOCKS = {
     "layer map": ("layer map", "layer order", "layering"),
+    "layer preservation contract": (
+        "layer preservation contract",
+        "visual layer contract",
+        "layer contract",
+        "z index ledger",
+        "z-index ledger",
+    ),
+    "scenery plane allocation": (
+        "scenery plane allocation",
+        "front middle back",
+        "front mid back",
+        "foreground midground background",
+        "back mid front",
+    ),
     "adjustable parameters": ("adjustable parameters", "refinement parameters"),
     "asset naming rules": ("asset naming rules", "naming rules"),
     "export rules": ("export rules",),
@@ -40,14 +54,26 @@ REQUIRED_GUIDE_BLOCKS = {
 
 REQUIRED_LAYER_TERMS = [
     "background",
+    "back scenery",
     "grid",
     "illustration",
+    "mid scenery",
+    "midground",
+    "content surface",
     "card",
     "control",
     "text",
+    "foreground",
+    "front scenery",
+    "decoration",
     "effect",
     "mask",
     "motion",
+    "z index",
+    "occlusion",
+    "compositing",
+    "must remain separate",
+    "may merge",
 ]
 
 REQUIRED_PARAMETER_TERMS = [
@@ -88,7 +114,8 @@ def ok(message: str) -> None:
 
 
 def normalize(value: str) -> str:
-    lowered = value.lower()
+    camel_spaced = re.sub(r"([a-z])([A-Z])", r"\1 \2", value)
+    lowered = camel_spaced.lower()
     return re.sub(r"[^a-z0-9\u4e00-\u9fff]+", " ", lowered)
 
 

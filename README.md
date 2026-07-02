@@ -340,12 +340,12 @@ Implementation target:
 - If real APIs exist, connect them. Otherwise, use same-shape mock data.
 
 Output requirements:
-- Phase 1: 三个独立视觉方向、选中的视觉目标、高端 UI brief、桌面/移动预览图、像素级布局/文字/按钮/动效要求。
-- Phase 2: 先做主屏封面级资产，再扩展完整基础组件资产包、命名资产、asset manifest、asset handoff，并在最终输出前让我审核资产是否通过。
-- Phase 3: 可运行前端、资产接入、接口或 mock、桌面/移动截图、design QA 和验证命令。
-- Phase 1: Three independent visual directions, a selected visual target, premium UI brief, desktop/mobile previews, pixel-level layout/copy/button/motion requirements.
-- Phase 2: Primary selected-screen assets first, then the complete foundation asset kit, named assets, asset manifest, asset handoff, and an explicit asset review checkpoint before final output.
-- Phase 3: Runnable frontend, asset integration, real APIs or mocks, desktop/mobile screenshots, design QA, and verification commands.
+- Phase 1: 三个独立视觉方向、选中的视觉目标、高端 UI brief、桌面/移动预览图、像素级布局/文字/按钮/动效要求，以及 Scenery Plane Allocation 前中后景深分配。
+- Phase 2: 先锁定 Scenery Plane Allocation，再做主屏封面级资产、完整基础组件资产包、命名资产、asset manifest、asset handoff，并在最终输出前让我审核资产是否通过。
+- Phase 3: 可运行前端、资产接入、接口或 mock、桌面/移动截图、99% similarity 视觉回归、design QA 和验证命令。
+- Phase 1: Three independent visual directions, a selected visual target, premium UI brief, desktop/mobile previews, pixel-level layout/copy/button/motion requirements, and Scenery Plane Allocation.
+- Phase 2: Lock Scenery Plane Allocation first, then produce primary selected-screen assets, the complete foundation asset kit, named assets, asset manifest, asset handoff, and an explicit asset review checkpoint before final output.
+- Phase 3: Runnable frontend, asset integration, real APIs or mocks, desktop/mobile screenshots, 99% similarity visual regression, design QA, and verification commands.
 ```
 
 ## Demo 模式和生产模式 / Demo Mode And Production Mode
@@ -371,9 +371,15 @@ Demo artifacts such as `phase3-demo*/index.html`, `README.md`, and `phase3-demo-
 - 阶段一先锁定 design brief：目标页面、视觉来源、交互等级和目标尺寸。
 - 阶段一必须使用真实参考：截图、localhost、Figma、品牌资产、Storybook、tokens 或组件引用；不能只靠文件名猜风格。
 - 阶段一生成三个独立视觉方向，每个方向单独一张图，选中后才能进入阶段二。
+- 阶段一必须输出 Layer Preservation Contract：把插画拆成 base background、depth overlay、illustration、content surface、foreground decoration、motion overlay 等层，并写清 z-index、compositing group、occlusion policy、mayMergeWith、mustRemainSeparateFrom。
+- 阶段一必须输出 Scenery Plane Allocation：先判断 back scenery、mid scenery、content plane、interaction plane、front scenery，再决定哪些插画级组件必须独立生成，避免前景边框、粒子、rim light 被压进底图。
 - 阶段二必须生成 asset-assembled primary screen preview，也就是用真实 Phase 2 assets 拼一次主屏；不能把 Phase 1 preview screenshot 复制过来冒充资产证明。
+- 阶段二拆分资产前必须先写 `phase2-scenery-plane-allocation.md` 或等价 manifest 表，字段至少包含 `sceneryPlane`、`depthBand`、`planePurpose`、`componentizationRule`。
+- 阶段二必须通过 layer preservation contract 校验；前景边框、rim light、glint、粒子、遮罩、装饰描边不能被烤进底层背景再被内容框遮住。
 - 阶段二审核包必须说明 visual diff / assembly diff 的结果；如果差异来自“资产拼装图不是最终前端截图”，要写清楚并把 Phase 3 screenshot QA 作为最终像素门禁。
-- 阶段三必须在真实前端里跑起来、截图、做 visual diff，并生成 `design-qa.md`。
+- 阶段三必须复用阶段二已经生成并审核通过的组件和资产，不可以重新生成新的可见组件、可见状态、边框、底框、阴影、装饰、icon 风格或动效状态。
+- 阶段三只允许新增用于文字绑定和定位的隐藏/透明辅助层，例如 invisible text-binding boxes、transparent text fields、hidden backing text frames；这些辅助层不能产生新的可见边框、背景、阴影或组件轮廓。
+- 阶段三必须在真实前端里跑起来、截图、做 visual diff，并以阶段一页面插画图为源图循环微调到 99% similarity 以上，最后生成 `design-qa.md`。
 
 **English**
 
@@ -382,9 +388,15 @@ This plugin is not just a prompt for taste. It turns frontend design quality int
 - Phase 1 locks the design brief: target surface, visual source, interactivity level, and target dimensions.
 - Phase 1 must use real references: screenshots, localhost, Figma, brand assets, Storybook, tokens, or component references; do not infer style from filenames alone.
 - Phase 1 generates three independent visual directions, each as its own image, before selecting one for Phase 2.
+- Phase 1 must output a Layer Preservation Contract: split the illustration into base background, depth overlay, illustration, content surface, foreground decoration, motion overlay, and record z-index, compositing group, occlusion policy, mayMergeWith, and mustRemainSeparateFrom.
+- Phase 1 must output Scenery Plane Allocation: decide back scenery, mid scenery, content plane, interaction plane, and front scenery before choosing which illustration-level components must stay separate.
 - Phase 2 must create an asset-assembled primary screen preview from real Phase 2 assets; do not copy the Phase 1 preview screenshot as asset proof.
+- Phase 2 must write `phase2-scenery-plane-allocation.md` or an equivalent manifest table before asset slicing, with `sceneryPlane`, `depthBand`, `planePurpose`, and `componentizationRule`.
+- Phase 2 must pass layer preservation contract validation; foreground frames, rim lights, glints, particles, masks, and decorative strokes must not be baked into the bottom background and then hidden by content surfaces.
 - Phase 2 review must explain the visual diff / assembly diff result; when the difference exists because the assembly is not the final app screenshot, keep Phase 3 screenshot QA as the final pixel gate.
-- Phase 3 must run the real frontend, capture screenshots, run visual diff, and generate `design-qa.md`.
+- Phase 3 must reuse the approved Phase 2 components and assets. It must not generate new visible component families, visible states, borders, backing boxes, shadows, ornaments, icon treatments, or motion states.
+- Phase 3 may only add hidden/transparent helper layers for text binding and placement, such as invisible text-binding boxes, transparent text fields, or hidden backing text frames; those helpers must not create a new visible border, background, shadow, or component silhouette.
+- Phase 3 must run the real frontend, capture screenshots, compare every page against the Phase 1 illustration-level page image, iterate until every page is at least 99% similar, and generate `design-qa.md`.
 
 ## uni-app / HBuilderX 项目 / uni-app And HBuilderX Projects
 
@@ -441,6 +453,8 @@ Use $frontend-implementation with the approved phase 2 assets. Hot-replace the r
 - `phase1-visual-excellence-gate.md`
 - 桌面或移动预览图
 - 组件、背景、文字、按钮、状态、点击反馈和动效要求
+- Layer Preservation Contract：z-index ledger、compositing group、occlusion policy、mayMergeWith、mustRemainSeparateFrom、alphaRequired
+- Scenery Plane Allocation：back scenery、mid scenery、content plane、interaction plane、front scenery 的前中后景深分配和组件拆分规则
 - 给阶段二使用的生成指南
 - 完整基础组件资产清单
 
@@ -461,6 +475,8 @@ Required outputs:
 - `phase1-visual-excellence-gate.md`
 - Desktop or mobile preview image
 - Requirements for components, background, copy, buttons, states, click feedback, and motion
+- Layer Preservation Contract: z-index ledger, compositing group, occlusion policy, mayMergeWith, mustRemainSeparateFrom, and alphaRequired
+- Scenery Plane Allocation: back scenery, mid scenery, content plane, interaction plane, front scenery, and the componentization rule for each plane
 - Generation guide for Phase 2
 - Complete foundation component asset inventory
 
@@ -478,12 +494,15 @@ Success criteria:
 
 - 主屏封面级资产集
 - 用真实资产拼出来的主屏预览：`primary-screen-asset-assembly.png` 或等价 HTML/PNG
+- `phase2-layer-preservation-plan.md` 或等价 manifest 表，说明每个资产的 layerRole、zIndex、compositingGroup、occlusionPolicy 和 mustRemainSeparateFrom
+- `phase2-scenery-plane-allocation.md` 或等价 manifest 表，说明每个资产的 sceneryPlane、depthBand、planePurpose 和 componentizationRule
 - visual diff / assembly diff 报告和已知差异说明
 - 背景、插图、遮罩、图标、sprites 或 motion frames
 - 完整基础组件资产包
 - `asset-manifest.json`
 - `phase2-asset-handoff.md`
 - 资产预览或审核包
+- Layer and Occlusion Review，确认前景装饰没有被合并到底层背景
 
 基础组件资产包至少覆盖：
 
@@ -530,12 +549,15 @@ Required outputs:
 
 - Primary selected-screen asset set
 - Asset-assembled primary screen preview such as `primary-screen-asset-assembly.png` or equivalent HTML/PNG
+- `phase2-layer-preservation-plan.md` or equivalent manifest table describing layerRole, zIndex, compositingGroup, occlusionPolicy, and mustRemainSeparateFrom for every major asset
+- `phase2-scenery-plane-allocation.md` or equivalent manifest table describing sceneryPlane, depthBand, planePurpose, and componentizationRule for every major asset
 - Visual diff / assembly diff report and known deviation notes
 - Backgrounds, illustrations, masks, icons, sprites, or motion frames
 - Complete foundation component asset kit
 - `asset-manifest.json`
 - `phase2-asset-handoff.md`
 - Asset preview or review package
+- Layer and Occlusion Review confirming that foreground decoration was not merged into the bottom background
 
 The foundation kit should cover at least:
 
@@ -587,6 +609,8 @@ Phase 2 must stop for user asset review. The final handoff should be written onl
 - 真实 API 接入，或同结构 mock 数据
 - hover、focus、pressed、loading、reduced-motion 等状态
 - 桌面和移动截图，或说明为什么无法截图
+- 每个阶段三截图都要对齐阶段一对应页面插画图，达到至少 99% similarity；低于 99% 必须继续微调布局、裁切、z-index、透明度、字体、间距和动效静止态
+- 所有可见组件都必须来自阶段二 manifest / handoff；新增元素只能是绑定文字用的隐藏/透明文本框或底框，且不能带来新的可见样式
 - `design-qa.md`，且最终交付前必须是 `final result: passed`
 - 验证命令、结果和本地运行方式
 
@@ -599,6 +623,8 @@ Required outputs:
 - Real API integration, or same-shape mock data
 - Hover, focus, pressed, loading, and reduced-motion states
 - Desktop and mobile screenshots, or a clear explanation for why screenshots could not be captured
+- Every Phase 3 screenshot must be compared against its matching Phase 1 page image and reach at least 99% similarity; if it misses the gate, continue tuning layout, crop, z-index, opacity, typography, spacing, and motion resting state
+- Every visible component must come from the Phase 2 manifest / handoff; new elements are limited to hidden or transparent text-binding boxes/backing boxes and must not introduce new visible styling
 - `design-qa.md`, with `final result: passed` before final handoff
 - Verification commands, results, and local run instructions
 
@@ -633,6 +659,7 @@ A complete run should leave at least:
 - `phase1-visual-excellence-gate.md`
 - Approved asset directory
 - Asset review package
+- Layer Preservation Contract and Layer and Occlusion Review
 - Primary screen preview assembled from real generated assets
 - Visual diff / assembly diff evidence
 - `phase2-asset-handoff.md`
@@ -864,6 +891,8 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_visual_benchmark_report.
 
 阶段二可以使用内置脚本生成完整基础组件清单，避免漏掉按钮、角标、卡片、combobox、常用 icons、导航、通告、搜索、章节标题、弹窗和过渡动画状态：
 
+同时，manifest 会写入 Scenery Plane Allocation：每个屏幕级资产都会标记 back / mid / content / interaction / front 视觉平面、depthBand、planePurpose 和 componentizationRule。阶段二要先读这部分，再生成对应插画级组件。
+
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_foundation_manifest.py \
   --project my-app \
@@ -878,11 +907,13 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_foundation_manifest.py \
 
 Phase 2 can use the bundled script to generate a complete foundation component manifest so buttons, badges, cards, comboboxes, common icons, navigation, notice bars, search bars, section titles, modals, and transition states are not missed.
 
+The manifest also includes Scenery Plane Allocation: every screen-level asset is tagged with its back / mid / content / interaction / front visual plane, depthBand, planePurpose, and componentizationRule. Phase 2 should read this before generating illustration-level components.
+
 ## 阶段二资产提示包生成器 / Phase 2 Asset Prompt Pack Generator
 
 **中文**
 
-当用户不懂美术、Figma 或资产切图时，可以先把阶段一 brief 和阶段二 manifest 转成一份具体的生产提示包。它会输出 AI raster、Figma/vector、CSS/SVG 三类资产生产提示、分层规则、二次调参项、manifest 路径和审核清单：
+当用户不懂美术、Figma 或资产切图时，可以先把阶段一 brief 和阶段二 manifest 转成一份具体的生产提示包。它会输出 AI raster、Figma/vector、CSS/SVG 三类资产生产提示、Scenery Plane Allocation、分层规则、二次调参项、manifest 路径和审核清单：
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_prompt_pack.py \
@@ -894,7 +925,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_prompt_pack.py \
 
 **English**
 
-When the user does not know art direction, Figma, or asset slicing, convert the Phase 1 brief and Phase 2 manifest into a practical production prompt pack first. It outputs AI raster, Figma/vector, and CSS/SVG prompts, layer rules, refinement knobs, manifest paths, and review checklist:
+When the user does not know art direction, Figma, or asset slicing, convert the Phase 1 brief and Phase 2 manifest into a practical production prompt pack first. It outputs AI raster, Figma/vector, and CSS/SVG prompts, Scenery Plane Allocation, layer rules, refinement knobs, manifest paths, and review checklist:
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_prompt_pack.py \
@@ -908,7 +939,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_prompt_pack.py \
 
 **中文**
 
-生成资产后，用验收器确认完整基础组件和常用 icons 没有漏项：
+生成资产后，用验收器确认完整基础组件、常用 icons、Layer Preservation Contract 和 Scenery Plane Allocation 都没有漏项：
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/validate_foundation_manifest.py ./asset-manifest.json
@@ -916,7 +947,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/validate_foundation_manifest.py .
 
 **English**
 
-After asset generation, validate that the foundation component states and common icons are complete:
+After asset generation, validate that the foundation component states, common icons, Layer Preservation Contract, and Scenery Plane Allocation are complete:
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/validate_foundation_manifest.py ./asset-manifest.json
@@ -1026,7 +1057,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/record_asset_review_decision.py \
 
 **中文**
 
-用户明确说资产通过，并且已经记录 `phase2-asset-review-decision.json` 后，用这个脚本生成标准 `phase2-asset-handoff.md`。它会把审批证据、manifest、review packet、contact sheet、visual diff、组件调用规则、动效规则和 Phase 3 验收清单合并成一份可直接交给 `$frontend-implementation` 的文档。审核决定是 pending 或返修时，脚本会失败，防止跳过审核门禁。
+用户明确说资产通过，并且已经记录 `phase2-asset-review-decision.json` 后，用这个脚本生成标准 `phase2-asset-handoff.md`。它会把审批证据、manifest、Scenery Plane Allocation、review packet、contact sheet、visual diff、组件调用规则、动效规则和 Phase 3 验收清单合并成一份可直接交给 `$frontend-implementation` 的文档。审核决定是 pending 或返修时，脚本会失败，防止跳过审核门禁。
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_phase2_handoff.py \
@@ -1045,7 +1076,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_phase2_handoff.py \
 
 **English**
 
-After the user explicitly approves the assets and `phase2-asset-review-decision.json` has been recorded, use this script to generate the standard `phase2-asset-handoff.md`. It combines approval evidence, manifest entries, review packet, contact sheet, visual diff report, component usage rules, motion rules, and the Phase 3 acceptance checklist into one document for `$frontend-implementation`. The script fails when the review decision is pending or revision-only, so the review gate cannot be skipped accidentally.
+After the user explicitly approves the assets and `phase2-asset-review-decision.json` has been recorded, use this script to generate the standard `phase2-asset-handoff.md`. It combines approval evidence, manifest entries, Scenery Plane Allocation, review packet, contact sheet, visual diff report, component usage rules, motion rules, and the Phase 3 acceptance checklist into one document for `$frontend-implementation`. The script fails when the review decision is pending or revision-only, so the review gate cannot be skipped accidentally.
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_phase2_handoff.py \
@@ -1092,7 +1123,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/inspect_frontend_target.py \
 
 **中文**
 
-目标项目检查完成后，用这个脚本生成桌面/移动端截图计划、Playwright 捕获脚本、截图输出路径、视觉产物检查命令和视觉差异对比命令。它不会假装项目已经能跑起来；如果检测到 HBuilderX 或外部运行环境，就会把截图计划和外部运行提示写清楚。
+目标项目检查完成后，用这个脚本生成桌面/移动端截图计划、Playwright 捕获脚本、截图输出路径、视觉产物检查命令和视觉差异对比命令。默认 diff 命令会带 `--max-diff-pct 1.0`，也就是每张阶段三截图都要和阶段一对应页面图达到 99% similarity。它不会假装项目已经能跑起来；如果检测到 HBuilderX 或外部运行环境，就会把截图计划和外部运行提示写清楚。
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_screenshot_qa_plan.py \
@@ -1105,7 +1136,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_screenshot_qa_plan.py \
 
 **English**
 
-After target inspection, use this script to generate desktop/mobile screenshot targets, a Playwright capture script, screenshot output paths, visual artifact check commands, and visual diff commands. It does not pretend the app is already runnable; if HBuilderX or another external runtime is required, the plan records that guidance.
+After target inspection, use this script to generate desktop/mobile screenshot targets, a Playwright capture script, screenshot output paths, visual artifact check commands, and visual diff commands. The generated diff commands include `--max-diff-pct 1.0` by default, which means every Phase 3 screenshot must reach 99% similarity against its matching Phase 1 page image. It does not pretend the app is already runnable; if HBuilderX or another external runtime is required, the plan records that guidance.
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_screenshot_qa_plan.py \
@@ -1122,6 +1153,8 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_screenshot_qa_plan.py \
 
 真实改项目之前，用这个脚本把“要复制哪些资产、要改哪些文件、哪些 API 必须保留、哪些运行/截图检查要做”先写成计划。没有阶段二明确通过或目标路由没有匹配时，它会标记 `blockedBeforeEditing: true`，防止误改正式应用。
 
+这个计划还会输出 `Phase 2 Component Reuse Ledger` 和 `Phase 3 Component Reuse Contract`：阶段三只能复用阶段二组件；如果文字需要绑定到插画背景或组件槽位，可以新增隐藏/透明文本框或底框，但不能新增可见组件外观。
+
 复制清单会按 `kind + source + destination` 去重；共享的 foundation CSS 或 icon sprite 只会列一次，同时在 JSON 中保留聚合后的 `components`、`states` 和 `entryCount`。
 
 ```bash
@@ -1136,6 +1169,8 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_implementation_patch_pla
 **English**
 
 Before editing a real project, use this script to plan exactly which assets to copy, which files to edit, which APIs to preserve, and which runtime/screenshot checks to run. If Phase 2 approval is missing or the target route is not matched, it records `blockedBeforeEditing: true` so the production app is not changed accidentally.
+
+The plan also writes a `Phase 2 Component Reuse Ledger` and `Phase 3 Component Reuse Contract`: Phase 3 may only reuse Phase 2 components. If live text must bind to an illustrated background or component slot, hidden/transparent text boxes or backing boxes are allowed, but new visible component styling is not.
 
 Copy operations are deduplicated by `kind + source + destination`; shared foundation CSS or icon sprites are listed once while aggregated `components`, `states`, and `entryCount` remain in the JSON plan.
 
@@ -1224,6 +1259,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_design_qa_gate.py \
   --implementation-screenshot ./implementation-screenshot-mobile.png \
   --visual-diff-json ./visual-diff-report.json \
   --require-diff \
+  --min-similarity-pct 99 \
   --output-md ./design-qa.md \
   --output-json ./design-qa.json
 ```
@@ -1238,6 +1274,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/generate_design_qa_gate.py \
   --implementation-screenshot ./implementation-screenshot-mobile.png \
   --visual-diff-json ./visual-diff-report.json \
   --require-diff \
+  --min-similarity-pct 99 \
   --output-md ./design-qa.md \
   --output-json ./design-qa.json
 ```

@@ -173,6 +173,8 @@ def main() -> None:
         if skill == "frontend-ui-ideation":
             for required in (
                 "Phase 2 generation guide",
+                "Layer Preservation Contract",
+                "Scenery Plane Allocation",
                 "Required Phase 2 Component Inventory",
                 "First Run Checklist",
                 "Visual Taste Rubric",
@@ -194,6 +196,15 @@ def main() -> None:
             for required in (
                 "Required Foundation Kit",
                 "complete foundational component kit",
+                "Layer Preservation Contract",
+                "Scenery Plane Allocation",
+                "phase2-scenery-plane-allocation.md",
+                "layerRole",
+                "sceneryPlane",
+                "depthBand",
+                "componentizationRule",
+                "zIndex",
+                "occlusionPolicy",
                 "Run Mode",
                 "SVG Sprite Review Rule",
                 "Asset Prompt Pack Generator",
@@ -208,6 +219,7 @@ def main() -> None:
                 "Asset-Assembled Primary Preview Rule",
                 "--assembly-preview",
                 "Phase 1 preview screenshot",
+                "Layer and Occlusion Review",
                 "selected visual target",
                 "real raster/ImageGen",
                 "clipped titles",
@@ -236,7 +248,17 @@ def main() -> None:
                 "Implementation Patch Plan",
                 "Design QA Gate",
                 "Catalog every visual asset",
+                "Layer Preservation Contract",
+                "Scenery Plane Allocation",
+                "stacking contexts",
                 "Measure the approved preview",
+                "99% similarity",
+                "pixel adjustment loop",
+                "--min-similarity-pct 99",
+                "Phase 3 Component Reuse Contract",
+                "allowed component ledger",
+                "invisible/transparent text-binding boxes",
+                "Do not create a new visible button",
             ):
                 if required not in skill_md:
                     fail(f"{skill}/SKILL.md missing {required}")
@@ -287,6 +309,19 @@ def main() -> None:
         "质量门禁",
         "asset-assembled primary screen preview",
         "visual diff / assembly diff",
+        "Layer Preservation Contract",
+        "Scenery Plane Allocation",
+        "phase2-scenery-plane-allocation.md",
+        "99% similarity",
+        "--min-similarity-pct",
+        "Phase 2 Component Reuse Ledger",
+        "Phase 3 Component Reuse Contract",
+        "隐藏/透明文本框",
+        "transparent text fields",
+        "Layer and Occlusion Review",
+        "layer preservation contract",
+        "z-index",
+        "occlusion policy",
         "Phase 3 screenshot QA",
         "$frontend-ui-ideation",
         "$frontend-asset-production",
@@ -457,6 +492,31 @@ Layer map:
 4. controls and text
 5. effect overlays, special mask, and motion overlays
 
+Scenery Plane Allocation:
+The selected page image must be read as foreground midground background depth before any asset slicing. Back scenery carries the far-field atmosphere, mid scenery / midground carries the primary illustration motif, content plane carries cards and readable surfaces, interaction plane carries controls and text, and front scenery carries foreground frames, particles, rim lights, and border ornaments.
+
+| Page | sceneryPlane | depthBand | planePurpose | componentizationRule |
+| --- | --- | --- | --- | --- |
+| dashboard | back scenery | back-00 | far-field atmosphere and base color world | generate as the base background layer |
+| dashboard | mid scenery / midground | mid-00 | primary illustration motif and depth cue | generate as an illustration-level component |
+| dashboard | content plane | content-00 | card material and readable content surfaces | generate as separate translucent surfaces |
+| dashboard | interaction plane | interaction-00 | controls, copy, inputs, and live UI states | render as UI components |
+| dashboard | front scenery | front-00 | foreground frame, glints, particles, and decorative borders | generate as transparent overlays above content edges |
+
+Layer Preservation Contract:
+
+| Asset | layerRole | zIndex | compositingGroup | occlusionPolicy | mayMergeWith | mustRemainSeparateFrom | alphaRequired |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| base background | background base | -100 | background system | behind all content | depth overlay | content surface, foreground decoration | false |
+| depth overlay | background depth | -90 | background system | below illustration and content surface | base background | foreground decoration | true |
+| illustration motif | illustration midground | -70 | illustration system | behind content surface | none | content surface, foreground decoration | true |
+| content surface | content surface | -20 | content system | above background, below text controls | none | base background, foreground decoration | true |
+| controls and text | interactive controls | 10 | ui controls | above content surface | none | base background | false |
+| foreground decoration | foreground decoration | 50 | foreground decoration system | above content surface and card edges | none | base background, content surface | true |
+| motion overlay | motion overlay | 70 | motion system | above trigger region | none | base background | true |
+
+Do not flatten foreground decoration, rim lights, masks, particles, or border ornaments into the base background. They must remain separate transparent overlays when they sit above cards or controls.
+
 Adjustable parameters:
 - opacity, blur, shadow, highlight intensity, saturation, stroke width, radius, spacing, duration, easing, and responsive crop.
 
@@ -523,13 +583,34 @@ Phase 2 can start after validation passes.
         )
         generated = json.loads(output_path.read_text(encoding="utf-8"))
         entries = generated.get("entries", [])
-        expected_total = 89
+        expected_total = 91
         if generated.get("coverage", {}).get("commonIcons") != len(COMMON_ICONS):
             fail("foundation manifest generator must cover all common icons")
         if generated.get("coverage", {}).get("totalEntries") != expected_total:
             fail("foundation manifest generator total entry count changed unexpectedly")
         if len(entries) != expected_total:
             fail("foundation manifest generator output is missing required foundation states")
+        if generated.get("coverage", {}).get("screenAssetSlots") != 8:
+            fail("foundation manifest generator must include layer preservation screen slots")
+        if generated.get("layerContract", {}).get("schemaVersion") != "frontend-ui-pipeline.layer-contract.v1":
+            fail("foundation manifest generator must include a layer preservation contract")
+        if not generated.get("layerContract", {}).get("sceneryPlaneAllocation"):
+            fail("foundation manifest generator must include scenery plane allocation")
+        for field in (
+            "layerRole",
+            "sceneryPlane",
+            "depthBand",
+            "planePurpose",
+            "componentizationRule",
+            "zIndex",
+            "compositingGroup",
+            "occlusionPolicy",
+            "mayMergeWith",
+            "mustRemainSeparateFrom",
+            "alphaRequired",
+        ):
+            if any(field not in entry for entry in entries):
+                fail(f"foundation manifest entries missing {field}")
         prompt_pack_path = Path(temp_dir) / "phase2-asset-prompt-pack.md"
         prompt_pack_check = subprocess.run(
             [
@@ -557,6 +638,12 @@ Phase 2 can start after validation passes.
             "AI Raster Prompt",
             "Figma/Vector Prompt",
             "CSS/SVG Component Prompt",
+            "Layer Preservation Contract",
+            "Scenery Plane Allocation",
+            "scenery",
+            "Componentization",
+            "z `",
+            "occlusion",
             "Common icons",
             "Total manifest entries",
         ):
@@ -577,6 +664,10 @@ Phase 2 can start after validation passes.
         )
         if "common icons: 20" not in validator_check.stdout:
             fail("foundation manifest validator did not verify common icon coverage")
+        if "layer preservation contract" not in validator_check.stdout:
+            fail("foundation manifest validator did not verify the layer preservation contract")
+        if "scenery plane allocation" not in validator_check.stdout:
+            fail("foundation manifest validator did not verify scenery plane allocation")
         review_root = Path(temp_dir) / "review"
         review_root.mkdir()
         doctor_home = Path(temp_dir) / "doctor-home"
@@ -766,12 +857,12 @@ Phase 2 can start after validation passes.
             stderr=subprocess.PIPE,
             text=True,
         )
-        if "visual diff 0.0%" not in visual_diff_check.stdout:
+        if "visual diff 0.0%" not in visual_diff_check.stdout or "similarity=100.0%" not in visual_diff_check.stdout:
             fail("visual diff helper did not report a zero-difference comparison")
         diff_report = json.loads(diff_json.read_text(encoding="utf-8"))
-        if not diff_report.get("passed") or diff_report.get("differingPixels") != 0:
+        if not diff_report.get("passed") or diff_report.get("differingPixels") != 0 or diff_report.get("similarityPct") != 100.0:
             fail("visual diff helper JSON did not prove matching PNGs")
-        if "Visual Diff Report" not in diff_md.read_text(encoding="utf-8"):
+        if "Visual Diff Report" not in diff_md.read_text(encoding="utf-8") or "Similarity" not in diff_md.read_text(encoding="utf-8"):
             fail("visual diff helper did not write Markdown output")
         pipeline_start_dir = Path(temp_dir) / "pipeline-start-run"
         start_check = subprocess.run(
@@ -833,6 +924,8 @@ Phase 2 can start after validation passes.
                 "--visual-diff-json",
                 str(diff_json),
                 "--require-diff",
+                "--min-similarity-pct",
+                "99",
                 "--min-width",
                 "1",
                 "--min-height",
@@ -850,7 +943,14 @@ Phase 2 can start after validation passes.
         if "final result: passed" not in design_qa_check.stdout:
             fail("design QA gate did not pass matching screenshots")
         design_qa = json.loads(design_qa_json.read_text(encoding="utf-8"))
-        if design_qa.get("finalResult") != "passed" or "final result: passed" not in design_qa_md.read_text(encoding="utf-8"):
+        design_qa_text = design_qa_md.read_text(encoding="utf-8")
+        if (
+            design_qa.get("finalResult") != "passed"
+            or design_qa.get("minSimilarityPct") != 99.0
+            or design_qa.get("similarityPct") != 100.0
+            or "final result: passed" not in design_qa_text
+            or "Required similarity" not in design_qa_text
+        ):
             fail("design QA gate did not write a passing report")
         review_packet_check = subprocess.run(
             [
@@ -892,6 +992,9 @@ Phase 2 can start after validation passes.
             "Primary Screen Asset Assembly",
             "Asset-assembled primary screen preview",
             "Visual diff report",
+            "Layer and Occlusion Review",
+            "Scenery",
+            "foreground decoration",
         ):
             if required_approval_text not in approval_text:
                 fail(f"asset review packet missing {required_approval_text}")
@@ -1099,8 +1202,14 @@ Phase 2 can start after validation passes.
             "## Approval",
             "## Asset Manifest",
             "## Assembly Map",
+            "## Layer Preservation Contract",
+            "## Scenery Plane Allocation",
+            "99% similarity",
             "Asset-assembled primary screen preview",
             "## Component Usage Rules",
+            "## Phase 3 Component Reuse Contract",
+            "invisible text-binding boxes",
+            "Do not generate new visible component families",
             "## Phase 3 Acceptance Checklist",
             "$frontend-implementation",
         ):
@@ -1225,12 +1334,17 @@ Phase 2 can start after validation passes.
             fail("screenshot QA plan must include mobile and desktop cases")
         if not plan.get("visualCheckCommand") or not plan.get("visualDiffCommands"):
             fail("screenshot QA plan missing visual check or diff commands")
+        if plan.get("maxDiffPct") != 1.0 or plan.get("minSimilarityPct") != 99.0:
+            fail("screenshot QA plan must default to 99% similarity")
+        if not all("--max-diff-pct" in command and "1.0" in command for command in plan.get("visualDiffCommands", [])):
+            fail("screenshot QA visual diff commands must enforce max 1% diff")
         plan_text = plan_md.read_text(encoding="utf-8")
         for required_plan_text in (
             "Phase 3 Screenshot QA Plan",
             "Capture Command",
             "Visual Artifact Check",
             "Visual Diff Commands",
+            "99% Similarity Gate",
             "capture-screenshots.mjs",
         ):
             if required_plan_text not in plan_text:
@@ -1288,6 +1402,11 @@ Phase 2 can start after validation passes.
         approved_plan = json.loads(patch_plan_json.read_text(encoding="utf-8"))
         if approved_plan.get("blockedBeforeEditing") or not approved_plan.get("copyOperations") or not approved_plan.get("fileOperations"):
             fail("implementation patch plan missing copy/file operations after approval")
+        reuse_contract = approved_plan.get("componentReuseContract", {})
+        if not reuse_contract.get("visibleComponentInventoryClosed") or "invisible text-binding boxes" not in reuse_contract.get("allowedAdditions", []):
+            fail("implementation patch plan must enforce the Phase 3 component reuse contract")
+        if not approved_plan.get("phase2ComponentLedger"):
+            fail("implementation patch plan must include the Phase 2 component reuse ledger")
         copy_keys = [
             (item.get("kind"), item.get("source"), item.get("destination"))
             for item in approved_plan.get("copyOperations", [])
@@ -1299,6 +1418,12 @@ Phase 2 can start after validation passes.
             "Phase 3 Implementation Patch Plan",
             "Copy Operations",
             "File Operations",
+            "Layer Preservation Hints",
+            "Scenery Plane Hints",
+            "Phase 2 Component Reuse Ledger",
+            "Phase 3 Component Reuse Contract",
+            "invisible text-binding boxes",
+            "new visible component families",
             "API Preservation",
             "Verification Steps",
         ):

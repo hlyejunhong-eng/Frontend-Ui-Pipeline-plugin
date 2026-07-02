@@ -10,6 +10,21 @@ from pathlib import Path
 from generate_foundation_manifest import COMMON_ICONS, FOUNDATION_COMPONENTS, SCREEN_ASSET_SLOTS
 
 
+REQUIRED_LAYER_FIELDS = (
+    "sceneryPlane",
+    "depthBand",
+    "planePurpose",
+    "componentizationRule",
+    "layerRole",
+    "zIndex",
+    "compositingGroup",
+    "occlusionPolicy",
+    "mayMergeWith",
+    "mustRemainSeparateFrom",
+    "alphaRequired",
+)
+
+
 def fail(message: str) -> None:
     print(f"[FAIL] {message}")
     raise SystemExit(1)
@@ -73,6 +88,72 @@ def validate_status(entries: list[dict], required_status: str) -> None:
         fail(f"{len(mismatches)} entries do not have status {required_status}: {preview}")
 
 
+def validate_layer_contract(payload: dict, entries: list[dict]) -> None:
+    layer_contract = payload.get("layerContract")
+    if not isinstance(layer_contract, dict):
+        fail("Manifest must contain a layerContract object")
+    if layer_contract.get("schemaVersion") != "frontend-ui-pipeline.layer-contract.v1":
+        fail("layerContract schemaVersion must be frontend-ui-pipeline.layer-contract.v1")
+    scenery_allocation = layer_contract.get("sceneryPlaneAllocation")
+    if not isinstance(scenery_allocation, dict):
+        fail("layerContract must contain sceneryPlaneAllocation")
+
+    missing_fields = []
+    bad_types = []
+    for entry in entries:
+        entry_id = str(entry.get("id", entry.get("assetPath", "<unknown>")))
+        for field in REQUIRED_LAYER_FIELDS:
+            if field not in entry:
+                missing_fields.append(f"{entry_id}:{field}")
+        if "zIndex" in entry and not isinstance(entry.get("zIndex"), (int, float)):
+            bad_types.append(f"{entry_id}:zIndex")
+        for field in ("mayMergeWith", "mustRemainSeparateFrom"):
+            if field in entry and not isinstance(entry.get(field), list):
+                bad_types.append(f"{entry_id}:{field}")
+        if "alphaRequired" in entry and not isinstance(entry.get("alphaRequired"), bool):
+            bad_types.append(f"{entry_id}:alphaRequired")
+        if "sceneryPlane" in entry and str(entry.get("sceneryPlane")) not in {"back", "mid", "content", "interaction", "front"}:
+            bad_types.append(f"{entry_id}:sceneryPlane")
+
+    if missing_fields:
+        fail("Missing layer contract fields: " + ", ".join(missing_fields[:12]))
+    if bad_types:
+        fail("Invalid layer contract field types: " + ", ".join(bad_types[:12]))
+
+    by_state = {str(entry.get("state")): entry for entry in entries if str(entry.get("id", "")).startswith("screen/")}
+    required_order = [
+        ("base-background", -100),
+        ("content-surface", -20),
+        ("foreground-frame", 50),
+    ]
+    missing = [state for state, _z in required_order if state not in by_state]
+    if missing:
+        fail("Missing layer preservation screen slots: " + ", ".join(missing))
+    if not (
+        by_state["base-background"]["zIndex"]
+        < by_state["content-surface"]["zIndex"]
+        < by_state["foreground-frame"]["zIndex"]
+    ):
+        fail("Layer order must keep base-background below content-surface below foreground-frame")
+
+    required_planes = {
+        "base-background": "back",
+        "primary-illustration": "mid",
+        "content-surface": "content",
+        "foreground-frame": "front",
+    }
+    for state, plane in required_planes.items():
+        if state not in by_state:
+            fail(f"Missing required scenery state: {state}")
+        if by_state[state].get("sceneryPlane") != plane:
+            fail(f"{state} must be assigned to sceneryPlane {plane}")
+
+    foreground_separate = set(by_state["foreground-frame"].get("mustRemainSeparateFrom", []))
+    for required in ("base-background", "content-surface"):
+        if required not in foreground_separate:
+            fail(f"foreground-frame must remain separate from {required}")
+
+
 def validate_manifest(args: argparse.Namespace) -> None:
     payload = load_manifest(Path(args.manifest).expanduser().resolve())
     entries = payload["entries"]
@@ -97,6 +178,8 @@ def validate_manifest(args: argparse.Namespace) -> None:
                 missing_screen_slots.append(f"{category}/{state}")
 
     validate_status(normalized_entries, args.require_status)
+    if args.require_layer_contract:
+        validate_layer_contract(payload, normalized_entries)
 
     if missing_components:
         fail("Missing foundation component states: " + ", ".join(missing_components))
@@ -110,6 +193,9 @@ def validate_manifest(args: argparse.Namespace) -> None:
     ok(f"common icons: {len(COMMON_ICONS)}")
     if args.require_screen_slots:
         ok(f"screen asset slots: {len(SCREEN_ASSET_SLOTS)}")
+    if args.require_layer_contract:
+        ok("layer preservation contract")
+        ok("scenery plane allocation")
     ok(f"entries inspected: {len(normalized_entries)}")
 
 
@@ -127,7 +213,14 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Require every entry to have this status, such as review-pending or approved.",
     )
+    parser.add_argument(
+        "--no-layer-contract",
+        dest="require_layer_contract",
+        action="store_false",
+        help="Skip layer preservation contract validation for legacy manifests.",
+    )
     parser.set_defaults(require_screen_slots=True)
+    parser.set_defaults(require_layer_contract=True)
     return parser.parse_args()
 
 

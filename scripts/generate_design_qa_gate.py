@@ -60,8 +60,20 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
             blockers.append(f"Implementation screenshot too small: {screenshot_size[0]}x{screenshot_size[1]}")
 
     diff = load_diff(Path(args.visual_diff_json).expanduser().resolve() if args.visual_diff_json else None)
+    similarity_pct = None
     if diff and not diff.get("passed"):
         blockers.append("Visual diff report did not pass.")
+    if diff:
+        if isinstance(diff.get("similarityPct"), (int, float)):
+            similarity_pct = float(diff["similarityPct"])
+        elif isinstance(diff.get("diffPct"), (int, float)):
+            similarity_pct = 100.0 - float(diff["diffPct"])
+        if similarity_pct is None:
+            blockers.append("Visual diff JSON does not contain diffPct or similarityPct.")
+        elif similarity_pct < args.min_similarity_pct:
+            blockers.append(
+                f"Similarity {similarity_pct:.6f}% is below required {args.min_similarity_pct:.6f}%."
+            )
     if not diff and args.require_diff:
         blockers.append("Visual diff JSON is required but was not provided.")
 
@@ -74,6 +86,8 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "implementationSize": screenshot_size,
         "visualDiffJson": args.visual_diff_json,
         "visualDiffPassed": diff.get("passed") if diff else None,
+        "similarityPct": round(similarity_pct, 6) if similarity_pct is not None else None,
+        "minSimilarityPct": args.min_similarity_pct,
         "blockers": blockers,
         "finalResult": final_result,
         "mustFixBeforeHandoff": blockers,
@@ -81,6 +95,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
             "Reference preview exists and is readable.",
             "Implementation screenshot exists and is readable.",
             "Visual diff passes when provided or required.",
+            f"Implementation screenshot is at least {args.min_similarity_pct}% similar to the Phase 1 source preview.",
             "No visible layout breakage, text overflow, missing assets, or wrong interaction state remains.",
         ],
     }
@@ -105,6 +120,8 @@ def markdown(report: dict[str, Any]) -> str:
             f"- Implementation size: `{screenshot_size[0]}x{screenshot_size[1]}`",
             f"- Visual diff JSON: `{report['visualDiffJson'] or 'not provided'}`",
             f"- Visual diff passed: `{report['visualDiffPassed']}`",
+            f"- Similarity: `{report['similarityPct'] if report['similarityPct'] is not None else 'unknown'}%`",
+            f"- Required similarity: `{report['minSimilarityPct']}%`",
             "",
             "## Blocking Issues",
             "",
@@ -126,6 +143,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--implementation-screenshot", required=True, help="Phase 3 implementation screenshot PNG.")
     parser.add_argument("--visual-diff-json", default="", help="Optional compare_visual_artifacts.py JSON report.")
     parser.add_argument("--require-diff", action="store_true", help="Require a visual diff JSON report.")
+    parser.add_argument("--min-similarity-pct", type=float, default=99.0, help="Minimum similarity percentage required for final Phase 3 handoff.")
     parser.add_argument("--min-width", type=int, default=320)
     parser.add_argument("--min-height", type=int, default=240)
     parser.add_argument("--output-md", required=True, help="Output design-qa.md path.")
