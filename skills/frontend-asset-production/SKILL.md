@@ -26,6 +26,7 @@ Require:
 
 - `phase1-ui-brief.md` or an equivalent design specification.
 - One or more phase 1 preview images.
+- `phase1-source-visual-inventory.md/json` or equivalent code-search notes when Phase 1 had access to source code.
 - Any brand assets, source screenshots, icons, fonts, or target platform constraints supplied by the user.
 
 If phase 1 artifacts are missing, ask for them or run `$frontend-ui-ideation` first.
@@ -36,6 +37,9 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
 
 1. Read and normalize the design contract:
    - Extract every required screen, layer, component, state, and motion requirement from the phase 1 brief.
+   - Extract the Phase 1 Source Visual Inventory before producing assets. Read `phase1-source-visual-inventory.md/json` when present, or the equivalent Source Visual Inventory section inside the brief.
+   - Build a source-derived component map from the inventory: existing buttons, controls, component families, state variants, icons/media, visual tokens, hover/focus/active/disabled/loading/error/empty/success/warning settings, transitions, animations, and gesture feedback.
+   - Phase 2 must generate corresponding components/assets for source-derived requirements or document an approved replacement mapping. Do not drop existing visual interaction states just because they are not obvious in the Phase 1 preview image.
    - Confirm that Phase 1 has a selected visual target and a passing visual excellence gate. If missing, return to `$frontend-ui-ideation` before generating assets.
    - Extract the Phase 1 Layer Preservation Contract before making any asset. If the brief only says "background" or "decorative frame" without z-index, occlusion, and merge rules, add a Phase 1 supplement before producing assets.
    - Extract or create the Scenery Plane Allocation before making any illustration-level component. This analysis must decide how visual scenery is distributed across back scenery, mid scenery, content plane, interaction plane, and front scenery.
@@ -114,11 +118,13 @@ If the phase 1 preview exists but is too vague to slice into assets, tighten the
 The final Markdown document must include:
 
 - Source references: phase 1 brief path, preview image paths, and approved review package path.
+- Source visual inventory: path or notes for source-derived buttons, components, tokens, icons, and visual interaction settings.
 - Asset manifest: file path, type, dimensions, scale, transparency, color mode, purpose, owning screen/component, and state.
 - Layer Preservation Contract: z-index ledger, compositing groups, occlusion policy, allowed merge rules, forbidden merge rules, alpha requirements, and implementation hints.
 - Scenery Plane Allocation: per-page back scenery, mid scenery, content plane, interaction plane, front scenery, plane purpose, occlusion relationship, crop anchor, and componentization rule.
 - Assembly map: exact layer order, placement coordinates, sizing rules, object-fit rules, masks, blend modes, and responsive behavior.
 - Component usage rules: which assets each component imports, fallback behavior, and when to use CSS or native UI instead of images.
+- Source-derived component mapping: which Phase 2 generated component/asset covers each existing source button, component family, state, icon/media pattern, and visual interaction setting.
 - Motion asset rules: frame order, frame rate, duration, looping, easing, trigger, start/end states, and reduced-motion fallback.
 - Implementation notes: target import paths, bundler/public folder assumptions, preloading strategy, cache busting, and optimization instructions.
 - Acceptance checklist for `$frontend-implementation`.
@@ -146,6 +152,7 @@ Represent this kit as real frontend-consumable assets: SVG icon sprites or files
 Before expanding the complete foundation kit, make the selected Phase 1 screen visually convincing:
 
 - Lock the selected Phase 1 preview as the visual source of truth.
+- Lock the Phase 1 Source Visual Inventory as the source-derived component and interaction-state coverage contract.
 - Lock the Phase 1 Layer Preservation Contract as the depth source of truth.
 - Lock the Scenery Plane Allocation before generating any illustration-level component.
 - Generate or assemble the main background, illustration/motif, surface material, key icon style, and one representative motion/feedback cue.
@@ -322,6 +329,7 @@ Final output must include:
 - A visual diff report when a comparable Phase 1 preview and Phase 2 asset preview/contact sheet are available.
 - A primary screen asset assembly preview built from generated Phase 2 assets, not a copied Phase 1 screenshot.
 - A manifest or table that maps every asset to a component, state, layer, and import/calling path.
+- A manifest or table that maps source-derived buttons, components, visual states, tokens, icons, and interaction settings to generated Phase 2 assets/components or approved replacements.
 - A manifest or table that maps every asset to a component, state, `layerRole`, `zIndex`, `compositingGroup`, `occlusionPolicy`, `mayMergeWith`, `mustRemainSeparateFrom`, and import/calling path.
 - A manifest or table that maps every asset to `sceneryPlane`, `depthBand`, `planePurpose`, and `componentizationRule`.
 - A complete foundational component kit covering buttons, badges, cards, combobox, common icons, navigation, notice bar, search bar, section titles, modal, and transition animations.

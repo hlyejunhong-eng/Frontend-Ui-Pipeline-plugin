@@ -369,12 +369,14 @@ Demo artifacts such as `phase3-demo*/index.html`, `README.md`, and `phase3-demo-
 这个插件的目标不是“写一段审美提示词”，而是把高质量前端设计拆成可验证步骤：
 
 - 阶段一先锁定 design brief：目标页面、视觉来源、交互等级和目标尺寸。
+- 阶段一如果有本地代码，必须先生成 Source Visual Inventory：检索潜在按钮、控件、组件、class/token、hover/focus/disabled/loading/error/transition/animation 等视觉交互设定，并记录为 `phase1-source-visual-inventory.md/json`。
 - 阶段一必须使用真实参考：截图、localhost、Figma、品牌资产、Storybook、tokens 或组件引用；不能只靠文件名猜风格。
 - 阶段一生成三个独立视觉方向，每个方向单独一张图，选中后才能进入阶段二。
 - 阶段一必须输出 Layer Preservation Contract：把插画拆成 base background、depth overlay、illustration、content surface、foreground decoration、motion overlay 等层，并写清 z-index、compositing group、occlusion policy、mayMergeWith、mustRemainSeparateFrom。
 - 阶段一必须输出 Scenery Plane Allocation：先判断 back scenery、mid scenery、content plane、interaction plane、front scenery，再决定哪些插画级组件必须独立生成，避免前景边框、粒子、rim light 被压进底图。
 - 阶段二必须生成 asset-assembled primary screen preview，也就是用真实 Phase 2 assets 拼一次主屏；不能把 Phase 1 preview screenshot 复制过来冒充资产证明。
 - 阶段二拆分资产前必须先写 `phase2-scenery-plane-allocation.md` 或等价 manifest 表，字段至少包含 `sceneryPlane`、`depthBand`、`planePurpose`、`componentizationRule`。
+- 阶段二必须读取 Source Visual Inventory，按已有代码中的按钮、组件、状态、icon/media 和视觉交互设定生成对应组件资产，或写清楚映射到哪个已批准替代组件。
 - 阶段二必须通过 layer preservation contract 校验；前景边框、rim light、glint、粒子、遮罩、装饰描边不能被烤进底层背景再被内容框遮住。
 - 阶段二审核包必须说明 visual diff / assembly diff 的结果；如果差异来自“资产拼装图不是最终前端截图”，要写清楚并把 Phase 3 screenshot QA 作为最终像素门禁。
 - 阶段三必须复用阶段二已经生成并审核通过的组件和资产，不可以重新生成新的可见组件、可见状态、边框、底框、阴影、装饰、icon 风格或动效状态。
@@ -386,12 +388,14 @@ Demo artifacts such as `phase3-demo*/index.html`, `README.md`, and `phase3-demo-
 This plugin is not just a prompt for taste. It turns frontend design quality into verifiable gates:
 
 - Phase 1 locks the design brief: target surface, visual source, interactivity level, and target dimensions.
+- When local source code is available, Phase 1 must generate a Source Visual Inventory first: scan for potential buttons, controls, components, classes/tokens, and visual interaction settings such as hover, focus, disabled, loading, error, transition, and animation, then record `phase1-source-visual-inventory.md/json`.
 - Phase 1 must use real references: screenshots, localhost, Figma, brand assets, Storybook, tokens, or component references; do not infer style from filenames alone.
 - Phase 1 generates three independent visual directions, each as its own image, before selecting one for Phase 2.
 - Phase 1 must output a Layer Preservation Contract: split the illustration into base background, depth overlay, illustration, content surface, foreground decoration, motion overlay, and record z-index, compositing group, occlusion policy, mayMergeWith, and mustRemainSeparateFrom.
 - Phase 1 must output Scenery Plane Allocation: decide back scenery, mid scenery, content plane, interaction plane, and front scenery before choosing which illustration-level components must stay separate.
 - Phase 2 must create an asset-assembled primary screen preview from real Phase 2 assets; do not copy the Phase 1 preview screenshot as asset proof.
 - Phase 2 must write `phase2-scenery-plane-allocation.md` or an equivalent manifest table before asset slicing, with `sceneryPlane`, `depthBand`, `planePurpose`, and `componentizationRule`.
+- Phase 2 must read the Source Visual Inventory and generate corresponding component assets for source-derived buttons, components, states, icon/media usage, and visual interaction settings, or document the approved replacement mapping.
 - Phase 2 must pass layer preservation contract validation; foreground frames, rim lights, glints, particles, masks, and decorative strokes must not be baked into the bottom background and then hidden by content surfaces.
 - Phase 2 review must explain the visual diff / assembly diff result; when the difference exists because the assembly is not the final app screenshot, keep Phase 3 screenshot QA as the final pixel gate.
 - Phase 3 must reuse the approved Phase 2 components and assets. It must not generate new visible component families, visible states, borders, backing boxes, shadows, ornaments, icon treatments, or motion states.
@@ -448,6 +452,7 @@ Use $frontend-implementation with the approved phase 2 assets. Hot-replace the r
 
 - `phase1-ui-brief.md`
 - 已锁定的 design brief：目标页面、视觉来源、交互等级和目标尺寸
+- `phase1-source-visual-inventory.md/json`：从源码检索出的按钮、控件、组件、视觉状态、tokens、icons/media 和交互设定
 - 三个独立视觉方向预览图
 - 选中的视觉目标
 - `phase1-visual-excellence-gate.md`
@@ -470,6 +475,7 @@ Required outputs:
 
 - `phase1-ui-brief.md`
 - Locked design brief: target surface, visual source, interactivity level, and target dimensions
+- `phase1-source-visual-inventory.md/json`: buttons, controls, components, visual states, tokens, icons/media, and interaction settings discovered from source code
 - Three independent visual direction previews
 - Selected visual target
 - `phase1-visual-excellence-gate.md`
@@ -498,6 +504,7 @@ Success criteria:
 - `phase2-scenery-plane-allocation.md` 或等价 manifest 表，说明每个资产的 sceneryPlane、depthBand、planePurpose 和 componentizationRule
 - visual diff / assembly diff 报告和已知差异说明
 - 背景、插图、遮罩、图标、sprites 或 motion frames
+- Source-Derived Component Mapping：阶段一源码清单中的按钮、组件、状态、icon/media 和交互设定分别由哪些阶段二组件/资产覆盖
 - 完整基础组件资产包
 - `asset-manifest.json`
 - `phase2-asset-handoff.md`
@@ -553,6 +560,7 @@ Required outputs:
 - `phase2-scenery-plane-allocation.md` or equivalent manifest table describing sceneryPlane, depthBand, planePurpose, and componentizationRule for every major asset
 - Visual diff / assembly diff report and known deviation notes
 - Backgrounds, illustrations, masks, icons, sprites, or motion frames
+- Source-Derived Component Mapping: which Phase 2 components/assets cover the buttons, components, states, icon/media usage, and interaction settings from the Phase 1 source inventory
 - Complete foundation component asset kit
 - `asset-manifest.json`
 - `phase2-asset-handoff.md`
@@ -771,7 +779,7 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/quick_check.py
 
 **中文**
 
-它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、启动向导、流水线运行索引生成器、流水线完成度审计生成器、案例包生成器、阶段一视觉卓越门、Product Design 基准门、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二资产审核决定记录器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、阶段三 design QA 门、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
+它会检查插件 manifest、三个 skills、agent YAML、安装脚本、README、启动向导、流水线运行索引生成器、流水线完成度审计生成器、案例包生成器、阶段一源码视觉清单生成器、阶段一视觉卓越门、Product Design 基准门、阶段一 brief 验收器、阶段二 manifest 工具、阶段二资产提示包生成器、阶段二资产审核包生成器、阶段二资产审核决定记录器、阶段二最终交接文档生成器、阶段三目标项目检查器、阶段三截图 QA 计划生成器、阶段三实现补丁计划生成器、阶段三 design QA 门、视觉产物检查器、视觉差异对比器，以及仓库是否误跟踪了 `examples/`、`launch-kit/`、`docs/`、`PROMPTS.md` 等非插件内容。
 
 如果你是普通使用者，不需要跑完整 CI，可以优先运行安装诊断：
 
@@ -781,12 +789,40 @@ python3 ~/plugins/frontend-ui-pipeline/scripts/diagnose_install.py
 
 **English**
 
-This checks the plugin manifest, three skills, agent YAML files, install script, README, start wizard, pipeline runbook generator, pipeline completion audit generator, case study pack generator, Phase 1 visual excellence gate, Product Design benchmark gate, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 asset review decision recorder, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, Phase 3 design QA gate, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
+This checks the plugin manifest, three skills, agent YAML files, install script, README, start wizard, pipeline runbook generator, pipeline completion audit generator, case study pack generator, Phase 1 source visual inventory generator, Phase 1 visual excellence gate, Product Design benchmark gate, Phase 1 brief validator, Phase 2 manifest tools, Phase 2 asset prompt pack generator, Phase 2 asset review packet generator, Phase 2 asset review decision recorder, Phase 2 final handoff generator, Phase 3 target inspector, Phase 3 screenshot QA plan generator, Phase 3 implementation patch plan generator, Phase 3 design QA gate, visual artifact checker, visual diff helper, and whether non-plugin material such as `examples/`, `launch-kit/`, `docs/`, or `PROMPTS.md` is accidentally tracked.
 
 If you are a regular user and do not need the full CI check, run the install doctor first:
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/diagnose_install.py
+```
+
+## 阶段一源代码视觉清单生成器 / Phase 1 Source Visual Inventory Generator
+
+**中文**
+
+阶段一开始前，如果输入包含本地前端项目，先用这个脚本检索源码里的潜在按钮、控件、组件、class/token、视觉状态和交互设定。输出的 `phase1-source-visual-inventory.md/json` 要写进 `phase1-ui-brief.md`，阶段二会按这份清单生成对应组件或记录替代映射。
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_source_visual_inventory.py \
+  /path/to/frontend-project \
+  --target-route /dashboard \
+  --target-name "Dashboard" \
+  --output-md ./phase1-source-visual-inventory.md \
+  --output-json ./phase1-source-visual-inventory.json
+```
+
+**English**
+
+When Phase 1 receives a local frontend project, run this script before visual ideation to scan source code for potential buttons, controls, components, classes/tokens, visual states, and interaction settings. Record `phase1-source-visual-inventory.md/json` in `phase1-ui-brief.md`; Phase 2 uses it to generate corresponding components or document approved replacement mappings.
+
+```bash
+python3 ~/plugins/frontend-ui-pipeline/scripts/generate_source_visual_inventory.py \
+  /path/to/frontend-project \
+  --target-route /dashboard \
+  --target-name "Dashboard" \
+  --output-md ./phase1-source-visual-inventory.md \
+  --output-json ./phase1-source-visual-inventory.json
 ```
 
 ## 阶段一 Brief 验收器 / Phase 1 Brief Validator
@@ -913,24 +949,26 @@ The manifest also includes Scenery Plane Allocation: every screen-level asset is
 
 **中文**
 
-当用户不懂美术、Figma 或资产切图时，可以先把阶段一 brief 和阶段二 manifest 转成一份具体的生产提示包。它会输出 AI raster、Figma/vector、CSS/SVG 三类资产生产提示、Scenery Plane Allocation、分层规则、二次调参项、manifest 路径和审核清单：
+当用户不懂美术、Figma 或资产切图时，可以先把阶段一 brief、阶段一源码视觉清单和阶段二 manifest 转成一份具体的生产提示包。它会输出 AI raster、Figma/vector、CSS/SVG 三类资产生产提示、Source Visual Inventory、Scenery Plane Allocation、分层规则、二次调参项、manifest 路径和审核清单：
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_prompt_pack.py \
   --phase1-brief ./phase1-ui-brief.md \
   --manifest ./asset-manifest.json \
+  --source-visual-inventory ./phase1-source-visual-inventory.md \
   --strategy hybrid \
   --output ./phase2-asset-prompt-pack.md
 ```
 
 **English**
 
-When the user does not know art direction, Figma, or asset slicing, convert the Phase 1 brief and Phase 2 manifest into a practical production prompt pack first. It outputs AI raster, Figma/vector, and CSS/SVG prompts, Scenery Plane Allocation, layer rules, refinement knobs, manifest paths, and review checklist:
+When the user does not know art direction, Figma, or asset slicing, convert the Phase 1 brief, Phase 1 source visual inventory, and Phase 2 manifest into a practical production prompt pack first. It outputs AI raster, Figma/vector, and CSS/SVG prompts, Source Visual Inventory, Scenery Plane Allocation, layer rules, refinement knobs, manifest paths, and review checklist:
 
 ```bash
 python3 ~/plugins/frontend-ui-pipeline/scripts/generate_asset_prompt_pack.py \
   --phase1-brief ./phase1-ui-brief.md \
   --manifest ./asset-manifest.json \
+  --source-visual-inventory ./phase1-source-visual-inventory.md \
   --strategy hybrid \
   --output ./phase2-asset-prompt-pack.md
 ```

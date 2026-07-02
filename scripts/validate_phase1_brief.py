@@ -13,6 +13,12 @@ from generate_foundation_manifest import COMMON_ICONS, FOUNDATION_COMPONENTS
 REQUIRED_SECTIONS = {
     "context": ("context",),
     "source audit": ("source audit", "source evidence"),
+    "source visual inventory": (
+        "source visual inventory",
+        "phase1 source visual inventory",
+        "source code visual inventory",
+        "code visual inventory",
+    ),
     "preview": ("preview",),
     "layout spec": ("layout spec", "layout"),
     "background spec": ("background spec", "background"),
@@ -49,6 +55,12 @@ REQUIRED_GUIDE_BLOCKS = {
         "complete phase 2 component inventory",
         "complete foundation component inventory",
         "required phase 2 component inventory",
+    ),
+    "source-derived component map": (
+        "source-derived component map",
+        "source derived component map",
+        "source-derived component",
+        "source derived component",
     ),
 }
 
@@ -88,6 +100,19 @@ REQUIRED_PARAMETER_TERMS = [
     "duration",
     "easing",
     "crop",
+]
+
+REQUIRED_SOURCE_VISUAL_TERMS = [
+    "phase1 source visual inventory",
+    "buttons",
+    "components",
+    "visual states",
+    "interaction settings",
+    "hover",
+    "focus",
+    "disabled",
+    "loading",
+    "transition",
 ]
 
 COMPONENT_ALIASES = {
@@ -159,6 +184,14 @@ def require_phase2_guide(text: str) -> None:
     ok("phase 2 generation guide")
 
 
+def require_source_visual_inventory(text: str) -> None:
+    normalized = normalize(text)
+    missing_terms = [term for term in REQUIRED_SOURCE_VISUAL_TERMS if normalize(term).strip() not in normalized]
+    if missing_terms:
+        fail("Missing source visual inventory terms: " + ", ".join(missing_terms))
+    ok("source visual inventory")
+
+
 def require_foundation_inventory(text: str) -> None:
     lines = split_lines(text)
     missing_states = []
@@ -195,6 +228,7 @@ def validate_brief(path: Path) -> None:
         fail("Phase 1 brief is too short to be an implementation-grade handoff")
     require_sections(text)
     require_preview_paths(text)
+    require_source_visual_inventory(text)
     require_phase2_guide(text)
     require_foundation_inventory(text)
     ok("phase 1 brief is ready for Phase 2")

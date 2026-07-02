@@ -18,6 +18,7 @@ STRATEGY_NOTES = {
 }
 
 SECTION_HINTS = [
+    "Source Visual Inventory",
     "Selected Direction",
     "Layer Preservation Contract",
     "Background Spec",
@@ -37,6 +38,18 @@ def load_text(path: Path) -> str:
     if not path.exists():
         fail(f"Phase 1 brief does not exist: {path}")
     return path.read_text(encoding="utf-8")
+
+
+def load_optional_text(path_value: str) -> str:
+    if not path_value:
+        return ""
+    path = Path(path_value).expanduser().resolve()
+    if not path.exists():
+        fail(f"Source visual inventory does not exist: {path}")
+    text = path.read_text(encoding="utf-8")
+    if len(text) <= 2600:
+        return text.strip()
+    return text[:2600].rstrip() + "\n..."
 
 
 def load_manifest(path: Path) -> dict:
@@ -134,7 +147,7 @@ def entry_line(entry: dict) -> str:
     return f"- `{entry_id}` -> `{asset_path}`; state `{state}`" + (f"; {suffix_text}" if suffix_text else "")
 
 
-def build_prompt_pack(args: argparse.Namespace, brief: str, manifest: dict) -> str:
+def build_prompt_pack(args: argparse.Namespace, brief: str, manifest: dict, source_inventory: str = "") -> str:
     entries = [entry for entry in manifest["entries"] if isinstance(entry, dict)]
     grouped = group_entries(entries)
     components = grouped_components(entries)
@@ -175,6 +188,13 @@ def build_prompt_pack(args: argparse.Namespace, brief: str, manifest: dict) -> s
         "## Global Style Contract",
         "",
         brief_style_contract(brief),
+        "",
+        "## Source Visual Inventory",
+        "",
+        source_inventory
+        or "Use the Source Visual Inventory section in the Phase 1 brief. If no code inventory exists, record that Phase 1 did not have source code access.",
+        "",
+        "Phase 2 must generate corresponding assets/components for source-derived buttons, controls, component families, icons/media, visual states, and interaction settings. If a source-derived item is replaced by a new approved component, document the mapping instead of silently dropping it.",
         "",
         "## Negative Prompt / Avoid",
         "",
@@ -292,6 +312,7 @@ def build_prompt_pack(args: argparse.Namespace, brief: str, manifest: dict) -> s
             "- Every generated file path matches the manifest or the manifest is updated before validation.",
             "- Every manifest entry keeps layerRole, zIndex, compositingGroup, occlusionPolicy, mayMergeWith, mustRemainSeparateFrom, and alphaRequired.",
             "- Every manifest entry keeps sceneryPlane, depthBand, planePurpose, and componentizationRule.",
+            "- Source-derived buttons, components, icons/media, visual states, and interaction settings are generated or explicitly mapped to approved replacements.",
             "- Top-plane decoration that crosses over content remains a separate transparent asset and is visible in the asset-assembled primary screen preview.",
             "- The user must approve the review package before final Phase 2 handoff or Phase 3 implementation.",
             "",
@@ -311,6 +332,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate a Phase 2 asset prompt pack.")
     parser.add_argument("--phase1-brief", required=True, help="Path to phase1-ui-brief.md")
     parser.add_argument("--manifest", required=True, help="Path to Phase 2 asset manifest JSON")
+    parser.add_argument("--source-visual-inventory", default="", help="Optional phase1-source-visual-inventory.md/json path")
     parser.add_argument("--output", required=True, help="Destination Markdown file")
     parser.add_argument("--strategy", choices=sorted(STRATEGY_NOTES), default="hybrid")
     parser.add_argument("--project", default="frontend-ui-pipeline")
@@ -324,7 +346,7 @@ def main() -> None:
     brief_path = Path(args.phase1_brief).expanduser().resolve()
     manifest_path = Path(args.manifest).expanduser().resolve()
     output_path = Path(args.output).expanduser().resolve()
-    pack = build_prompt_pack(args, load_text(brief_path), load_manifest(manifest_path))
+    pack = build_prompt_pack(args, load_text(brief_path), load_manifest(manifest_path), load_optional_text(args.source_visual_inventory))
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(pack, encoding="utf-8")
     print(f"Wrote {output_path}")

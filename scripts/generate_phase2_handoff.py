@@ -266,6 +266,34 @@ def component_usage(entries: list[dict[str, Any]]) -> list[str]:
     return lines
 
 
+def source_derived_component_mapping(args: argparse.Namespace, entries: list[dict[str, Any]]) -> list[str]:
+    lines = [
+        "- Phase 2 must preserve the Phase 1 Source Visual Inventory coverage: existing buttons, controls, component families, icons/media patterns, visual states, and interaction settings must be generated or explicitly mapped to approved replacements.",
+    ]
+    if args.source_visual_inventory:
+        source_path = Path(args.source_visual_inventory).expanduser()
+        if not source_path.exists():
+            fail(f"source-visual-inventory does not exist: {source_path}")
+        lines.append(f"- Source visual inventory: `{args.source_visual_inventory}`")
+    else:
+        lines.append("- Source visual inventory: see `phase1-ui-brief.md` or `phase2-asset-prompt-pack.md`.")
+
+    components: dict[str, set[str]] = {}
+    for entry in entries:
+        category = str(entry.get("category", ""))
+        if category not in {"component", "icon", "motion"}:
+            continue
+        component = str(entry.get("component", category) or category)
+        state = str(entry.get("state", "default") or "default")
+        components.setdefault(component, set()).add(state)
+    lines.extend(["", "| Phase 2 Component/Asset | Covered States | Source-Derived Use |", "| --- | --- | --- |"])
+    for component, states in sorted(components.items()):
+        lines.append(f"| `{component}` | `{', '.join(sorted(states))}` | Map source-derived usage to this approved generated item or document replacement. |")
+    if not components:
+        lines.append("| - | - | No generated component/icon/motion entries found; return to Phase 2 before implementation. |")
+    return lines
+
+
 def phase3_component_reuse_contract(entries: list[dict[str, Any]]) -> list[str]:
     visible_components: dict[str, set[str]] = {}
     for entry in entries:
@@ -371,6 +399,10 @@ def build_markdown(args: argparse.Namespace, manifest: dict[str, Any], entries: 
         "",
         *component_usage(entries),
         "",
+        "## Source-Derived Component Mapping",
+        "",
+        *source_derived_component_mapping(args, entries),
+        "",
         "## Phase 3 Component Reuse Contract",
         "",
         *phase3_component_reuse_contract(entries),
@@ -386,6 +418,7 @@ def build_markdown(args: argparse.Namespace, manifest: dict[str, Any], entries: 
         "- Preserve the Scenery Plane Allocation; map back scenery, mid scenery, content plane, interaction plane, and front scenery into separate implementation layers before pixel tuning.",
         "- Implement `foreground-frame` and other top-plane decoration as transparent overlays above content surfaces when present.",
         "- Preserve and reuse the Phase 2 foundation kit even if the target screen currently uses only part of it; do not add new visible component families or states in Phase 3.",
+        "- Preserve the Source-Derived Component Mapping; existing code buttons, components, visual states, and interaction settings must have generated Phase 2 equivalents or documented replacements.",
         "- Use invisible text-binding boxes, transparent text fields, or hidden backing text frames only to bind live text to approved background/component positions.",
         "- Use CSS/native UI for scalable controls when the manifest import rule says the visual is code-driven.",
         "- Use image assets for backgrounds, illustrations, masks, textures, and sprite/icon files named in the manifest.",
@@ -398,6 +431,7 @@ def build_markdown(args: argparse.Namespace, manifest: dict[str, Any], entries: 
         "- Layer Preservation Contract implemented: background, content surfaces, controls, foreground decoration, and motion overlays retain their z-index order.",
         "- Scenery Plane Allocation implemented: back, mid, content, interaction, and front scenery retain their Phase 1 visual role.",
         "- Phase 3 Component Reuse Contract followed: every visible component maps to the approved Phase 2 manifest; added text-binding helpers are hidden/transparent except for live text.",
+        "- Source-derived component mapping followed: existing buttons/components/states/interactions are covered by approved generated assets/components or documented replacements.",
         "- Every implemented page screenshot reaches at least 99% similarity against its Phase 1 page image after pixel adjustment.",
         "- Foundation CSS/icons/motion available to future screens.",
         "- Real APIs connected when callable, otherwise mocks match the preview data shape.",
@@ -422,6 +456,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--approved-by", default="user", help="Approver name or role.")
     parser.add_argument("--approved-at", default="", help="Approval timestamp. Defaults to current UTC time.")
     parser.add_argument("--phase1-brief", default="", help="Optional Phase 1 brief path.")
+    parser.add_argument("--source-visual-inventory", default="", help="Optional phase1-source-visual-inventory.md/json path.")
     parser.add_argument("--prompt-pack", default="", help="Optional Phase 2 asset prompt pack path.")
     parser.add_argument("--review-packet", default="", help="Optional Phase 2 review packet Markdown or HTML path.")
     parser.add_argument("--contact-sheet", default="", help="Optional contact sheet path.")

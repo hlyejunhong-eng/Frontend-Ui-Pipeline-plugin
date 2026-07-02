@@ -1,6 +1,6 @@
 ---
 name: frontend-ui-ideation
-description: "Phase 1 of the frontend UI pipeline. Use when the user wants to redesign an existing app, screen, route, or product flow into a premium custom UI concept; collect ideas from current code, screenshots, URLs, Figma, or a running app; generate illustration-level UI and motion direction previews; and produce a Markdown design specification with pixel-level requirements for backgrounds, layout, components, text, buttons, states, click feedback, and animations. Can run alone or hand off to frontend-asset-production."
+description: "Phase 1 of the frontend UI pipeline. Use when the user wants to redesign an existing app, screen, route, or product flow into a premium custom UI concept; collect ideas from current code, screenshots, URLs, Figma, or a running app; inspect source code for existing buttons, components, visual states, and interaction settings; generate illustration-level UI and motion direction previews; and produce a Markdown design specification with pixel-level requirements for backgrounds, layout, components, text, buttons, states, click feedback, and animations. Can run alone or hand off to frontend-asset-production."
 ---
 
 # Frontend UI Ideation
@@ -50,6 +50,9 @@ If the user provides no runnable app, screenshot, URL, Figma frame, or code targ
 
 1. Establish the design target:
    - Identify the exact screen, route, component set, or product flow.
+   - If source code or a local frontend project is available, search the code before visual ideation for existing buttons, controls, component families, visual states, tokens, style rules, icons, and interaction settings. Run `../../scripts/generate_source_visual_inventory.py <repo-root> --target-route <route-or-component> --output-md <handoff-root>/phase1-source-visual-inventory.md --output-json <handoff-root>/phase1-source-visual-inventory.json` when the bundled script is available.
+   - If the bundled source inventory script is unavailable, use `rg` to search for button/control names, component definitions/usages, class names, CSS variables/tokens, hover/focus/active/disabled/loading/error states, transitions, animations, z-index, opacity, border/radius/shadow/background/font rules, icons, and media assets. Record the evidence manually in `phase1-ui-brief.md`.
+   - Treat `phase1-source-visual-inventory.md/json` as Phase 1 source evidence. The redesign can be visually transformed, but Phase 2 must know which source-derived components and interaction settings need generated equivalents or explicit approved replacements.
    - Capture the current state with screenshots when possible.
    - If screenshots cannot be captured, create source evidence from route paths, code excerpts, API maps, state inventories, and a clear reason screenshots were unavailable.
    - Inventory real copy, controls, data states, loading states, error states, empty states, and navigation transitions.
@@ -111,6 +114,7 @@ The Markdown document must include:
 
 - Context: product background, target users, business intent, target surfaces, and known constraints.
 - Source audit: current screen/flow structure, components, copy, states, and interaction model.
+- Source Visual Inventory: `phase1-source-visual-inventory.md/json` path or equivalent code search notes covering source-derived buttons, controls, component families, visual states, tokens, style rules, icons, and visual interaction settings.
 - Selected direction: visual narrative, art direction, tone, and why it fits.
 - Layout spec: viewport sizes, grid, spacing scale, z-index/layering, alignment, safe areas, responsive behavior, and overflow rules.
 - Layer preservation contract: z-index ledger, compositing groups, occlusion policy, may-merge rules, must-remain-separate rules, alpha requirements, and implementation hints for every major visual plane.
@@ -121,6 +125,7 @@ The Markdown document must include:
 - Button and control spec: hit area, icon usage, hover/press/focus/disabled states, cursor, and keyboard behavior.
 - Motion spec: page transitions, component entrance, click feedback, hover, drag, loading, idle motion, easing, durations, delays, transform origins, and reduced-motion alternatives.
 - Phase 2 generation guide: layer map, adjustable visual parameters, asset naming rules, export rules, responsive crop rules, and component coverage rules.
+- Source-derived component map: which existing buttons, components, visual states, and interaction settings Phase 2 must generate as corresponding assets/components, and which ones may map to approved replacements.
 - Split ledger: a table that lists every background, illustration, content surface, foreground decoration, mask, texture, and motion overlay with `layerRole`, `zIndex`, `compositingGroup`, `occlusionPolicy`, `mayMergeWith`, `mustRemainSeparateFrom`, and `alphaRequired`.
 - Scenery allocation table: a table that lists every Phase 1 page image, each plane's `sceneryPlane`, `depthBand`, `planePurpose`, `componentizationRule`, and the illustration-level components Phase 2 must generate from it.
 - Visual excellence gate: three visual option names, preview paths, selected option, selected visual target, taste scores, and a clear pass/fail result.
@@ -167,6 +172,7 @@ Do not finish with prose only. Final output must provide:
 - A `phase1-ui-brief.md` file.
 - At least one preview image that represents the redesigned target UI.
 - Evidence of source inspection, such as screenshots, route/component notes, or a clear statement that the source artifact was not available.
+- A source visual inventory when code is available, preferably `phase1-source-visual-inventory.md/json`, proving existing buttons/components and visual interaction settings were searched before ideation.
 - A Phase 2 generation guide with layer order, adjustable parameters, and the full foundational component inventory.
 - A Layer Preservation Contract proving foreground decoration and atmosphere can be split without destroying the selected illustration depth.
 - A Scenery Plane Allocation proving Phase 2 knows which visuals are back scenery, mid scenery, content, interaction, and front scenery before generating illustration-level components.

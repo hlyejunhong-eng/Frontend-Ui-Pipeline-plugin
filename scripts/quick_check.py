@@ -173,6 +173,9 @@ def main() -> None:
         if skill == "frontend-ui-ideation":
             for required in (
                 "Phase 2 generation guide",
+                "Source Visual Inventory",
+                "generate_source_visual_inventory.py",
+                "phase1-source-visual-inventory",
                 "Layer Preservation Contract",
                 "Scenery Plane Allocation",
                 "Required Phase 2 Component Inventory",
@@ -196,6 +199,9 @@ def main() -> None:
             for required in (
                 "Required Foundation Kit",
                 "complete foundational component kit",
+                "Source Visual Inventory",
+                "source-derived component map",
+                "source-derived requirements",
                 "Layer Preservation Contract",
                 "Scenery Plane Allocation",
                 "phase2-scenery-plane-allocation.md",
@@ -316,6 +322,10 @@ def main() -> None:
         "--min-similarity-pct",
         "Phase 2 Component Reuse Ledger",
         "Phase 3 Component Reuse Contract",
+        "Phase 1 Source Visual Inventory Generator",
+        "generate_source_visual_inventory.py",
+        "phase1-source-visual-inventory.md",
+        "Source-Derived Component Mapping",
         "隐藏/透明文本框",
         "transparent text fields",
         "Layer and Occlusion Review",
@@ -421,6 +431,8 @@ def main() -> None:
     check_file(visual_benchmark_gate)
     phase1_validator = ROOT / "scripts" / "validate_phase1_brief.py"
     check_file(phase1_validator)
+    source_inventory_generator = ROOT / "scripts" / "generate_source_visual_inventory.py"
+    check_file(source_inventory_generator)
     manifest_generator = ROOT / "scripts" / "generate_foundation_manifest.py"
     check_file(manifest_generator)
     prompt_pack_generator = ROOT / "scripts" / "generate_asset_prompt_pack.py"
@@ -448,6 +460,65 @@ def main() -> None:
     review_server = ROOT / "scripts" / "serve_review.py"
     check_file(review_server)
     with tempfile.TemporaryDirectory() as temp_dir:
+        source_root = Path(temp_dir) / "source-app"
+        (source_root / "src").mkdir(parents=True)
+        (source_root / "src" / "Button.tsx").write_text(
+            """export function PrimaryButton({ loading, disabled }) {
+  return <button className="btn primary" disabled={disabled} onClick={() => {}}>
+    {loading ? 'Loading' : 'Confirm'}
+  </button>
+}
+export const MetricCard = ({ selected }) => <section className={selected ? 'card selected' : 'card'} />
+""",
+            encoding="utf-8",
+        )
+        (source_root / "src" / "styles.css").write_text(
+            """.btn.primary:hover { transition: transform 160ms ease; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.btn.primary:focus-visible { outline: 2px solid var(--focus-ring); }
+.btn.primary:disabled { opacity: .5; }
+.card.selected { border-radius: 16px; background: var(--surface); z-index: 2; }
+""",
+            encoding="utf-8",
+        )
+        source_inventory_md = Path(temp_dir) / "phase1-source-visual-inventory.md"
+        source_inventory_json = Path(temp_dir) / "phase1-source-visual-inventory.json"
+        source_inventory_check = subprocess.run(
+            [
+                sys.executable,
+                str(source_inventory_generator),
+                str(source_root),
+                "--target-route",
+                "/dashboard",
+                "--target-name",
+                "Dashboard",
+                "--output-md",
+                str(source_inventory_md),
+                "--output-json",
+                str(source_inventory_json),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if "Hits retained" not in source_inventory_check.stdout or not source_inventory_md.exists() or not source_inventory_json.exists():
+            fail("source visual inventory generator did not write expected outputs")
+        source_inventory = json.loads(source_inventory_json.read_text(encoding="utf-8"))
+        if source_inventory.get("schemaVersion") != "frontend-ui-pipeline.source-visual-inventory.v1":
+            fail("source visual inventory JSON schema version is wrong")
+        for category in ("buttonsAndControls", "componentDefinitions", "visualStyleSettings", "interactionMotionSettings", "stateFeedbackSettings"):
+            if source_inventory.get("summary", {}).get("categoryCounts", {}).get(category, 0) <= 0:
+                fail(f"source visual inventory missing category {category}")
+        source_inventory_text = source_inventory_md.read_text(encoding="utf-8")
+        for required_source_text in (
+            "Phase 1 Source Visual Inventory",
+            "Source-Derived Component Requirements",
+            "buttonsAndControls",
+            "interactionMotionSettings",
+        ):
+            if required_source_text not in source_inventory_text:
+                fail(f"source visual inventory markdown missing {required_source_text}")
+
         phase1_brief = Path(temp_dir) / "phase1-ui-brief.md"
         phase1_brief.write_text(
             """# Phase 1 UI Brief: Quick Check
@@ -457,6 +528,15 @@ Product context for a premium frontend flow.
 
 ## Source Audit
 Route and source evidence were inspected.
+
+## Source Visual Inventory
+Source code was scanned before ideation. The Phase1 Source Visual Inventory is recorded at `phase1-source-visual-inventory.md` and `phase1-source-visual-inventory.json`.
+
+Source-derived buttons: primary button, disabled button, loading button, icon-only button, and pressed button.
+Source-derived components: PrimaryButton, MetricCard, cards, inputs, navigation, modal, search, and section title.
+Source-derived visual states: hover, focus, active, disabled, loading, selected, empty, error, success, and warning.
+Source-derived interaction settings: transition, animation, transform, duration, easing, click feedback, focus ring, and gesture feedback.
+Source-derived tokens and visual settings: background, color, font, border, border-radius, shadow, opacity, z index, spacing, and CSS variables.
 
 ## Preview Files
 - `phase1-preview-desktop.png`
@@ -542,6 +622,11 @@ Complete Phase 2 component inventory:
 - Modal: default, destructive confirmation, form modal, mobile sheet, overlay, close action, focus.
 - Transition animation: page enter, page exit, modal enter, modal exit, button press, hover, loading shimmer, reduced motion.
 
+Source-derived component map:
+- PrimaryButton states map to generated button assets: primary, disabled, loading, pressed, hover, focus.
+- MetricCard states map to generated card assets: flat, elevated, selected, disabled, media, metric, action-card.
+- Source interaction settings map to generated transition animation and focus/hover component states.
+
 ## Asset Expectations
 Backgrounds, illustrations, masks, icons, component CSS, motion frames, and manifest.
 
@@ -620,6 +705,8 @@ Phase 2 can start after validation passes.
                 str(phase1_brief),
                 "--manifest",
                 str(output_path),
+                "--source-visual-inventory",
+                str(source_inventory_md),
                 "--strategy",
                 "hybrid",
                 "--output",
@@ -640,6 +727,8 @@ Phase 2 can start after validation passes.
             "CSS/SVG Component Prompt",
             "Layer Preservation Contract",
             "Scenery Plane Allocation",
+            "Source Visual Inventory",
+            "source-derived buttons",
             "scenery",
             "Componentization",
             "z `",
@@ -1178,6 +1267,8 @@ Phase 2 can start after validation passes.
                 str(assembly_preview),
                 "--visual-diff-report",
                 str(diff_md),
+                "--source-visual-inventory",
+                str(source_inventory_md),
                 "--target-runtime",
                 "quick-check-runtime",
                 "--approved-by",
@@ -1207,6 +1298,8 @@ Phase 2 can start after validation passes.
             "99% similarity",
             "Asset-assembled primary screen preview",
             "## Component Usage Rules",
+            "## Source-Derived Component Mapping",
+            "Source visual inventory",
             "## Phase 3 Component Reuse Contract",
             "invisible text-binding boxes",
             "Do not generate new visible component families",
